@@ -115,6 +115,7 @@
   #hotbar{
     position:fixed; left:50%; bottom:16px; transform:translateX(-50%);
     display:flex; gap:8px; pointer-events:auto; padding:8px 10px;
+    flex-wrap:wrap; justify-content:center; max-width:96vw;
   }
   .slot{
     width:60px; height:66px; border-radius:14px; cursor:pointer;
@@ -322,13 +323,19 @@
   body.touchmode #tut{bottom:210px;}
 
   /* ── 작은 동그란 버튼들 ── */
-  #tools{position:fixed; right:14px; bottom:14px; display:flex; gap:8px; pointer-events:auto; z-index:14;}
+  #tools{
+    position:fixed; right:14px; bottom:14px; display:flex; gap:8px; z-index:14;
+    pointer-events:auto; flex-wrap:wrap; max-width:212px; justify-content:flex-end;
+  }
   .tool{
     width:44px; height:44px; border-radius:50%; border:none; cursor:pointer; font-size:20px;
     background:rgba(255,255,255,.85); box-shadow:0 4px 0 rgba(0,0,0,.16); font-family:inherit;
   }
   .tool:active{transform:translateY(3px); box-shadow:0 1px 0 rgba(0,0,0,.16);}
-  body.touchmode #tools{bottom:auto; top:70px; right:14px; flex-direction:column;}
+  body.touchmode #tools{
+    bottom:auto; top:66px; right:10px; flex-direction:row; flex-wrap:wrap;
+    width:100px; justify-content:flex-end;
+  }
 
   /* ── 도움말 ── */
   #help{
@@ -343,6 +350,139 @@
   #helpbox table{width:100%; border-collapse:collapse; font-size:16px;}
   #helpbox td{padding:7px 4px; border-bottom:2px dotted rgba(0,0,0,.09);}
   #helpbox td:first-child{width:42%; font-weight:900;}
+
+
+  /* ══ 공용 팝업 창 (제작 · 배지 · 청사진 · 나누기 · 출석) ══ */
+  .modal{
+    position:fixed; inset:0; z-index:38; display:none;
+    align-items:center; justify-content:center; background:rgba(25,20,45,.5);
+    pointer-events:auto; padding:12px;
+  }
+  .mbox{
+    background:#fffdf7; border-radius:26px; padding:20px 22px 18px;
+    box-shadow:0 12px 0 rgba(0,0,0,.18), 0 24px 50px rgba(0,0,0,.35);
+    width:min(640px,94vw); max-height:88vh; overflow:auto;
+  }
+  .mhead{display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; gap:10px;}
+  .mhead h2{margin:0; font-size:25px;}
+  .msub{font-size:14px; opacity:.65; margin-bottom:14px; line-height:1.5;}
+  .mbtn{
+    margin-top:16px; width:100%; border:none; border-radius:16px; cursor:pointer;
+    font-family:inherit; font-weight:900; font-size:18px; color:#fff; padding:13px;
+    background:linear-gradient(#7c6df0,#5b4bd6); box-shadow:0 5px 0 #4335ad;
+  }
+  .mbtn:active{transform:translateY(3px); box-shadow:0 2px 0 #4335ad;}
+  .mbtn.green{background:linear-gradient(#7ae582,#38b862); box-shadow:0 5px 0 #2a8c4a;}
+  .mbtn.green:active{box-shadow:0 2px 0 #2a8c4a;}
+  .mbtn.gray{background:linear-gradient(#cfc9da,#a9a2b8); box-shadow:0 5px 0 #857d96; color:#3b3350;}
+  .mbtn.gray:active{box-shadow:0 2px 0 #857d96;}
+  .mrow{display:flex; gap:10px;}
+  .mrow .mbtn{width:auto; flex:1;}
+
+  /* 재료 주머니 */
+  #bagrow{display:flex; flex-wrap:wrap; gap:7px; margin-bottom:14px;}
+  .bagchip{
+    background:#f3eefc; border-radius:12px; padding:6px 11px; font-size:15px;
+    box-shadow:0 3px 0 rgba(0,0,0,.1); display:flex; align-items:center; gap:5px;
+  }
+  .bagchip b{font-size:16px;}
+  .bagchip.zero{opacity:.35;}
+
+  /* 제작 목록 */
+  .recipe{
+    display:flex; align-items:center; gap:12px; padding:11px 12px; margin-bottom:10px;
+    background:#f3eefc; border-radius:18px; box-shadow:0 4px 0 rgba(0,0,0,.1);
+  }
+  .recipe.can{background:#e6f7e9;}
+  .recipe .ric{font-size:34px; line-height:1;}
+  .recipe .rmid{flex:1; min-width:0;}
+  .recipe .rnm{font-size:17px;}
+  .recipe .rds{font-size:13px; opacity:.7; margin:2px 0 4px;}
+  .recipe .rneed{font-size:13px; display:flex; flex-wrap:wrap; gap:6px;}
+  .recipe .rneed span{background:rgba(255,255,255,.8); border-radius:9px; padding:2px 7px;}
+  .recipe .rneed span.no{color:#c0392b;}
+  .recipe .rhave{font-size:12px; opacity:.6; margin-top:3px;}
+  .makebtn{
+    border:none; border-radius:14px; cursor:pointer; font-family:inherit; font-weight:900;
+    font-size:15px; color:#fff; padding:11px 15px; white-space:nowrap;
+    background:linear-gradient(#ffcf3f,#ff9f1a); box-shadow:0 4px 0 #c9700a;
+  }
+  .makebtn:active{transform:translateY(3px); box-shadow:0 1px 0 #c9700a;}
+  .makebtn:disabled{background:#d8d3e0; box-shadow:0 4px 0 #b2abc0; color:#8a8398; cursor:default;}
+
+  /* 배지 */
+  #badgegrid{display:grid; grid-template-columns:repeat(auto-fill,minmax(112px,1fr)); gap:10px;}
+  .badge{
+    border-radius:16px; padding:11px 7px; text-align:center; background:#efeaf8;
+    box-shadow:0 4px 0 rgba(0,0,0,.1);
+  }
+  .badge.got{background:#fff3cf; box-shadow:0 0 0 3px #ffd93d, 0 5px 0 rgba(0,0,0,.12);}
+  .badge .bic{font-size:31px; line-height:1;}
+  .badge.lock .bic{filter:grayscale(1); opacity:.35;}
+  .badge .bnm{font-size:13px; margin-top:4px;}
+  .badge .bds{font-size:11px; opacity:.6; margin-top:2px; line-height:1.35;}
+
+  /* 청사진 목록 */
+  .bplan{
+    display:flex; align-items:center; gap:12px; padding:11px 12px; margin-bottom:10px;
+    background:#f3eefc; border-radius:18px; box-shadow:0 4px 0 rgba(0,0,0,.1); cursor:pointer;
+  }
+  .bplan:hover{transform:translateY(-2px);}
+  .bplan.done{background:#e6f7e9;}
+  .bplan.lock{opacity:.5; cursor:default;}
+  .bplan .pic{font-size:34px;}
+  .bplan .pnm{font-size:17px;}
+  .bplan .pds{font-size:13px; opacity:.7;}
+
+  /* 청사진 진행 표시 (화면 왼쪽 아래) */
+  #bpbar{
+    position:fixed; left:14px; bottom:96px; z-index:15; display:none;
+    pointer-events:auto; max-width:250px;
+  }
+  #bpbar .bptitle{font-size:16px; margin-bottom:5px;}
+  #bpbar .bptrack{height:11px; background:#e5e0ef; border-radius:999px; overflow:hidden;
+    box-shadow:inset 0 2px 4px rgba(0,0,0,.18);}
+  #bpbar .bpfill{height:100%; width:0%; border-radius:999px;
+    background:linear-gradient(90deg,#8fd6ff,#4f8fff); transition:width .25s ease;}
+  #bpbar .bpnum{font-size:13px; margin-top:4px; opacity:.75;}
+  #bpbar .bpstop{
+    margin-top:7px; border:none; border-radius:11px; cursor:pointer; font-family:inherit;
+    font-weight:900; font-size:13px; padding:7px 10px; width:100%;
+    background:#efe9fb; box-shadow:0 3px 0 rgba(0,0,0,.12); color:#4a4060;
+  }
+  body.touchmode #bpbar{bottom:200px;}
+
+  /* 나누기 코드 */
+  #sharecode{
+    width:100%; height:110px; resize:none; border-radius:14px; border:3px solid #e3ddef;
+    padding:10px 12px; font-family:ui-monospace,Menlo,Consolas,monospace; font-size:12px;
+    font-weight:600; color:#3b3350; background:#faf8ff; word-break:break-all;
+  }
+  #sharemsg{font-size:14px; margin-top:10px; min-height:20px; color:#38b862;}
+
+  /* 출석 카드 */
+  #dailybox{text-align:center;}
+  #dailybox .dbig{font-size:54px; line-height:1;}
+  #dailybox .dstreak{font-size:21px; margin:8px 0 2px;}
+  #dailybox .dgot{font-size:17px; opacity:.75;}
+  #dailydots{display:flex; gap:7px; justify-content:center; margin:14px 0 2px; flex-wrap:wrap;}
+  #dailydots i{
+    width:26px; height:26px; border-radius:50%; background:#e5e0ef; font-style:normal;
+    display:flex; align-items:center; justify-content:center; font-size:13px;
+  }
+  #dailydots i.on{background:linear-gradient(#ffcf3f,#ff9f1a); color:#fff; box-shadow:0 3px 0 #c9700a;}
+
+  /* 배지 획득 토스트 */
+  #btoast{
+    position:fixed; left:50%; top:76px; transform:translateX(-50%) scale(.6);
+    z-index:33; pointer-events:none; opacity:0; transition:opacity .3s ease, transform .3s ease;
+    background:linear-gradient(#fff6d0,#ffe28a); border-radius:20px; padding:11px 20px;
+    box-shadow:0 6px 0 #d3a52b, 0 14px 28px rgba(0,0,0,.3); text-align:center;
+  }
+  #btoast.on{opacity:1; transform:translateX(-50%) scale(1);}
+  #btoast .tbic{font-size:32px; line-height:1;}
+  #btoast .tbnm{font-size:17px; margin-top:2px;}
+  #btoast .tbsub{font-size:12px; opacity:.6;}
 
   /* ── 좁은 화면(휴대폰) ── */
   @media (max-width:620px){
@@ -377,7 +517,19 @@
 
     body.touchmode #hotbar{bottom:196px; transform:translateX(-50%) scale(1);}
     body.touchmode #tut{bottom:262px;}
-    body.touchmode #tools{top:34%; bottom:auto; right:8px; flex-direction:column;}
+    body.touchmode #tools{top:26%; bottom:auto; right:6px; width:86px;}
+    .modal{padding:6px;}
+    .mbox{padding:15px 15px 13px; border-radius:20px;}
+    .mhead h2{font-size:20px;}
+    .recipe .ric{font-size:27px;}
+    .recipe .rnm{font-size:15px;}
+    #badgegrid{grid-template-columns:repeat(auto-fill,minmax(88px,1fr)); gap:7px;}
+    .badge .bic{font-size:25px;}
+    .badge .bnm{font-size:11px;}
+    .badge .bds{font-size:10px;}
+    #bpbar{left:8px; bottom:86px; max-width:170px;}
+    #bpbar .bptitle{font-size:13px;}
+    #bpbar .bpnum{font-size:11px;}
     .tool{width:38px; height:38px; font-size:17px;}
     #tut .tcard{font-size:15px; padding:11px 16px;}
     #banner{top:22%;}
@@ -419,6 +571,12 @@
   <div id="hotbar"></div>
   <div id="combo"></div>
   <div id="banner"></div>
+  <div class="card" id="bpbar">
+    <div class="bptitle" id="bptitle"></div>
+    <div class="bptrack"><div class="bpfill" id="bpfill"></div></div>
+    <div class="bpnum" id="bpnum"></div>
+    <button class="bpstop" id="bpstop">그만두기</button>
+  </div>
   <div id="fps"></div>
 </div>
 
@@ -449,8 +607,14 @@
 </div>
 
 <div id="tools">
+  <button class="tool" id="btnUndo"  title="되감기 (Z)">⏪</button>
+  <button class="tool" id="btnCraft" title="제작대 (C)">🔨</button>
+  <button class="tool" id="btnPlan"  title="청사진 건축학교 (B)">📐</button>
+  <button class="tool" id="btnBadge" title="배지 (V)">🏅</button>
+  <button class="tool" id="btnShare" title="내 월드 나누기">📤</button>
+  <button class="tool" id="btnTime"  title="밤낮 바꾸기">🌗</button>
   <button class="tool" id="btnSound" title="소리 켜기/끄기">🔊</button>
-  <button class="tool" id="btnHelp" title="조작법">❓</button>
+  <button class="tool" id="btnHelp"  title="조작법">❓</button>
 </div>
 
 <div id="tut"></div>
@@ -472,6 +636,59 @@
   <div id="shopgrid"></div>
   <button id="shopclose">닫기 (가게 밖으로 나가도 닫혀요)</button>
 </div></div>
+
+<!-- 🔨 제작대 -->
+<div class="modal" id="craft"><div class="mbox">
+  <div class="mhead"><h2>🔨 제작대</h2>
+    <div style="font-size:19px;display:flex;align-items:center;gap:7px"><div class="coinicon"></div><span id="craftcoinnum">0</span></div></div>
+  <div class="msub">블록을 <b>부수면</b> 재료 주머니에 모여요. 모은 재료로 특별한 블록을 만들 수 있어요!</div>
+  <div id="bagrow"></div>
+  <div id="craftlist"></div>
+  <button class="mbtn" id="craftclose">닫기</button>
+</div></div>
+
+<!-- 🏅 배지 -->
+<div class="modal" id="badges"><div class="mbox">
+  <div class="mhead"><h2>🏅 내 배지</h2><div id="badgecount" style="font-size:18px"></div></div>
+  <div class="msub">놀다 보면 저절로 모여요. 친구에게 자랑해 보세요!</div>
+  <div id="badgegrid"></div>
+  <button class="mbtn" id="badgeclose">닫기</button>
+</div></div>
+
+<!-- 📐 청사진 건축학교 -->
+<div class="modal" id="plans"><div class="mbox">
+  <div class="mhead"><h2>📐 청사진 건축학교</h2></div>
+  <div class="msub">무엇을 지을지 모르겠을 때! 반투명한 <b>유령 블록</b>이 자리를 알려 줘요.
+    그 자리에 같은 블록을 놓기만 하면 돼요.</div>
+  <div id="planlist"></div>
+  <button class="mbtn" id="planclose">닫기</button>
+</div></div>
+
+<!-- 📤 월드 나누기 -->
+<div class="modal" id="share"><div class="mbox">
+  <div class="mhead"><h2>📤 내 월드 나누기</h2></div>
+  <div class="msub">내가 만든 건축물이 <b>글자 코드</b>로 바뀌어요. 친구에게 보내면
+    친구 게임에 똑같이 나타나요. (코인과 배지는 넘어가지 않아요)</div>
+  <textarea id="sharecode" spellcheck="false"></textarea>
+  <div class="mrow" style="margin-top:12px">
+    <button class="mbtn green" id="sharecopy" style="margin-top:0">📋 내 코드 복사</button>
+    <button class="mbtn" id="shareload" style="margin-top:0">📥 코드 불러오기</button>
+  </div>
+  <div id="sharemsg"></div>
+  <button class="mbtn gray" id="shareclose">닫기</button>
+</div></div>
+
+<!-- 📅 출석 보상 -->
+<div class="modal" id="daily" style="z-index:42"><div class="mbox" id="dailybox">
+  <div class="dbig">📅</div>
+  <div class="dstreak" id="dstreak"></div>
+  <div class="dgot" id="dgot"></div>
+  <div id="dailydots"></div>
+  <button class="mbtn green" id="dailyclose">고마워요!</button>
+</div></div>
+
+<div id="btoast"><div class="tbic" id="tbic"></div><div class="tbnm" id="tbnm"></div>
+  <div class="tbsub">🏅 배지를 얻었어요</div></div>
 
 <div id="levelfx"></div>
 <div id="err"></div>
@@ -528,7 +745,9 @@ function valueNoise(seed, gw){
    1. 블록 종류
    ═══════════════════════════════════════════════════ */
 const AIR=0, GRASS=1, DIRT=2, STONE=3, WOOD=4, LEAF=5, SAND=6, GLASS=7, RAINBOW=8,
-      WATER=9, GOLD=10, PATH_B=11, PATH_S=12, PATH_G=13, PLANK=14;
+      WATER=9, GOLD=10, PATH_B=11, PATH_S=12, PATH_G=13, PLANK=14,
+      /* 제작대에서만 만들 수 있는 블록 */
+      TRAMP=15, LAMP=16, ICE=17;
 
 const BLOCKS = {
   [GRASS]:  {name:'잔디',   icon:'🌱'},
@@ -545,14 +764,18 @@ const BLOCKS = {
   [PATH_S]: {name:'은',     icon:'⚪'},
   [PATH_G]: {name:'금',     icon:'🟡'},
   [PLANK]:  {name:'판자',   icon:'🟧'},
+  [TRAMP]:  {name:'통통',   icon:'🟩'},
+  [LAMP]:   {name:'램프',   icon:'💡', glow:true},
+  [ICE]:    {name:'얼음',   icon:'🧊', transparent:true},
 };
 const BLOCK_COLOR = {
   [GRASS]:0x63c64d, [DIRT]:0x96653f, [STONE]:0x9aa0a8, [WOOD]:0x9c6b3f,
   [LEAF]:0x4fbf52, [SAND]:0xf0dfa8, [GLASS]:0xbeebff, [RAINBOW]:0xff7ddb,
   [WATER]:0x49aee0, [GOLD]:0xffc82e, [PATH_B]:0xc87137, [PATH_S]:0xd5dae0,
-  [PATH_G]:0xffd93d, [PLANK]:0xd7a96b
+  [PATH_G]:0xffd93d, [PLANK]:0xd7a96b,
+  [TRAMP]:0x4fd86a, [LAMP]:0xffe9a0, [ICE]:0xa8e4ff
 };
-const RENDER_TYPES = [GRASS,DIRT,STONE,WOOD,LEAF,SAND,GLASS,RAINBOW,GOLD,PATH_B,PATH_S,PATH_G,PLANK];
+const RENDER_TYPES = [GRASS,DIRT,STONE,WOOD,LEAF,SAND,GLASS,RAINBOW,GOLD,PATH_B,PATH_S,PATH_G,PLANK,TRAMP,LAMP,ICE];
 const isLiquid = t => t===WATER;
 const isSolidType = t => t!==AIR && !isLiquid(t);
 
@@ -620,6 +843,28 @@ function goldTex(g,rng){
   g.fillStyle='#fff8d0'; g.fillRect(4,4,3,3);
 }
 
+/* ---- 제작 블록 3종 ---- */
+function trampTex(g,rng){
+  g.fillStyle='#3fb95a'; g.fillRect(0,0,TS,TS);
+  g.fillStyle='#63e87e';
+  for(let i=2;i<TS;i+=4){ g.fillRect(i,0,2,TS); g.fillRect(0,i,TS,2); }
+  g.fillStyle='rgba(255,255,255,.55)'; g.fillRect(0,0,TS,2);
+  g.fillStyle='rgba(0,0,0,.18)'; g.fillRect(0,TS-2,TS,2);
+}
+function lampTex(g,rng){
+  g.fillStyle='#c98a2e'; g.fillRect(0,0,TS,TS);
+  g.fillStyle='#ffe9a0'; g.fillRect(2,2,TS-4,TS-4);
+  g.fillStyle='#fffbe0'; g.fillRect(5,5,TS-10,TS-10);
+  speckle(g,rng,['#fff6c8','#ffdc7a'],24);
+}
+function iceTex(g,rng){
+  g.fillStyle='#a8e4ff'; g.fillRect(0,0,TS,TS);
+  speckle(g,rng,['#cdf1ff','#8ad3f5'],40);
+  g.fillStyle='rgba(255,255,255,.85)';
+  g.fillRect(0,0,TS,1); g.fillRect(0,0,1,TS);
+  g.fillStyle='rgba(255,255,255,.55)'; g.fillRect(3,9,7,1); g.fillRect(9,3,1,7);
+}
+
 const TEX = {};
 function buildTextures(){
   TEX[GRASS]   = [grassSide, grassSide, grassTop, flat('#96653f',['#7d5433','#a97a4d']), grassSide, grassSide];
@@ -635,6 +880,9 @@ function buildTextures(){
   TEX[PATH_S]  = flat('#d5dae0',['#bcc3cb','#eef2f6']);
   TEX[PATH_G]  = flat('#ffd93d',['#e6b800','#fff0a0']);
   TEX[PLANK]   = flat('#d7a96b',['#c1904f','#e8c390'],40);
+  TEX[TRAMP]   = trampTex;
+  TEX[LAMP]    = lampTex;
+  TEX[ICE]     = iceTex;
 }
 
 const MATS = {};
@@ -646,6 +894,8 @@ function buildMaterials(){
       const o = {map:map};
       if(def.transparent){ o.transparent=true; o.opacity=0.72; o.depthWrite=true; }
       if(def.glow){ o.emissive = new THREE.Color(0x553311); o.emissiveIntensity=0.55; o.emissiveMap=map; }
+      if(t===LAMP){ o.emissive = new THREE.Color(0xffd98a); o.emissiveIntensity=0.5; o.emissiveMap=map; }
+      if(t===ICE){ o.transparent=true; o.opacity=0.82; o.depthWrite=true; }
       return new THREE.MeshLambertMaterial(o);
     };
     MATS[t] = Array.isArray(spec) ? spec.map(mk) : mk(spec,0);
@@ -791,6 +1041,7 @@ sun.shadow.normalBias = 0.04;
 scene.add(sun); scene.add(sun.target);
 
 /* ---- 하늘 + 구름 ---- */
+let skyMesh = null;
 function buildSky(){
   const c=document.createElement('canvas'); c.width=8; c.height=128;
   const g=c.getContext('2d');
@@ -805,6 +1056,7 @@ function buildSky(){
   );
   sky.frustumCulled=false;
   scene.add(sky);
+  skyMesh = sky;
 
   // 구름: 납작한 박스 몇 개를 뭉쳐서
   const cloudMat = new THREE.MeshLambertMaterial({color:0xffffff, emissive:0x777777, fog:false});
@@ -1031,7 +1283,10 @@ function updatePlayer(dt){
   }
   const mult = player.inWater ? 0.62 : 1;
   const targetVX = ax*SPEED*mult, targetVZ = az*SPEED*mult;
-  const k = player.onGround ? 1 : AIR_CTRL;
+  // 🧊 얼음 위에서는 발이 잘 안 붙어서 쭈욱 미끄러진다
+  const onIce = player.onGround &&
+    getBlock(Math.floor(player.x), Math.floor(player.y - 0.12), Math.floor(player.z)) === ICE;
+  const k = player.onGround ? (onIce ? 0.11 : 1) : AIR_CTRL;
   player.vx = lerp(player.vx, targetVX, clamp(k*dt*16,0,1));
   player.vz = lerp(player.vz, targetVZ, clamp(k*dt*16,0,1));
 
@@ -1065,9 +1320,23 @@ function updatePlayer(dt){
   player.vy = Math.max(player.vy, -45);
 
   player.onGround = false;
+  const vyBefore = player.vy;
   moveAxis('x', player.vx*dt);
   moveAxis('z', player.vz*dt);
   moveAxis('y', player.vy*dt);
+
+  // 🟩 통통 블록: 밟으면 떨어진 힘보다 더 세게 튀어오른다
+  if(player.onGround && vyBefore < -0.5){
+    const bx = Math.floor(player.x), by = Math.floor(player.y - 0.12), bz = Math.floor(player.z);
+    if(getBlock(bx, by, bz) === TRAMP){
+      player.vy = clamp(-vyBefore * 1.18, 11, 24);
+      player.onGround = false;
+      player.squash = 0.8;
+      player.rocketLeft = hasUnlock('로켓 점프') ? 1 : 0;
+      Sound.bounce();
+      Particles.burst(bx+.5, by+1, bz+.5, 0x4fd86a, 14, 4);
+    }
+  }
 
   // 섬 밖으로 떨어져도 죽지 않고 통통 튀어서 돌아오기
   if(player.y < -14){
@@ -1128,7 +1397,8 @@ function updateCamera(dt){
   camera.position.set(hx + dirX*camState.curDist, hy + dirY*camState.curDist, hz + dirZ*camState.curDist);
   camera.lookAt(hx, hy, hz);
 
-  sun.position.set(hx+28, 48, hz+18);
+  const sd = DayNight.dir;
+  sun.position.set(hx + sd.x*46, player.y + Math.max(6, sd.y*52), hz + sd.z*46);
   sun.target.position.set(hx, player.y, hz);
   sun.target.updateMatrixWorld();
 }
@@ -1157,7 +1427,17 @@ const input = {
 const touch = {moveX:0, moveY:0, lookX:0, lookY:0, breaking:false, placing:false};
 
 const NO_SCROLL = {Space:1, ArrowUp:1, ArrowDown:1, ArrowLeft:1, ArrowRight:1};
+/* 창이 떠 있거나 코드를 입력 중이면 캐릭터가 멋대로 움직이면 안 된다 */
+function panelOpen(){
+  const el = document.activeElement;
+  if(el && (el.tagName==='TEXTAREA' || el.tagName==='INPUT')) return true;
+  return shopOpen || craftOpen || plansOpen ||
+         $('#badges').style.display==='flex' ||
+         $('#share').style.display==='flex' ||
+         $('#daily').style.display==='flex';
+}
 addEventListener('keydown', e=>{
+  if(panelOpen()){ for(const k in keys) keys[k]=false; return; }
   if(e.code==='Space') jumpBuffer = 0.14;
   if(NO_SCROLL[e.code]) e.preventDefault();
   keys[e.code]=true;
@@ -1288,6 +1568,11 @@ const state = {
   coinsEarned:0, maxHeight:0, rainbowPlaced:0, combosMade:0, goldFound:0,
   quests:[], questsDone:{},
   skin:'basic', skinsOwned:{}, tutorialDone:0, soundOn:1,
+  bag:{}, seen:{}, crafted:0,          // 재료 주머니 · 만들어 본 블록
+  badges:{},                           // 얻은 배지
+  bpDone:{}, bpActive:null,            // 청사진 완성 · 진행 중
+  lastDay:'', streak:0,                // 출석
+  timeMode:'auto', lampNight:0, undos:0, shared:0,
   edits:{},                // "x,y,z" -> 블록 번호 (0 = 부순 자리)
   collected:{},            // 이미 먹은 코인/별
   obbyDone:{}              // 완주한 코스
@@ -1299,7 +1584,7 @@ function saveSoon(){ clearTimeout(saveTimer); saveTimer = setTimeout(saveNow, 70
 function saveNow(){
   try{
     localStorage.setItem(SAVE_KEY, JSON.stringify({
-      v:6, coins:state.coins, exp:state.exp, level:state.level,
+      v:7, coins:state.coins, exp:state.exp, level:state.level,
       placed:state.placed, broken:state.broken, starsGot:state.starsGot,
       coinsEarned:state.coinsEarned, maxHeight:state.maxHeight,
       rainbowPlaced:state.rainbowPlaced, combosMade:state.combosMade, goldFound:state.goldFound,
@@ -1307,6 +1592,10 @@ function saveNow(){
       skin:state.skin, skinsOwned:state.skinsOwned,
       tutorialDone:state.tutorialDone, soundOn:state.soundOn,
       edits:state.edits, collected:state.collected, obbyDone:state.obbyDone,
+      bag:state.bag, seen:state.seen, crafted:state.crafted,
+      badges:state.badges, bpDone:state.bpDone, bpActive:state.bpActive,
+      lastDay:state.lastDay, streak:state.streak, timeMode:state.timeMode,
+      lampNight:state.lampNight, undos:state.undos, shared:state.shared,
       pos:{x:player.x, y:player.y, z:player.z}, slot:selectedSlot
     }));
   }catch(e){ /* 저장 공간이 없어도 게임은 계속 */ }
@@ -1316,7 +1605,7 @@ function loadSave(){
   try{ raw = localStorage.getItem(SAVE_KEY); }catch(e){ return; }
   if(!raw) return;
   let d; try{ d = JSON.parse(raw); }catch(e){ return; }
-  if(!d || d.v !== 6) return;
+  if(!d || (d.v !== 6 && d.v !== 7)) return;   // v6(6단계) 저장도 그대로 이어서 쓴다
   state.coins = d.coins|0; state.exp = d.exp|0; state.level = Math.max(1, d.level|0);
   state.placed = d.placed|0; state.broken = d.broken|0; state.starsGot = d.starsGot|0;
   state.edits = d.edits || {};
@@ -1331,6 +1620,12 @@ function loadSave(){
   state.skinsOwned = d.skinsOwned || {};
   state.tutorialDone = d.tutorialDone|0;
   state.soundOn = (d.soundOn === 0) ? 0 : 1;
+  state.bag = d.bag || {}; state.seen = d.seen || {}; state.crafted = d.crafted|0;
+  state.badges = d.badges || {};
+  state.bpDone = d.bpDone || {}; state.bpActive = d.bpActive || null;
+  state.lastDay = d.lastDay || ''; state.streak = d.streak|0;
+  state.timeMode = d.timeMode || 'auto';
+  state.lampNight = d.lampNight|0; state.undos = d.undos|0; state.shared = d.shared|0;
   if(typeof d.slot === 'number') selectedSlot = clamp(d.slot,0,7);
   if(d.pos && isFinite(d.pos.x)){ SPAWN_LOAD = d.pos; }
 }
@@ -1386,24 +1681,37 @@ let selectedSlot = 0;
 
 function blockUnlocked(t){ return (UNLOCK_LEVEL[t] || 1) <= state.level; }
 
+const SLOT_KEY = ['1','2','3','4','5','6','7','8','9','0','-'];
 function buildHotbar(){
   const bar = $('#hotbar');
+  const HB = hotbarList();
   bar.innerHTML = '';
-  HOTBAR.forEach((t,i)=>{
-    const ok = blockUnlocked(t);
+  HB.forEach((t,i)=>{
+    const made = isCrafted(t);
+    const n = made ? Bag.count(t) : -1;
+    const ok = blockUnlocked(t) && (!made || n > 0);
     const el = document.createElement('div');
     el.className = 'slot' + (i===selectedSlot?' sel':'') + (ok?'':' lock');
-    el.innerHTML = '<div class="num">'+(i+1)+'</div>' +
+    el.innerHTML = '<div class="num">'+(SLOT_KEY[i]||'')+'</div>' +
                    '<div class="ic">'+BLOCKS[t].icon+'</div>' +
-                   '<div class="nm">'+(ok?BLOCKS[t].name:'레벨 '+UNLOCK_LEVEL[t])+'</div>';
+                   '<div class="nm">'+
+                     (made ? BLOCKS[t].name + ' ' + n
+                           : (blockUnlocked(t) ? BLOCKS[t].name : '레벨 '+UNLOCK_LEVEL[t]))+
+                   '</div>';
     el.addEventListener('click', (e)=>{ e.stopPropagation(); selectSlot(i); });
     bar.appendChild(el);
   });
 }
 function selectSlot(i){
-  i = ((i % HOTBAR.length) + HOTBAR.length) % HOTBAR.length;
-  if(!blockUnlocked(HOTBAR[i])){
-    showHint('🔒 레벨 ' + UNLOCK_LEVEL[HOTBAR[i]] + '이 되면 쓸 수 있어요!', 1800);
+  const HB = hotbarList();
+  i = ((i % HB.length) + HB.length) % HB.length;
+  if(isCrafted(HB[i]) && Bag.count(HB[i]) <= 0){
+    showHint('🔨 ' + BLOCKS[HB[i]].name + ' 블록이 없어요. 제작대(C)에서 만들어요!', 2200);
+    Sound.deny();
+    return;
+  }
+  if(!blockUnlocked(HB[i])){
+    showHint('🔒 레벨 ' + UNLOCK_LEVEL[HB[i]] + '이 되면 쓸 수 있어요!', 1800);
     Sound.deny();
     return;
   }
@@ -1545,15 +1853,27 @@ function breakBlock(){
   Particles.burst(x+.5, y+.5, z+.5, BLOCK_COLOR[t] || 0xffffff, 16);
   Sound.breakBlock();
   state.broken++;
+  // 부순 블록은 재료 주머니로 (제작대에서 쓴다)
+  let delta = null;
+  if(isMaterial(t) || isCrafted(t)){ Bag.add(t, 1); delta = {}; delta[t] = 1; }
+  if(t === LAMP) Lamps.remove(x,y,z);
+  Undo.push(x,y,z,t,AIR,delta);
   tut.broke = true; tutAdvance();
   addExp(1);
   checkQuests();
+  Blueprint.check();
+  checkBadges();
   return true;
 }
 function placeBlock(){
   if(!aimed) return false;
-  const t = HOTBAR[selectedSlot];
+  const HB = hotbarList();
+  const t = HB[Math.min(selectedSlot, HB.length-1)];
   if(!blockUnlocked(t)){ Sound.deny(); return false; }
+  if(isCrafted(t) && Bag.count(t) <= 0){
+    showHint('🔨 ' + BLOCKS[t].name + ' 블록을 다 썼어요. 제작대(C)에서 더 만들어요!', 2200);
+    Sound.deny(); buildHotbar(); return false;
+  }
   const x = aimed.x + aimed.nx, y = aimed.y + aimed.ny, z = aimed.z + aimed.nz;
   if(!inside(x,y,z)) return false;
   const cur = getBlock(x,y,z);
@@ -1569,6 +1889,7 @@ function placeBlock(){
       Particles.burst(fx+.5, fy+.5, fz+.5, BLOCK_COLOR[t] || 0xffffff, 10, 3);
       Sound.placeBlock();
       state.placed++;
+      afterPlace(fx,fy,fz,t);
       tut.placed = true; tutAdvance();
       if(t === RAINBOW) state.rainbowPlaced++;
       addExp(2);
@@ -1584,11 +1905,26 @@ function placeBlock(){
   Particles.burst(x+.5, y+.5, z+.5, BLOCK_COLOR[t] || 0xffffff, 10, 3);
   Sound.placeBlock();
   state.placed++;
+  afterPlace(x,y,z,t);
   tut.placed = true; tutAdvance();
   if(t === RAINBOW) state.rainbowPlaced++;
   addExp(2);
   checkQuests();
   return true;
+}
+
+/* 블록을 놓은 뒤 공통으로 할 일 — 주머니 · 램프 · 청사진 · 되감기 */
+function afterPlace(x,y,z,t){
+  let delta = null;
+  if(isCrafted(t)){ Bag.add(t, -1); delta = {}; delta[t] = -1; buildHotbar(); }
+  if(t === LAMP){
+    Lamps.add(x,y,z);
+    if(DayNight.isNight() && !state.lampNight){ state.lampNight = 1; }
+  }
+  Undo.push(x,y,z,AIR,t,delta);
+  Blueprint.onPlaced(x,y,z,t);
+  Blueprint.check();
+  checkBadges();
 }
 
 /* 마우스 / 키 연결 */
@@ -1611,11 +1947,14 @@ addEventListener('keydown', e=>{
   if(e.code.startsWith('Digit')){
     const n = +e.code.slice(5);
     if(n>=1 && n<=8) selectSlot(n-1);
+    else if(n===9) selectSlot(8);
+    else if(n===0) selectSlot(9);
   }
+  if(e.code==='Minus') selectSlot(10);
 });
 function updateActions(dt){
   actCooldown -= dt;
-  if(actCooldown > 0 || shopOpen) return;
+  if(actCooldown > 0 || panelOpen()) return;
   const wantBreak = keys['KeyQ'] || keys['KeyF'] || touch.breaking || (locked && mouseDown[0]);
   const wantPlace = keys['KeyE'] || keys['KeyR'] || touch.placing  || (locked && mouseDown[2]);
   if(wantBreak && breakBlock()) actCooldown = 0.22;
@@ -2748,6 +3087,12 @@ function buildHelp(){
     ['🧱 놓기','블록 놓기'],
     ['아래 블록 칸','블록 고르기'],
     ['가게 안으로','상점 열기'],
+    ['⏪ 단추','실수한 블록 되돌리기'],
+    ['🔨 단추','제작대 — 부순 재료로 특별 블록 만들기'],
+    ['📐 단추','청사진 건축학교 — 따라 지으면 돼요'],
+    ['🏅 단추','내가 모은 배지 보기'],
+    ['📤 단추','내 월드를 코드로 친구에게 보내기'],
+    ['🌗 단추','낮 / 밤 고정하기'],
   ] : [
     ['W A S D','움직이기'],
     ['← ↑ ↓ →','둘러보기'],
@@ -2757,6 +3102,12 @@ function buildHelp(){
     ['1 ~ 8','블록 고르기'],
     ['마우스','클릭하면 마우스로 둘러보기 (Esc 로 해제)'],
     ['가게 안으로','상점 열기'],
+    ['Z  또는 ⏪','실수한 블록 되돌리기 (80번까지)'],
+    ['C  또는 🔨','제작대 — 부순 재료로 특별 블록 만들기'],
+    ['B  또는 📐','청사진 건축학교 — 따라 지으면 돼요'],
+    ['V  또는 🏅','내가 모은 배지 보기'],
+    ['📤 단추','내 월드를 코드로 친구에게 보내기'],
+    ['🌗 단추','낮 / 밤 고정하기'],
   ];
   $('#helptable').innerHTML = rows.map(r=>'<tr><td>'+r[0]+'</td><td>'+r[1]+'</td></tr>').join('');
 }
@@ -2779,6 +3130,783 @@ function popText(text, color){
   el.style.top  = '52%';
   $('#pops').appendChild(el);
   setTimeout(()=>el.remove(), 1000);
+}
+
+/* ═══════════════════════════════════════════════════
+   10.22 재료 주머니 + 제작대  (마인크래프트의 "캐서 만든다" 루프)
+   ───────────────────────────────────────────────────
+   블록 놓기는 계속 무제한이다(초등학생이 막히지 않게).
+   대신 "부수기"에 의미를 준다 — 부순 블록이 재료로 쌓이고,
+   그 재료로만 특별한 블록 3종을 만들 수 있다.
+   ═══════════════════════════════════════════════════ */
+const MATERIALS = [GRASS, DIRT, STONE, WOOD, LEAF, SAND, GLASS, RAINBOW];
+const CRAFTED   = [TRAMP, LAMP, ICE];
+const isCrafted = t => CRAFTED.indexOf(t) >= 0;
+const isMaterial = t => MATERIALS.indexOf(t) >= 0;
+
+const RECIPES = [
+  {out:TRAMP, make:4, need:{[LEAF]:10, [DIRT]:6},
+   desc:'밟으면 하늘 높이 통통 튀어요'},
+  {out:LAMP,  make:4, need:{[SAND]:8, [STONE]:6},
+   desc:'밤이 되면 주변을 환하게 밝혀 줘요'},
+  {out:ICE,   make:4, need:{[STONE]:14, [SAND]:10},
+   desc:'쭈욱 미끄러지는 얼음 — 미끄럼틀을 만들어 보세요'},
+];
+
+const Bag = {
+  count(t){ return state.bag[t] | 0; },
+  add(t, n){
+    if(!isMaterial(t) && !isCrafted(t)) return;
+    state.bag[t] = Math.max(0, (state.bag[t]|0) + n);
+    if(isCrafted(t) && state.bag[t] > 0) state.seen[t] = 1;
+    if(craftOpen) renderCraft();
+    saveSoon();
+  },
+  canMake(r){
+    for(const k in r.need) if(Bag.count(k) < r.need[k]) return false;
+    return true;
+  }
+};
+
+let craftOpen = false;
+
+function renderBagRow(){
+  const row = $('#bagrow');
+  row.innerHTML = '';
+  MATERIALS.forEach(t=>{
+    const n = Bag.count(t);
+    const el = document.createElement('div');
+    el.className = 'bagchip' + (n ? '' : ' zero');
+    el.innerHTML = BLOCKS[t].icon + ' ' + BLOCKS[t].name + ' <b>' + n + '</b>';
+    row.appendChild(el);
+  });
+}
+function renderCraft(){
+  $('#craftcoinnum').textContent = state.coins;
+  renderBagRow();
+  const list = $('#craftlist');
+  list.innerHTML = '';
+  RECIPES.forEach(r=>{
+    const can = Bag.canMake(r);
+    const el = document.createElement('div');
+    el.className = 'recipe' + (can ? ' can' : '');
+    const needHtml = Object.keys(r.need).map(k=>{
+      const enough = Bag.count(k) >= r.need[k];
+      return '<span class="'+(enough?'':'no')+'">' + BLOCKS[k].icon + ' ' +
+             BLOCKS[k].name + ' ' + Bag.count(k) + '/' + r.need[k] + '</span>';
+    }).join('');
+    el.innerHTML =
+      '<div class="ric">' + BLOCKS[r.out].icon + '</div>' +
+      '<div class="rmid">' +
+        '<div class="rnm">' + BLOCKS[r.out].name + ' 블록 ×' + r.make + '</div>' +
+        '<div class="rds">' + r.desc + '</div>' +
+        '<div class="rneed">' + needHtml + '</div>' +
+        '<div class="rhave">지금 가진 것: ' + BLOCKS[r.out].icon + ' ' + Bag.count(r.out) + '개</div>' +
+      '</div>';
+    const b = document.createElement('button');
+    b.className = 'makebtn';
+    b.textContent = can ? '만들기' : '재료 부족';
+    b.disabled = !can;
+    b.addEventListener('click', ()=>craftOne(r));
+    el.appendChild(b);
+    list.appendChild(el);
+  });
+}
+function craftOne(r){
+  if(!Bag.canMake(r)){ Sound.deny(); return; }
+  for(const k in r.need) Bag.add(+k, -r.need[k]);
+  Bag.add(r.out, r.make);
+  state.crafted = (state.crafted|0) + r.make;
+  state.seen[r.out] = 1;
+  Sound.buy();
+  popText('🔨 ' + BLOCKS[r.out].name + ' ×' + r.make, '#7ae582');
+  addExp(12);
+  buildHotbar();
+  renderCraft();
+  checkBadges();
+  saveSoon();
+}
+function openCraft(){
+  if(craftOpen) return;
+  craftOpen = true;
+  $('#craft').style.display = 'flex';
+  if(document.pointerLockElement) document.exitPointerLock();
+  renderCraft();
+  Sound.shop();
+}
+function closeCraft(){ craftOpen = false; $('#craft').style.display = 'none'; }
+
+/* 하단 블록 바 = 기본 8칸 + (한 번이라도 만들어 본) 제작 블록 */
+function hotbarList(){
+  return HOTBAR.concat(CRAFTED.filter(t=>state.seen[t]));
+}
+
+/* ═══════════════════════════════════════════════════
+   10.23 되감기 ⏪  (우리 게임만의 것 ①)
+   ───────────────────────────────────────────────────
+   마인크래프트에도 로블록스에도 없다. 초등학생이 실수로 아끼던 걸
+   부쉈을 때 울지 않도록, 마지막 80번까지 한 칸씩 되돌린다.
+   ═══════════════════════════════════════════════════ */
+const Undo = (function(){
+  const CAP = 80;
+  const stack = [];
+  function push(x,y,z,before,after,bagDelta){
+    stack.push({x,y,z,before,after,bag:bagDelta||null});
+    if(stack.length > CAP) stack.shift();
+  }
+  function undo(){
+    if(!stack.length){
+      showHint('⏪ 되돌릴 게 없어요', 1500);
+      Sound.deny();
+      return false;
+    }
+    const e = stack.pop();
+    setBlock(e.x, e.y, e.z, e.before);
+    recordEdit(e.x, e.y, e.z, e.before);
+    if(e.bag) for(const k in e.bag) Bag.add(+k, -e.bag[k]);
+    if(e.after === AIR) state.broken = Math.max(0, state.broken - 1);
+    else state.placed = Math.max(0, state.placed - 1);
+    if(e.before !== AIR) Lamps.scanCell(e.x, e.y, e.z);
+    else Lamps.remove(e.x, e.y, e.z);
+    Lamps.scanCell(e.x, e.y, e.z);
+    Particles.burst(e.x+.5, e.y+.5, e.z+.5, 0x9fd8ff, 12, 3);
+    Sound.bounce();
+    state.undos = (state.undos|0) + 1;
+    showHint('⏪ 한 칸 되돌렸어요 (' + stack.length + '번 더 가능)', 1600);
+    Blueprint.check();
+    checkBadges();
+    saveSoon();
+    return true;
+  }
+  return {push, undo, left(){ return stack.length; }};
+})();
+
+/* ═══════════════════════════════════════════════════
+   10.24 낮과 밤  (마인크래프트의 시간 흐름)
+   ───────────────────────────────────────────────────
+   일부러 몬스터는 넣지 않았다. 밤은 무서운 시간이 아니라
+   램프를 켜고 구경하는 예쁜 시간이다.
+   ═══════════════════════════════════════════════════ */
+const DayNight = (function(){
+  const CYCLE = 300;                 // 하루 = 5분
+  /* 시간대별 하늘색 · 빛 세기. t: 0=자정, 0.5=정오 */
+  const KEYS = [
+    {t:0.00, sky:0x101838, fog:0x1b2450, sun:0.05, hemi:0.30, sunCol:0x8fa6ff},
+    {t:0.21, sky:0x2b3f72, fog:0x455184, sun:0.10, hemi:0.34, sunCol:0x9fb0ff},
+    {t:0.27, sky:0xff9a5c, fog:0xffc49a, sun:0.46, hemi:0.50, sunCol:0xffb070},
+    {t:0.35, sky:0x87ceeb, fog:0xbfe8ff, sun:0.72, hemi:0.62, sunCol:0xfff3d0},
+    {t:0.65, sky:0x87ceeb, fog:0xbfe8ff, sun:0.72, hemi:0.62, sunCol:0xfff3d0},
+    {t:0.73, sky:0xff8a4c, fog:0xffbb8e, sun:0.44, hemi:0.48, sunCol:0xffa860},
+    {t:0.80, sky:0x2b3f72, fog:0x455184, sun:0.10, hemi:0.34, sunCol:0x9fb0ff},
+    {t:1.00, sky:0x101838, fog:0x1b2450, sun:0.05, hemi:0.30, sunCol:0x8fa6ff},
+  ];
+  let t = 0.34;                      // 아침에 시작
+  const cSky = new THREE.Color(), cFog = new THREE.Color(), cSun = new THREE.Color();
+  const cA = new THREE.Color(), cB = new THREE.Color();
+  const dir = new THREE.Vector3(0.5, 0.8, 0.3);
+  let night = 0;                     // 0 = 완전한 낮, 1 = 완전한 밤
+  const WHITE = new THREE.Color(0xffffff);
+
+  /* 별 · 해 · 달 */
+  let stars = null, moon = null, sunDisc = null;
+  function buildSkyStuff(){
+    const rng = makeRng(SEED + 4242);
+    const N = 170;
+    const g = new THREE.BoxGeometry(1,1,1);
+    const m = new THREE.MeshBasicMaterial({color:0xffffff, fog:false, transparent:true, opacity:0});
+    stars = new THREE.InstancedMesh(g, m, N);
+    stars.frustumCulled = false;
+    const mm = new THREE.Matrix4();
+    for(let i=0;i<N;i++){
+      const u = rng()*Math.PI*2, v = rng()*0.75 + 0.05;
+      const r = 172, sy = Math.cos(v*Math.PI*0.5);
+      const sr = Math.sqrt(Math.max(0, 1 - sy*sy));
+      const s = 0.7 + rng()*1.5;
+      mm.makeScale(s,s,s);
+      mm.setPosition(Math.cos(u)*sr*r, sy*r*0.9 + 12, Math.sin(u)*sr*r);
+      stars.setMatrixAt(i, mm);
+    }
+    stars.instanceMatrix.needsUpdate = true;
+    scene.add(stars);
+
+    moon = new THREE.Mesh(new THREE.BoxGeometry(9,9,9),
+      new THREE.MeshBasicMaterial({color:0xfdfbe8, fog:false}));
+    moon.frustumCulled = false; scene.add(moon);
+
+    sunDisc = new THREE.Mesh(new THREE.BoxGeometry(11,11,11),
+      new THREE.MeshBasicMaterial({color:0xfff6c0, fog:false}));
+    sunDisc.frustumCulled = false; scene.add(sunDisc);
+  }
+
+  function sample(tt){
+    let a = KEYS[0], b = KEYS[KEYS.length-1];
+    for(let i=0;i<KEYS.length-1;i++){
+      if(tt >= KEYS[i].t && tt <= KEYS[i+1].t){ a = KEYS[i]; b = KEYS[i+1]; break; }
+    }
+    const k = (b.t - a.t) ? (tt - a.t) / (b.t - a.t) : 0;
+    cA.setHex(a.sky); cB.setHex(b.sky); cSky.copy(cA).lerp(cB, k);
+    cA.setHex(a.fog); cB.setHex(b.fog); cFog.copy(cA).lerp(cB, k);
+    cA.setHex(a.sunCol); cB.setHex(b.sunCol); cSun.copy(cA).lerp(cB, k);
+    return {sun: lerp(a.sun, b.sun, k), hemi: lerp(a.hemi, b.hemi, k)};
+  }
+
+  function apply(){
+    const v = sample(t);
+    scene.background.copy(cSky);
+    scene.fog.color.copy(cFog);
+    sun.intensity = v.sun;
+    sun.color.copy(cSun);
+    hemi.intensity = v.hemi;
+    hemi.color.copy(cSky).lerp(WHITE, 0.55);
+
+    // 해의 방향 (동 → 위 → 서)
+    const ang = (t - 0.25) * Math.PI * 2;
+    dir.set(Math.cos(ang) * 0.85, Math.sin(ang), 0.34).normalize();
+
+    night = clamp(1 - (Math.sin(ang) + 0.18) * 2.4, 0, 1);
+    if(skyMesh) skyMesh.material.color.copy(cSky).multiplyScalar(1.25);
+    if(stars) stars.material.opacity = night * 0.95;
+    if(sunDisc) sunDisc.visible = dir.y > -0.15;
+    if(moon) moon.visible = dir.y < 0.15;
+    // 램프는 밤에 훨씬 밝게
+    const lm = MATS[LAMP];
+    if(lm) lm.emissiveIntensity = 0.38 + night * 1.5;
+  }
+
+  function update(dt){
+    if(state.timeMode === 'day')      t = 0.42;
+    else if(state.timeMode === 'night') t = 0.98;
+    else { t = (t + dt / CYCLE) % 1; }
+    apply();
+    const cx = camera.position.x, cz = camera.position.z;
+    if(sunDisc) sunDisc.position.set(cx + dir.x*165, dir.y*165 + 10, cz + dir.z*165);
+    if(moon)    moon.position.set(cx - dir.x*165, -dir.y*165 + 10, cz - dir.z*165);
+    if(stars)   stars.position.set(cx, 0, cz);
+  }
+
+  function label(){
+    if(t < 0.22 || t > 0.80) return '🌙 밤';
+    if(t < 0.32) return '🌅 아침';
+    if(t < 0.68) return '☀️ 낮';
+    return '🌇 저녁';
+  }
+  return {
+    build: buildSkyStuff, update, apply, dir,
+    isNight(){ return night > 0.5; },
+    nightAmt(){ return night; },
+    label,
+    set(v){ t = v; apply(); }
+  };
+})();
+
+/* 시간 버튼: 자동 → 낮 고정 → 밤 고정 → 자동 */
+function cycleTimeMode(){
+  const order = ['auto','day','night'];
+  const i = order.indexOf(state.timeMode || 'auto');
+  state.timeMode = order[(i+1) % order.length];
+  const txt = {auto:'🌗 시간이 저절로 흘러요', day:'☀️ 계속 낮으로 고정!', night:'🌙 계속 밤으로 고정!'};
+  $('#btnTime').textContent = {auto:'🌗', day:'☀️', night:'🌙'}[state.timeMode];
+  showHint(txt[state.timeMode], 2200);
+  Sound.click();
+  saveSoon();
+}
+
+/* ── 램프 불빛: 라이트를 하나만 두고 가장 가까운 램프로 옮긴다 ── */
+const Lamps = (function(){
+  const set = new Set();
+  const light = new THREE.PointLight(0xffd98a, 0, 15, 2);
+  light.castShadow = false;
+  scene.add(light);
+  function key(x,y,z){ return x+','+y+','+z; }
+  function add(x,y,z){ set.add(key(x,y,z)); }
+  function remove(x,y,z){ set.delete(key(x,y,z)); }
+  function scanCell(x,y,z){ if(getBlock(x,y,z)===LAMP) add(x,y,z); else remove(x,y,z); }
+  function scanAll(){
+    set.clear();
+    for(let y=0;y<H;y++) for(let z=0;z<D;z++) for(let x=0;x<W;x++)
+      if(voxels[IDX(x,y,z)] === LAMP) add(x,y,z);
+  }
+  function update(){
+    let best = null, bd = 1e9;
+    set.forEach(k=>{
+      const a = k.split(',');
+      const dx = (+a[0]+.5) - player.x, dy = (+a[1]+.5) - player.y, dz = (+a[2]+.5) - player.z;
+      const d = dx*dx + dy*dy + dz*dz;
+      if(d < bd){ bd = d; best = a; }
+    });
+    if(best && bd < 400){
+      light.position.set(+best[0]+.5, +best[1]+.5, +best[2]+.5);
+      light.intensity = 0.35 + DayNight.nightAmt() * 1.5;
+      light.distance = 16;
+    } else light.intensity = 0;
+  }
+  return {add, remove, scanCell, scanAll, update, count(){ return set.size; }};
+})();
+
+/* ═══════════════════════════════════════════════════
+   10.25 청사진 건축학교 📐  (우리 게임만의 것 ②)
+   ───────────────────────────────────────────────────
+   마인크래프트는 자유롭지만 "뭘 지어야 하지?" 앞에서 막히고,
+   로블록스는 남이 만든 걸 구경만 한다. 여기서는 반투명한
+   유령 블록이 자리를 알려 주고, 그 자리를 채우면서 짓는 법을 배운다.
+   ═══════════════════════════════════════════════════ */
+const BP_CHARS = {'.':null, 'G':GRASS, 'D':DIRT, 'S':STONE, 'W':WOOD,
+                  'L':LEAF, 'N':SAND, 'A':GLASS, 'R':RAINBOW};
+
+const BLUEPRINTS = [
+  {id:'stair', name:'계단 탑', icon:'🪜', lv:1, coins:60, exp:90,
+   tip:'돌을 한 칸씩 높여서 계단을 만들어요',
+   layers:[ ["SSSS"], [".SSS"], ["..SS"], ["...S"] ]},
+  {id:'bench', name:'나무 벤치', icon:'🪑', lv:1, coins:100, exp:150,
+   tip:'앉는 자리와 등받이가 있는 벤치',
+   layers:[ ["W..W","...."], ["WWWW","WWWW"], ["....","WWWW"] ]},
+  {id:'house', name:'작은 집', icon:'🏠', lv:2, coins:320, exp:430,
+   tip:'문과 유리창이 있는 진짜 집 (유리는 레벨 2부터)',
+   layers:[ ["WWWW","W..W","W..W","W.WW"],
+            ["WWWW","A..A","W..W","W.WW"],
+            ["LLLL","LLLL","LLLL","LLLL"] ]},
+  {id:'arch', name:'무지개 다리', icon:'🌈', lv:3, coins:260, exp:360,
+   tip:'가운데가 뻥 뚫린 아치 다리 (무지개는 레벨 3부터)',
+   layers:[ ["S.....S","S.....S"],
+            ["S.....S","S.....S"],
+            ["SR...RS","SR...RS"],
+            [".RR.RR.",".RR.RR."],
+            ["..RRR..","..RRR.."] ]},
+];
+
+function bpCells(def){
+  const out = [];
+  def.layers.forEach((rows, y)=>{
+    rows.forEach((row, z)=>{
+      for(let x=0; x<row.length; x++){
+        const t = BP_CHARS[row[x]];
+        if(t) out.push({x, y, z, t});
+      }
+    });
+  });
+  return out;
+}
+function bpSize(def){
+  let w = 0;
+  const h = def.layers.length;
+  let d = 0;
+  def.layers.forEach(rows=>{
+    d = Math.max(d, rows.length);
+    rows.forEach(r=> w = Math.max(w, r.length));
+  });
+  return {w, h, d};
+}
+
+const Blueprint = (function(){
+  let active = null;            // {def, cells, ax, ay, az}
+  let ghost = null, outline = null;
+  const GCAP = 140;
+
+  function ensureGhost(){
+    if(ghost) return ghost;
+    const g = new THREE.BoxGeometry(0.94, 0.94, 0.94);
+    const n = g.attributes.position.count;
+    const white = new Float32Array(n*3); white.fill(1);
+    g.setAttribute('color', new THREE.BufferAttribute(white, 3));
+    const m = new THREE.MeshLambertMaterial({
+      vertexColors:true, transparent:true, opacity:0.34,
+      depthWrite:false, emissive:0x333333
+    });
+    ghost = new THREE.InstancedMesh(g, m, GCAP);
+    ghost.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(GCAP*3), 3);
+    ghost.frustumCulled = false;
+    ghost.castShadow = false; ghost.receiveShadow = false;
+    scene.add(ghost);
+    return ghost;
+  }
+
+  function clearVisual(){
+    if(ghost) ghost.count = 0;
+    if(outline){ scene.remove(outline); outline.geometry.dispose(); outline = null; }
+    $('#bpbar').style.display = 'none';
+  }
+
+  function cellAt(x,y,z){
+    if(!active) return null;
+    for(const c of active.cells)
+      if(active.ax+c.x===x && active.ay+c.y===y && active.az+c.z===z) return c;
+    return null;
+  }
+
+  function spotOk(def, ax, ay, az){
+    const {w,h,d} = bpSize(def);
+    if(ax<1 || az<1 || ax+w>W-1 || az+d>D-1 || ay+h>H-2) return false;
+    for(let x=0;x<w;x++) for(let y=0;y<h;y++) for(let z=0;z<d;z++){
+      const b = getBlock(ax+x, ay+y, az+z);
+      if(b !== AIR && b !== WATER) return false;
+    }
+    return true;
+  }
+
+  function start(id){
+    const def = BLUEPRINTS.find(b=>b.id===id);
+    if(!def) return;
+    if(state.level < def.lv){
+      showHint('🔒 레벨 ' + def.lv + '이 되면 열 수 있어요', 2200); Sound.deny(); return;
+    }
+    const {w,h,d} = bpSize(def);
+    // 바라보는 쪽으로 몇 발짝 앞, 땅 위에 자리를 잡는다
+    const fx = -Math.sin(player.yaw), fz = -Math.cos(player.yaw);
+    let placed = null;
+    for(const step of [4, 6, 8, 3, 10]){
+      const cx = player.x + fx*(step + Math.max(w,d)/2);
+      const cz = player.z + fz*(step + Math.max(w,d)/2);
+      const ax = Math.round(cx - w/2), az = Math.round(cz - d/2);
+      let ay = 0;
+      for(let x=0;x<w;x++) for(let z=0;z<d;z++)
+        ay = Math.max(ay, surfaceHeight(ax+x+0.5, az+z+0.5, player.y+4));
+      if(spotOk(def, ax, ay, az)){ placed = {ax, ay, az}; break; }
+    }
+    if(!placed){
+      closePlans();
+      showHint('📐 여기는 좁아요. 넓고 평평한 곳을 보고 다시 눌러 주세요', 3200);
+      Sound.deny();
+      return;
+    }
+    active = {def, cells:bpCells(def), ax:placed.ax, ay:placed.ay, az:placed.az};
+    state.bpActive = {id:def.id, ax:placed.ax, ay:placed.ay, az:placed.az};
+
+    // 테두리 상자
+    if(outline){ scene.remove(outline); outline.geometry.dispose(); }
+    const box = new THREE.BoxGeometry(w, h, d);
+    outline = new THREE.LineSegments(
+      new THREE.EdgesGeometry(box),
+      new THREE.LineBasicMaterial({color:0x4f8fff, transparent:true, opacity:0.55})
+    );
+    box.dispose();
+    outline.position.set(placed.ax + w/2, placed.ay + h/2, placed.az + d/2);
+    scene.add(outline);
+
+    closePlans();
+    Sound.quest();
+    showBanner('📐 ' + def.name, '파란 유령 블록 자리에 같은 블록을 놓아요!');
+    check();
+    saveSoon();
+  }
+
+  function stop(quiet){
+    active = null;
+    state.bpActive = null;
+    clearVisual();
+    if(!quiet) showHint('📐 청사진을 접었어요. 지은 건 그대로 남아요!', 2200);
+    saveSoon();
+  }
+
+  function check(){
+    if(!active){ clearVisual(); return; }
+    const g = ensureGhost();
+    const col = new THREE.Color();
+    const m4 = new THREE.Matrix4();
+    let done = 0, n = 0;
+    for(const c of active.cells){
+      const wx = active.ax+c.x, wy = active.ay+c.y, wz = active.az+c.z;
+      if(getBlock(wx,wy,wz) === c.t){ done++; continue; }
+      if(n < GCAP){
+        m4.makeTranslation(wx+0.5, wy+0.5, wz+0.5);
+        g.setMatrixAt(n, m4);
+        col.setHex(BLOCK_COLOR[c.t] || 0xffffff);
+        g.instanceColor.setXYZ(n, col.r, col.g, col.b);
+        n++;
+      }
+    }
+    g.count = n;
+    g.instanceMatrix.needsUpdate = true;
+    g.instanceColor.needsUpdate = true;
+
+    const total = active.cells.length;
+    $('#bpbar').style.display = 'block';
+    $('#bptitle').textContent = active.def.icon + ' ' + active.def.name;
+    $('#bpfill').style.width = (done/total*100) + '%';
+    $('#bpnum').textContent = done + ' / ' + total + '칸  ·  🪙' + active.def.coins;
+
+    if(done >= total) finish();
+  }
+
+  function finish(){
+    const def = active.def;
+    state.bpDone[def.id] = 1;
+    stop(true);
+    Sound.fanfare();
+    showBanner('🎉 ' + def.name + ' 완성!', '건축가가 다 됐네요!');
+    gainCoins(def.coins, true);
+    addExp(def.exp);
+    for(let i=0;i<5;i++)
+      setTimeout(()=>Particles.burst(player.x, player.y+1.2, player.z,
+        [0x4f8fff,0xffd93d,0x7ae582,0xff7ddb,0xffffff][i], 24, 7), i*110);
+    checkBadges();
+    saveSoon();
+  }
+
+  /* 블록을 놓았을 때: 맞으면 반짝, 틀리면 무슨 블록 자리인지 알려 준다 */
+  function onPlaced(x,y,z,t){
+    if(!active) return;
+    const c = cellAt(x,y,z);
+    if(!c) return;
+    if(c.t === t){
+      Particles.burst(x+.5, y+.5, z+.5, 0x9fd8ff, 10, 3);
+      Sound.coin();
+    } else {
+      showHint('📐 여기는 ' + BLOCKS[c.t].icon + ' ' + BLOCKS[c.t].name + ' 자리예요!', 2200);
+    }
+  }
+
+  function restore(){
+    if(!state.bpActive) return;
+    const def = BLUEPRINTS.find(b=>b.id===state.bpActive.id);
+    if(!def){ state.bpActive = null; return; }
+    const {w,h,d} = bpSize(def);
+    active = {def, cells:bpCells(def),
+              ax:state.bpActive.ax, ay:state.bpActive.ay, az:state.bpActive.az};
+    const box = new THREE.BoxGeometry(w, h, d);
+    outline = new THREE.LineSegments(
+      new THREE.EdgesGeometry(box),
+      new THREE.LineBasicMaterial({color:0x4f8fff, transparent:true, opacity:0.55})
+    );
+    box.dispose();
+    outline.position.set(active.ax + w/2, active.ay + h/2, active.az + d/2);
+    scene.add(outline);
+    check();
+  }
+
+  return {start, stop, check, onPlaced, restore, isOn(){ return !!active; }};
+})();
+
+let plansOpen = false;
+function renderPlans(){
+  const list = $('#planlist');
+  list.innerHTML = '';
+  BLUEPRINTS.forEach(def=>{
+    const done = !!state.bpDone[def.id];
+    const lock = state.level < def.lv;
+    const el = document.createElement('div');
+    el.className = 'bplan' + (done?' done':'') + (lock?' lock':'');
+    el.innerHTML =
+      '<div class="pic">' + def.icon + '</div>' +
+      '<div style="flex:1">' +
+        '<div class="pnm">' + def.name + (done ? ' ✅' : '') + '</div>' +
+        '<div class="pds">' + (lock ? '🔒 레벨 ' + def.lv + '부터' : def.tip) + '</div>' +
+        '<div class="pds">블록 ' + bpCells(def).length + '칸 · 🪙' + def.coins + ' ✨' + def.exp + '</div>' +
+      '</div>' +
+      '<div style="font-size:14px;opacity:.6">' + (lock ? '' : '시작 ▶') + '</div>';
+    if(!lock) el.addEventListener('click', ()=>Blueprint.start(def.id));
+    list.appendChild(el);
+  });
+}
+function openPlans(){
+  plansOpen = true;
+  $('#plans').style.display = 'flex';
+  if(document.pointerLockElement) document.exitPointerLock();
+  renderPlans();
+  Sound.shop();
+}
+function closePlans(){ plansOpen = false; $('#plans').style.display = 'none'; }
+
+/* ═══════════════════════════════════════════════════
+   10.26 배지 🏅  (로블록스의 "모으고 자랑하기")
+   ═══════════════════════════════════════════════════ */
+const BADGES = [
+  {id:'first_place', icon:'🧱', name:'첫 블록',     desc:'블록을 처음 놓았어요',    ok:()=>state.placed>=1},
+  {id:'first_break', icon:'⛏️', name:'첫 채굴',     desc:'블록을 처음 부쉈어요',    ok:()=>state.broken>=1},
+  {id:'builder',     icon:'🏗️', name:'꼬마 건축가', desc:'블록 200개 놓기',        ok:()=>state.placed>=200},
+  {id:'miner',       icon:'🕳️', name:'광부',        desc:'블록 200개 부수기',      ok:()=>state.broken>=200},
+  {id:'coin100',     icon:'🪙', name:'저금통',      desc:'코인 100개 모으기',      ok:()=>state.coinsEarned>=100},
+  {id:'coin500',     icon:'💰', name:'부자',        desc:'코인 500개 모으기',      ok:()=>state.coinsEarned>=500},
+  {id:'stars5',      icon:'⭐', name:'별 사냥꾼',   desc:'별 5개 찾기',            ok:()=>state.starsGot>=5},
+  {id:'obby3',       icon:'🏆', name:'삼관왕',      desc:'점프 코스 3개 모두 완주', ok:()=>state.obbyDone.bronze&&state.obbyDone.silver&&state.obbyDone.gold},
+  {id:'high35',      icon:'🚀', name:'하늘 높이',   desc:'35칸 높이까지 올라가기',  ok:()=>state.maxHeight>=35},
+  {id:'combo5',      icon:'🔥', name:'콤보왕',      desc:'콤보 5번 터뜨리기',      ok:()=>state.combosMade>=5},
+  {id:'rainbow30',   icon:'🌈', name:'무지개 화가', desc:'무지개 블록 30개 놓기',   ok:()=>state.rainbowPlaced>=30},
+  {id:'craft1',      icon:'🔨', name:'첫 제작',     desc:'제작대에서 블록 만들기',  ok:()=>(state.crafted|0)>=1},
+  {id:'craft_all',   icon:'⚗️', name:'발명왕',      desc:'특별 블록 3종 모두 만들기', ok:()=>CRAFTED.every(t=>state.seen[t])},
+  {id:'lamp_night',  icon:'💡', name:'밤을 밝혀',   desc:'밤에 램프 켜 보기',      ok:()=>!!state.lampNight},
+  {id:'undo1',       icon:'⏪', name:'실수해도 괜찮아', desc:'되감기 한 번 써 보기', ok:()=>(state.undos|0)>=1},
+  {id:'plan1',       icon:'📐', name:'청사진 입문', desc:'청사진 1개 완성',        ok:()=>Object.keys(state.bpDone).length>=1},
+  {id:'plan_all',    icon:'🏛️', name:'건축 박사',   desc:'청사진 4개 모두 완성',    ok:()=>BLUEPRINTS.every(b=>state.bpDone[b.id])},
+  {id:'streak3',     icon:'📅', name:'개근상',      desc:'3일 연속 놀러 오기',     ok:()=>(state.streak|0)>=3},
+  {id:'dressup',     icon:'🎩', name:'멋쟁이',      desc:'옷 3벌 모으기',          ok:()=>Object.keys(state.skinsOwned).length>=3},
+  {id:'share1',      icon:'📤', name:'나눔이',      desc:'내 월드 코드 복사해 보기', ok:()=>!!state.shared},
+];
+
+let toastQueue = [], toastBusy = false;
+function badgeToast(b){
+  toastQueue.push(b);
+  if(toastBusy) return;
+  (function next(){
+    const b2 = toastQueue.shift();
+    if(!b2){ toastBusy = false; return; }
+    toastBusy = true;
+    $('#tbic').textContent = b2.icon;
+    $('#tbnm').textContent = b2.name;
+    $('#btoast').classList.add('on');
+    Sound.star();
+    setTimeout(()=>{ $('#btoast').classList.remove('on'); setTimeout(next, 350); }, 2300);
+  })();
+}
+function checkBadges(){
+  let got = false;
+  for(const b of BADGES){
+    if(state.badges[b.id]) continue;
+    let ok = false;
+    try{ ok = !!b.ok(); }catch(e){}
+    if(ok){
+      state.badges[b.id] = 1;
+      badgeToast(b);
+      gainCoins(25, true);
+      addExp(20);
+      got = true;
+    }
+  }
+  if(got) saveSoon();
+}
+function renderBadges(){
+  const n = Object.keys(state.badges).length;
+  $('#badgecount').textContent = n + ' / ' + BADGES.length;
+  const grid = $('#badgegrid');
+  grid.innerHTML = '';
+  BADGES.forEach(b=>{
+    const got = !!state.badges[b.id];
+    const el = document.createElement('div');
+    el.className = 'badge ' + (got ? 'got' : 'lock');
+    el.innerHTML = '<div class="bic">' + b.icon + '</div>' +
+                   '<div class="bnm">' + (got ? b.name : '???') + '</div>' +
+                   '<div class="bds">' + b.desc + '</div>';
+    grid.appendChild(el);
+  });
+}
+function openBadges(){
+  $('#badges').style.display = 'flex';
+  if(document.pointerLockElement) document.exitPointerLock();
+  renderBadges();
+  Sound.shop();
+}
+
+/* ═══════════════════════════════════════════════════
+   10.27 오늘의 출석 보상 📅  (로블록스의 "또 오고 싶게")
+   ═══════════════════════════════════════════════════ */
+function dayKey(d){
+  return d.getFullYear() + '-' + (d.getMonth()+1) + '-' + d.getDate();
+}
+function checkDaily(){
+  const now = new Date();
+  const today = dayKey(now);
+  if(state.lastDay === today) return false;
+  const y = new Date(now.getTime() - 86400000);
+  state.streak = (state.lastDay === dayKey(y)) ? (state.streak|0) + 1 : 1;
+  state.lastDay = today;
+  const reward = Math.min(150, 25 + (state.streak - 1) * 25);
+  state.coins += reward; state.coinsEarned += reward;
+  updateHud();
+  $('#dstreak').textContent = state.streak + '일째 놀러 왔어요!';
+  $('#dgot').textContent = '🪙 코인 ' + reward + '개를 받았어요';
+  const dots = $('#dailydots');
+  dots.innerHTML = '';
+  for(let i=1;i<=7;i++){
+    const it = document.createElement('i');
+    it.className = (i <= Math.min(7, state.streak)) ? 'on' : '';
+    it.textContent = i;
+    dots.appendChild(it);
+  }
+  if(document.pointerLockElement) document.exitPointerLock();
+  $('#daily').style.display = 'flex';
+  Sound.buy();
+  saveSoon();
+  return true;
+}
+
+/* ═══════════════════════════════════════════════════
+   10.28 내 월드 나누기 📤  (로블록스의 UGC — 서버 없이)
+   ───────────────────────────────────────────────────
+   내가 바꾼 블록만 3바이트씩 눌러 담아 글자 코드로 만든다.
+   친구가 붙여넣으면 똑같은 건축물이 친구 게임에 생긴다.
+   ═══════════════════════════════════════════════════ */
+const B64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+function encodeWorld(){
+  const keys = Object.keys(state.edits);
+  const bytes = [];
+  for(const k of keys){
+    const a = k.split(',');
+    const x = +a[0]|0, y = +a[1]|0, z = +a[2]|0, t = state.edits[k]|0;
+    if(x<0||x>=W||y<0||y>=H||z<0||z>=D||t<0||t>31) continue;
+    const v = (x<<17) | (y<<11) | (z<<5) | t;
+    bytes.push((v>>16)&255, (v>>8)&255, v&255);
+  }
+  let out = '';
+  for(let i=0;i<bytes.length;i+=3){
+    const b0 = bytes[i], b1 = bytes[i+1], b2 = bytes[i+2];
+    out += B64[b0>>2] + B64[((b0&3)<<4)|(b1>>4)] + B64[((b1&15)<<2)|(b2>>6)] + B64[b2&63];
+  }
+  return 'BW1:' + out;
+}
+function decodeWorld(code){
+  code = (code||'').trim().replace(/\s+/g, '');
+  if(code.indexOf('BW1:') !== 0) return null;
+  const body = code.slice(4);
+  if(body.length % 4 !== 0) return null;
+  const edits = {};
+  for(let i=0;i<body.length;i+=4){
+    const c0 = B64.indexOf(body[i]),   c1 = B64.indexOf(body[i+1]);
+    const c2 = B64.indexOf(body[i+2]), c3 = B64.indexOf(body[i+3]);
+    if(c0<0||c1<0||c2<0||c3<0) return null;
+    const b0 = (c0<<2)|(c1>>4), b1 = ((c1&15)<<4)|(c2>>2), b2 = ((c2&3)<<6)|c3;
+    const v = (b0<<16)|(b1<<8)|b2;
+    const x = (v>>17)&63, y = (v>>11)&63, z = (v>>5)&63, t = v&31;
+    if(x>=W||y>=H||z>=D) return null;
+    edits[x+','+y+','+z] = t;
+  }
+  return edits;
+}
+let shareArmed = false;
+function openShare(){
+  $('#share').style.display = 'flex';
+  if(document.pointerLockElement) document.exitPointerLock();
+  const code = encodeWorld();
+  $('#sharecode').value = code;
+  $('#sharemsg').textContent = '내가 바꾼 블록 ' + Object.keys(state.edits).length + '칸이 담겨 있어요.';
+  $('#sharemsg').style.color = '#6b6480';
+  $('#shareload').textContent = '📥 코드 불러오기';
+  shareArmed = false;
+  Sound.shop();
+}
+function shareCopy(){
+  const el = $('#sharecode');
+  el.select(); el.setSelectionRange(0, 999999);
+  let ok = false;
+  try{ ok = document.execCommand('copy'); }catch(e){}
+  if(!ok && navigator.clipboard){ navigator.clipboard.writeText(el.value); ok = true; }
+  $('#sharemsg').style.color = ok ? '#38b862' : '#c0392b';
+  $('#sharemsg').textContent = ok
+    ? '✅ 복사했어요! 친구에게 붙여넣기로 보내 주세요.'
+    : '길게 눌러서 직접 복사해 주세요.';
+  if(ok){ state.shared = 1; Sound.click(); checkBadges(); saveSoon(); }
+}
+function shareLoad(){
+  const edits = decodeWorld($('#sharecode').value);
+  if(!edits){
+    $('#sharemsg').style.color = '#c0392b';
+    $('#sharemsg').textContent = '😢 코드가 이상해요. BW1: 로 시작하는 코드를 통째로 붙여넣어 주세요.';
+    Sound.deny();
+    return;
+  }
+  if(!shareArmed){
+    shareArmed = true;
+    $('#shareload').textContent = '정말요? 한 번 더!';
+    $('#sharemsg').style.color = '#c0392b';
+    $('#sharemsg').textContent = '⚠️ 지금 내 월드의 건축물은 사라지고 이 코드의 건축물로 바뀌어요. ' +
+                                 '(코인 · 레벨 · 배지는 그대로예요)';
+    return;
+  }
+  state.edits = edits;
+  state.bpActive = null;
+  saveNow();
+  $('#sharemsg').style.color = '#38b862';
+  $('#sharemsg').textContent = '✅ 불러왔어요! 잠시 뒤 새로 시작할게요...';
+  Sound.fanfare();
+  setTimeout(()=>location.reload(), 900);
 }
 
 /* ═══════════════════════════════════════════════════
@@ -2808,6 +3936,8 @@ function stepGame(dt){
   updateGold(dt);
   updateLabels(dt);
   updateAmbient(dt);
+  DayNight.update(dt);
+  Lamps.update();
   tutCheckMove();
 }
 
@@ -2862,6 +3992,54 @@ $('#shopclose').addEventListener('click', ()=>{
 goldEvent.at = performance.now()/1000 - 45;   // 처음엔 15초쯤 뒤에 등장
 setupTouch();
 buildHelp();
+DayNight.build();
+DayNight.apply();
+Lamps.scanAll();
+Blueprint.restore();
+$('#btnTime').textContent = {auto:'🌗', day:'☀️', night:'🌙'}[state.timeMode || 'auto'];
+
+/* ── 새 단추들 ── */
+/* 창이 이미 떠 있으면 그 위에 또 열지 않는다 */
+function guard(fn){
+  return ()=>{
+    if($('#daily').style.display === 'flex') return;
+    closeCraft(); closePlans();
+    $('#badges').style.display='none'; $('#share').style.display='none';
+    fn();
+  };
+}
+$('#btnUndo').addEventListener('click', ()=>Undo.undo());
+$('#btnCraft').addEventListener('click', guard(openCraft));
+$('#btnPlan').addEventListener('click', guard(openPlans));
+$('#btnBadge').addEventListener('click', guard(openBadges));
+$('#btnShare').addEventListener('click', guard(openShare));
+$('#btnTime').addEventListener('click', cycleTimeMode);
+$('#craftclose').addEventListener('click', closeCraft);
+$('#planclose').addEventListener('click', closePlans);
+$('#badgeclose').addEventListener('click', ()=>{ $('#badges').style.display='none'; });
+$('#shareclose').addEventListener('click', ()=>{ $('#share').style.display='none'; });
+$('#dailyclose').addEventListener('click', ()=>{ $('#daily').style.display='none'; });
+$('#sharecopy').addEventListener('click', shareCopy);
+$('#shareload').addEventListener('click', shareLoad);
+$('#bpstop').addEventListener('click', ()=>Blueprint.stop());
+addEventListener('keydown', e=>{
+  if(!started) return;
+  const typing = document.activeElement && document.activeElement.tagName === 'TEXTAREA';
+  if(typing) return;
+  const anyModal = craftOpen || plansOpen ||
+                   $('#badges').style.display==='flex' || $('#share').style.display==='flex';
+  if(e.code==='Escape' && anyModal){
+    closeCraft(); closePlans();
+    $('#badges').style.display='none'; $('#share').style.display='none';
+    return;
+  }
+  if(anyModal || shopOpen) return;
+  if(e.code==='KeyZ') Undo.undo();
+  if(e.code==='KeyC') craftOpen ? closeCraft() : openCraft();
+  if(e.code==='KeyB') plansOpen ? closePlans() : openPlans();
+  if(e.code==='KeyV') openBadges();
+});
+checkBadges();
 setSoundOn(state.soundOn !== 0);
 $('#btnSound').addEventListener('click', ()=>{ setSoundOn(!Sound.isEnabled()); Sound.resume(); Sound.click(); });
 $('#btnHelp').addEventListener('click', ()=>{ buildHelp(); $('#help').style.display='flex'; });
@@ -2884,6 +4062,7 @@ $('#startbtn').addEventListener('click', ()=>{
   else { showHint(touchMode ? '즐겁게 놀아요! 막히면 ❓ 를 눌러요'
                             : '화살표로 둘러보고, Q로 부수고, E로 블록을 놓아요!', 4500); }
   showMouseHintBriefly();
+  setTimeout(()=>{ checkDaily(); checkBadges(); }, 700);
 });
 
 window.BW = {player, setBlock, getBlock, scene, camera, renderer, voxels, W,H,D, IDX, keys,
@@ -2896,7 +4075,12 @@ window.BW = {player, setBlock, getBlock, scene, camera, renderer, voxels, W,H,D,
   comboOn(){ return comboOn; }, registerCoinForCombo,
   SKINS, buySkin, applySkin, openShop, closeShop, shopOpen(){ return shopOpen; },
   spawnGoldBlock, goldEvent, pets, SHOP, npc(){ return npcGroup; }, npcLine,
-  tut, tutStart, TUT_STEPS, setTouchMode, touchMode(){ return touchMode; }, touch, Sound, setSoundOn};
+  tut, tutStart, TUT_STEPS, setTouchMode, touchMode(){ return touchMode; }, touch, Sound, setSoundOn,
+  Bag, RECIPES, CRAFTED, craftOne, openCraft, closeCraft, hotbarList,
+  Undo, DayNight, Lamps, cycleTimeMode,
+  BLUEPRINTS, Blueprint, bpCells, bpSize, openPlans, closePlans,
+  BADGES, checkBadges, openBadges, checkDaily,
+  encodeWorld, decodeWorld, openShare, TRAMP, LAMP, ICE};
 })();
 </script>
 </body>
