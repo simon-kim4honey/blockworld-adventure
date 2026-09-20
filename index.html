@@ -111,6 +111,34 @@
 
   #fps{position:fixed; right:14px; bottom:12px; font-size:13px; color:#fff; text-shadow:0 2px 4px rgba(0,0,0,.5); opacity:.75;}
 
+  /* 하단 블록 선택 바 */
+  #hotbar{
+    position:fixed; left:50%; bottom:16px; transform:translateX(-50%);
+    display:flex; gap:8px; pointer-events:auto; padding:8px 10px;
+  }
+  .slot{
+    width:60px; height:66px; border-radius:14px; cursor:pointer;
+    background:rgba(255,255,255,.82); box-shadow:0 4px 0 rgba(0,0,0,.18);
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1px;
+    transition:transform .12s ease, box-shadow .12s ease, background .12s ease;
+    position:relative;
+  }
+  .slot .ic{font-size:26px; line-height:1;}
+  .slot .nm{font-size:11px; opacity:.8;}
+  .slot .num{
+    position:absolute; top:3px; left:6px; font-size:11px; opacity:.55;
+  }
+  .slot:hover{transform:translateY(-4px);}
+  .slot.sel{
+    background:#fff; transform:translateY(-10px) scale(1.1);
+    box-shadow:0 8px 0 #ffab2e, 0 0 0 4px #ffd93d, 0 12px 22px rgba(0,0,0,.25);
+  }
+  .slot.lock{filter:grayscale(1); opacity:.5; cursor:not-allowed;}
+  .slot.lock:after{
+    content:'🔒'; position:absolute; right:4px; top:3px; font-size:13px; filter:none;
+  }
+  .slot.lock .nm{font-size:10px;}
+
   #err{
     position:fixed; inset:0; z-index:99; display:none; align-items:center; justify-content:center;
     background:#2b2140; color:#fff; text-align:center; padding:30px; font-size:20px; line-height:1.7;
@@ -133,6 +161,7 @@
   </div>
   <div class="card" id="hint"></div>
   <div id="pops"></div>
+  <div id="hotbar"></div>
   <div id="fps"></div>
 </div>
 
@@ -146,6 +175,9 @@
     <span>WASD · 화살표 = 이동</span>
     <span>스페이스 = 점프</span>
     <span>마우스 = 둘러보기</span>
+    <span>왼쪽 클릭 = 블록 부수기</span>
+    <span>오른쪽 클릭 = 블록 놓기</span>
+    <span>1~8 = 블록 고르기</span>
   </div>
 </div>
 
@@ -220,6 +252,12 @@ const BLOCKS = {
   [PATH_S]: {name:'은',     icon:'⚪'},
   [PATH_G]: {name:'금',     icon:'🟡'},
   [PLANK]:  {name:'판자',   icon:'🟧'},
+};
+const BLOCK_COLOR = {
+  [GRASS]:0x63c64d, [DIRT]:0x96653f, [STONE]:0x9aa0a8, [WOOD]:0x9c6b3f,
+  [LEAF]:0x4fbf52, [SAND]:0xf0dfa8, [GLASS]:0xbeebff, [RAINBOW]:0xff7ddb,
+  [WATER]:0x49aee0, [GOLD]:0xffc82e, [PATH_B]:0xc87137, [PATH_S]:0xd5dae0,
+  [PATH_G]:0xffd93d, [PLANK]:0xd7a96b
 };
 const RENDER_TYPES = [GRASS,DIRT,STONE,WOOD,LEAF,SAND,GLASS,RAINBOW,GOLD,PATH_B,PATH_S,PATH_G,PLANK];
 const isLiquid = t => t===WATER;
@@ -438,7 +476,6 @@ const renderer = new THREE.WebGLRenderer({canvas, antialias:false, powerPreferen
 renderer.setPixelRatio(Math.min(devicePixelRatio||1, 2));
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-renderer.outputEncoding = THREE.sRGBEncoding;
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x87ceeb);
@@ -446,9 +483,9 @@ scene.fog = new THREE.Fog(0xbfe8ff, 55, 110);
 
 const camera = new THREE.PerspectiveCamera(70, 1, 0.1, 400);
 
-const hemi = new THREE.HemisphereLight(0xffffff, 0x99cc88, 0.85);
+const hemi = new THREE.HemisphereLight(0xffffff, 0x9dd48a, 0.62);
 scene.add(hemi);
-const sun = new THREE.DirectionalLight(0xfff3d0, 0.85);
+const sun = new THREE.DirectionalLight(0xfff3d0, 0.72);
 sun.castShadow = true;
 sun.shadow.mapSize.set(1024,1024);
 sun.shadow.camera.near = 1;
@@ -830,7 +867,7 @@ document.addEventListener('pointerlockchange', ()=>{
 addEventListener('mousemove', e=>{
   if(!locked) return;
   player.yaw   -= e.movementX * 0.0024;
-  player.pitch  = clamp(player.pitch - e.movementY * 0.0024, -1.35, 1.15);
+  player.pitch  = clamp(player.pitch - e.movementY * 0.0024, -1.18, 0.95);
 });
 $('#resume').addEventListener('click', requestLock);
 canvas.addEventListener('click', ()=>{ if(started && !locked) requestLock(); });
@@ -883,9 +920,290 @@ const Sound = (function(){
     jump(){ blip(420, .13, 'square', .35, 720); },
     land(){ noise(.09,.25,700); },
     bounce(){ blip(200,.28,'sine',.5,900); },
-    step(){ noise(.05,.10,500); }
+    step(){ noise(.05,.10,500); },
+    click(){ blip(660,.06,'square',.25); },
+    deny(){ blip(180,.16,'sawtooth',.28,120); },
+    placeBlock(){ blip(520,.09,'square',.32,760); noise(.06,.12,900); },
+    breakBlock(){ noise(.13,.34,900); blip(330,.11,'square',.22,150); },
+    levelUp(){ [523,659,784,1047].forEach((f,i)=> setTimeout(()=>blip(f,.22,'triangle',.45), i*90)); }
   };
 })();
+
+/* ═══════════════════════════════════════════════════
+   10.5 저장 데이터 + 경험치
+   ═══════════════════════════════════════════════════ */
+const SAVE_KEY = 'blockworld_save_v2';
+const state = {
+  coins:0, exp:0, level:1,
+  placed:0, broken:0,
+  edits:{}                 // "x,y,z" -> 블록 번호 (0 = 부순 자리)
+};
+const EXP_NEED = lv => 60 + (lv-1)*45;
+
+let saveTimer = null;
+function saveSoon(){ clearTimeout(saveTimer); saveTimer = setTimeout(saveNow, 700); }
+function saveNow(){
+  try{
+    localStorage.setItem(SAVE_KEY, JSON.stringify({
+      v:2, coins:state.coins, exp:state.exp, level:state.level,
+      placed:state.placed, broken:state.broken, edits:state.edits,
+      pos:{x:player.x, y:player.y, z:player.z}, slot:selectedSlot
+    }));
+  }catch(e){ /* 저장 공간이 없어도 게임은 계속 */ }
+}
+function loadSave(){
+  let raw = null;
+  try{ raw = localStorage.getItem(SAVE_KEY); }catch(e){ return; }
+  if(!raw) return;
+  let d; try{ d = JSON.parse(raw); }catch(e){ return; }
+  if(!d || d.v !== 2) return;
+  state.coins = d.coins|0; state.exp = d.exp|0; state.level = Math.max(1, d.level|0);
+  state.placed = d.placed|0; state.broken = d.broken|0;
+  state.edits = d.edits || {};
+  if(typeof d.slot === 'number') selectedSlot = clamp(d.slot,0,7);
+  if(d.pos && isFinite(d.pos.x)){ SPAWN_LOAD = d.pos; }
+}
+let SPAWN_LOAD = null;
+
+function applyEdits(){
+  for(const k in state.edits){
+    const a = k.split(',');
+    setBlock(+a[0], +a[1], +a[2], state.edits[k]|0, true);
+  }
+  worldDirty = true;
+}
+function recordEdit(x,y,z,t){ state.edits[x+','+y+','+z] = t; saveSoon(); }
+
+function addExp(n){
+  state.exp += n;
+  let up = false;
+  while(state.exp >= EXP_NEED(state.level)){
+    state.exp -= EXP_NEED(state.level);
+    state.level++;
+    up = true;
+  }
+  if(up) onLevelUp();
+  updateHud();
+  saveSoon();
+}
+function onLevelUp(){
+  popText('🎉 레벨 ' + state.level + '!', '#ffe66d');
+  Sound.levelUp();
+  buildHotbar();
+  const newly = HOTBAR.filter(t => UNLOCK_LEVEL[t] === state.level);
+  if(newly.length) showHint('🔓 새 블록 해금: ' + newly.map(t=>BLOCKS[t].icon+' '+BLOCKS[t].name).join(', '), 3500);
+}
+function updateHud(){
+  $('#coins').textContent = state.coins;
+  $('#lvl').textContent = state.level;
+  const need = EXP_NEED(state.level);
+  $('#exptext').textContent = state.exp + ' / ' + need;
+  $('#expfill').style.width = clamp(state.exp/need*100, 0, 100) + '%';
+}
+
+/* ═══════════════════════════════════════════════════
+   10.6 블록 선택 바
+   ═══════════════════════════════════════════════════ */
+const HOTBAR = [GRASS, DIRT, STONE, WOOD, LEAF, SAND, GLASS, RAINBOW];
+const UNLOCK_LEVEL = {[GLASS]:2, [RAINBOW]:3};
+let selectedSlot = 0;
+
+function blockUnlocked(t){ return (UNLOCK_LEVEL[t] || 1) <= state.level; }
+
+function buildHotbar(){
+  const bar = $('#hotbar');
+  bar.innerHTML = '';
+  HOTBAR.forEach((t,i)=>{
+    const ok = blockUnlocked(t);
+    const el = document.createElement('div');
+    el.className = 'slot' + (i===selectedSlot?' sel':'') + (ok?'':' lock');
+    el.innerHTML = '<div class="num">'+(i+1)+'</div>' +
+                   '<div class="ic">'+BLOCKS[t].icon+'</div>' +
+                   '<div class="nm">'+(ok?BLOCKS[t].name:'레벨 '+UNLOCK_LEVEL[t])+'</div>';
+    el.addEventListener('click', (e)=>{ e.stopPropagation(); selectSlot(i); });
+    bar.appendChild(el);
+  });
+}
+function selectSlot(i){
+  i = ((i % HOTBAR.length) + HOTBAR.length) % HOTBAR.length;
+  if(!blockUnlocked(HOTBAR[i])){
+    showHint('🔒 레벨 ' + UNLOCK_LEVEL[HOTBAR[i]] + '이 되면 쓸 수 있어요!', 1800);
+    Sound.deny();
+    return;
+  }
+  selectedSlot = i;
+  buildHotbar();
+  Sound.click();
+  saveSoon();
+}
+
+/* ═══════════════════════════════════════════════════
+   10.7 반짝이는 조각 (파티클)
+   ═══════════════════════════════════════════════════ */
+const Particles = (function(){
+  const CAP = 260;
+  const geo = new THREE.BoxGeometry(.16,.16,.16);
+  const mat = new THREE.MeshLambertMaterial({vertexColors:true});
+  const mesh = new THREE.InstancedMesh(geo, mat, CAP);
+  mesh.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(CAP*3), 3);
+  mesh.frustumCulled = false;
+  mesh.count = CAP;
+  scene.add(mesh);
+
+  const ps = [];
+  for(let i=0;i<CAP;i++) ps.push({life:0, x:0,y:0,z:0, vx:0,vy:0,vz:0, s:1, spin:0});
+  let cursor = 0;
+  const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(),
+        v3 = new THREE.Vector3(), sc = new THREE.Vector3(), col = new THREE.Color();
+
+  function burst(x,y,z,color,count,power){
+    power = power || 4.2;
+    for(let i=0;i<(count||14);i++){
+      const slot = cursor; const p = ps[slot]; cursor = (cursor+1)%CAP;
+      p.life = 0.5 + Math.random()*0.45;
+      p.max = p.life;
+      p.x=x; p.y=y; p.z=z;
+      p.vx=(Math.random()-.5)*power; p.vy=Math.random()*power*0.9+1.2; p.vz=(Math.random()-.5)*power;
+      p.s = 0.6 + Math.random()*0.8;
+      p.spin = (Math.random()-.5)*12;
+      col.set(color);
+      const j = 0.85 + Math.random()*0.3;
+      mesh.instanceColor.setXYZ(slot, col.r*j, col.g*j, col.b*j);
+    }
+    mesh.instanceColor.needsUpdate = true;
+  }
+  function update(dt){
+    for(let i=0;i<CAP;i++){
+      const p = ps[i];
+      if(p.life <= 0){ m4.makeScale(0,0,0); mesh.setMatrixAt(i,m4); continue; }
+      p.life -= dt;
+      p.vy -= 22*dt;
+      p.x += p.vx*dt; p.y += p.vy*dt; p.z += p.vz*dt;
+      if(solidAt(Math.floor(p.x),Math.floor(p.y),Math.floor(p.z))){ p.vy = Math.abs(p.vy)*0.35; p.y += 0.06; }
+      const k = clamp(p.life/(p.max||1),0,1);
+      v3.set(p.x,p.y,p.z);
+      q.setFromAxisAngle(new THREE.Vector3(0.3,1,0.5).normalize(), p.spin*(1-k));
+      const sz = p.s*k;
+      sc.set(sz,sz,sz);
+      m4.compose(v3,q,sc);
+      mesh.setMatrixAt(i,m4);
+    }
+    mesh.instanceMatrix.needsUpdate = true;
+  }
+  return {burst, update};
+})();
+
+/* ═══════════════════════════════════════════════════
+   10.8 블록 조준 (복셀 레이캐스트) + 설치 / 파괴
+   ═══════════════════════════════════════════════════ */
+const REACH = 6.2;
+const _dir = new THREE.Vector3();
+
+function raycastVoxel(ox,oy,oz, dx,dy,dz, maxDist){
+  let x = Math.floor(ox), y = Math.floor(oy), z = Math.floor(oz);
+  const sx = dx>0?1:(dx<0?-1:0), sy = dy>0?1:(dy<0?-1:0), sz = dz>0?1:(dz<0?-1:0);
+  const tdx = dx!==0 ? Math.abs(1/dx) : Infinity;
+  const tdy = dy!==0 ? Math.abs(1/dy) : Infinity;
+  const tdz = dz!==0 ? Math.abs(1/dz) : Infinity;
+  let tmx = dx!==0 ? ((dx>0 ? x+1-ox : ox-x) * tdx) : Infinity;
+  let tmy = dy!==0 ? ((dy>0 ? y+1-oy : oy-y) * tdy) : Infinity;
+  let tmz = dz!==0 ? ((dz>0 ? z+1-oz : oz-z) * tdz) : Infinity;
+  let nx=0, ny=0, nz=0, t=0;
+
+  for(let i=0;i<160;i++){
+    if(y>=0 && y<H && isSolidType(getBlock(x,y,z))) return {x,y,z, nx,ny,nz};
+    if(tmx < tmy && tmx < tmz){ t=tmx; if(t>maxDist) break; x+=sx; tmx+=tdx; nx=-sx; ny=0; nz=0; }
+    else if(tmy < tmz){       t=tmy; if(t>maxDist) break; y+=sy; tmy+=tdy; nx=0; ny=-sy; nz=0; }
+    else {                    t=tmz; if(t>maxDist) break; z+=sz; tmz+=tdz; nx=0; ny=0; nz=-sz; }
+    if(y<-2 || y>H+2) break;
+  }
+  return null;
+}
+
+let aimed = null;
+const highlight = new THREE.LineSegments(
+  new THREE.EdgesGeometry(new THREE.BoxGeometry(1.012,1.012,1.012)),
+  new THREE.LineBasicMaterial({color:0x201830, transparent:true, opacity:.75})
+);
+highlight.visible = false;
+scene.add(highlight);
+
+function updateAim(){
+  camera.getWorldDirection(_dir);
+  const ox = player.x, oy = player.y + 1.5, oz = player.z;
+  aimed = raycastVoxel(ox,oy,oz, _dir.x,_dir.y,_dir.z, REACH);
+  if(aimed){
+    highlight.visible = true;
+    highlight.position.set(aimed.x+0.5, aimed.y+0.5, aimed.z+0.5);
+  } else highlight.visible = false;
+  $('#crosshair').style.transform = aimed ? 'scale(1.3)' : 'scale(1)';
+}
+
+function playerBoxOverlaps(x,y,z){
+  return (player.x+PW > x && player.x-PW < x+1) &&
+         (player.y+PH > y && player.y      < y+1) &&
+         (player.z+PW > z && player.z-PW < z+1);
+}
+
+function breakBlock(){
+  if(!aimed) return false;
+  const {x,y,z} = aimed;
+  if(y <= 0){ showHint('🪨 섬의 바닥은 부술 수 없어요', 1500); Sound.deny(); return false; }
+  const t = getBlock(x,y,z);
+  if(t === AIR) return false;
+  setBlock(x,y,z,AIR);
+  recordEdit(x,y,z,AIR);
+  Particles.burst(x+.5, y+.5, z+.5, BLOCK_COLOR[t] || 0xffffff, 16);
+  Sound.breakBlock();
+  state.broken++;
+  addExp(1);
+  return true;
+}
+function placeBlock(){
+  if(!aimed) return false;
+  const t = HOTBAR[selectedSlot];
+  if(!blockUnlocked(t)){ Sound.deny(); return false; }
+  const x = aimed.x + aimed.nx, y = aimed.y + aimed.ny, z = aimed.z + aimed.nz;
+  if(!inside(x,y,z)) return false;
+  const cur = getBlock(x,y,z);
+  if(cur !== AIR && cur !== WATER) return false;
+  if(playerBoxOverlaps(x,y,z)){ showHint('🙅 내가 서 있는 자리에는 못 놓아요', 1500); Sound.deny(); return false; }
+  setBlock(x,y,z,t);
+  recordEdit(x,y,z,t);
+  Particles.burst(x+.5, y+.5, z+.5, BLOCK_COLOR[t] || 0xffffff, 10, 3);
+  Sound.placeBlock();
+  state.placed++;
+  addExp(2);
+  return true;
+}
+
+/* 마우스 / 키 연결 */
+const mouseDown = [false,false,false];
+let actCooldown = 0;
+canvas.addEventListener('mousedown', e=>{
+  if(!started) return;
+  if(!locked){ requestLock(); return; }
+  mouseDown[e.button] = true;
+  if(e.button===0) { if(breakBlock()) actCooldown = 0.22; }
+  if(e.button===2) { if(placeBlock()) actCooldown = 0.22; }
+});
+addEventListener('mouseup', e=>{ mouseDown[e.button] = false; });
+addEventListener('wheel', e=>{
+  if(!started || !locked) return;
+  selectSlot(selectedSlot + (e.deltaY>0 ? 1 : -1));
+}, {passive:true});
+addEventListener('keydown', e=>{
+  if(e.code.startsWith('Digit')){
+    const n = +e.code.slice(5);
+    if(n>=1 && n<=8) selectSlot(n-1);
+  }
+});
+function updateActions(dt){
+  actCooldown -= dt;
+  if(actCooldown > 0 || !locked) return;
+  if(mouseDown[0] && breakBlock()) actCooldown = 0.22;
+  else if(mouseDown[2] && placeBlock()) actCooldown = 0.22;
+}
 
 /* ═══════════════════════════════════════════════════
    11. 화면 알림
@@ -933,7 +1251,10 @@ function frame(t){
   if(started){
     updatePlayer(dt);
     updateCamera(dt);
+    updateAim();
+    updateActions(dt);
   }
+  Particles.update(dt);
   if(worldDirty) rebuildWorldMesh();
 
   clouds.position.x += dt*0.6;
@@ -952,10 +1273,16 @@ function frame(t){
    ═══════════════════════════════════════════════════ */
 buildTextures();
 buildMaterials();
+loadSave();
 generateWorld();
+applyEdits();
 resize();
 rebuildWorldMesh();
+buildHotbar();
+updateHud();
 player.x=SPAWN.x; player.y=SPAWN.y+1; player.z=SPAWN.z;
+if(SPAWN_LOAD){ player.x=SPAWN_LOAD.x; player.y=SPAWN_LOAD.y+0.5; player.z=SPAWN_LOAD.z; }
+addEventListener('beforeunload', saveNow);
 requestAnimationFrame(frame);
 
 $('#startbtn').addEventListener('click', ()=>{
@@ -963,12 +1290,14 @@ $('#startbtn').addEventListener('click', ()=>{
   started = true;
   Sound.resume();
   requestLock();
-  showHint('WASD로 움직이고 스페이스로 점프해 보세요!', 4000);
+  showHint('왼쪽 클릭으로 부수고, 오른쪽 클릭으로 블록을 놓아 보세요!', 5000);
 });
 
 window.BW = {player, setBlock, getBlock, scene, camera, renderer, voxels, W,H,D, IDX, keys,
   sim(dt,n){ for(let i=0;i<(n||1);i++){ if(jumpBuffer>0) jumpBuffer-=dt; updatePlayer(dt); updateCamera(dt);} },
-  pressJump(){ jumpBuffer=0.14; }};
+  pressJump(){ jumpBuffer=0.14; },
+  state, updateAim, breakBlock, placeBlock, selectSlot, addExp,
+  aim(){ return aimed; }, hotbarSlot(){ return selectedSlot; }};
 })();
 </script>
 </body>
