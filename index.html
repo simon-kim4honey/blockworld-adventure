@@ -267,12 +267,12 @@
   .skin.owned{background:#e6f7e9;}
   .skin.on{background:#fff3cf; box-shadow:0 0 0 4px #ffd93d, 0 6px 0 rgba(0,0,0,.14);}
   .skin.cant{opacity:.5;}
-  #shopclose{
+  .bigclose{
     margin-top:16px; width:100%; border:none; border-radius:16px; cursor:pointer;
     font-family:inherit; font-weight:900; font-size:18px; color:#fff; padding:13px;
     background:linear-gradient(#7c6df0,#5b4bd6); box-shadow:0 5px 0 #4335ad;
   }
-  #shopclose:active{transform:translateY(3px); box-shadow:0 2px 0 #4335ad;}
+  .bigclose:active{transform:translateY(3px); box-shadow:0 2px 0 #4335ad;}
 
   /* ── 모바일 터치 조작 ── */
   #touch{position:fixed; inset:0; display:none; z-index:13; pointer-events:none;}
@@ -450,6 +450,7 @@
 
 <div id="tools">
   <button class="tool" id="btnSound" title="소리 켜기/끄기">🔊</button>
+  <button class="tool" id="btnQuality" title="화질">⚙️</button>
   <button class="tool" id="btnHelp" title="조작법">❓</button>
 </div>
 
@@ -458,7 +459,7 @@
 <div id="help"><div id="helpbox">
   <h2>❓ 조작법</h2>
   <table id="helptable"></table>
-  <button id="shopclose" style="margin-top:16px" onclick="document.getElementById('help').style.display='none'">알겠어요!</button>
+  <button class="bigclose" id="helpclose" style="margin-top:16px">알겠어요!</button>
 </div></div>
 
 <div class="worldlabel" id="npclabel"></div>
@@ -470,7 +471,7 @@
     <div id="shopcoins"><div class="coinicon"></div><span id="shopcoinnum">0</span></div></div>
   <div id="shopsub">코인으로 멋진 옷과 모자를 살 수 있어요. 한 번 사면 계속 쓸 수 있어요!</div>
   <div id="shopgrid"></div>
-  <button id="shopclose">닫기 (가게 밖으로 나가도 닫혀요)</button>
+  <button class="bigclose" id="shopclose">닫기 · 가게에서 나가기</button>
 </div></div>
 
 <div id="levelfx"></div>
@@ -662,7 +663,16 @@ function buildMaterials(){
 const W=64, H=40, D=64;
 const IDX = (x,y,z) => (y*D + z)*W + x;
 const voxels = new Uint8Array(W*H*D);
-const filled = new Set();           // 공기가 아닌 칸의 인덱스 모음
+
+/* 월드를 16x16 청크로 나눠 둔다. 블록 하나를 고칠 때 월드 전체가 아니라
+   그 청크(와 경계에 닿는 이웃)만 다시 만들면 되고, 화면 밖 청크는 통째로 건너뛴다. */
+const CH = 32;
+const CHX = Math.ceil(W/CH), CHZ = Math.ceil(D/CH), NCH = CHX*CHZ;
+const chunkFilled = [];
+for(let i=0;i<NCH;i++) chunkFilled.push(new Set());
+const dirtyChunks = new Set();
+const chunkOf = (x,z) => (((z/CH)|0) * CHX) + ((x/CH)|0);
+
 const SEED = 20260920;
 const SPAWN = {x:32.5, y:0, z:36.5};
 
@@ -670,13 +680,23 @@ function inside(x,y,z){ return x>=0&&x<W&&y>=0&&y<H&&z>=0&&z<D; }
 function getBlock(x,y,z){ return inside(x,y,z) ? voxels[IDX(x,y,z)] : AIR; }
 function solidAt(x,y,z){ return isSolidType(getBlock(x,y,z)); }
 
+function markDirty(x,z){
+  if(x<0||x>=W||z<0||z>=D) return;
+  dirtyChunks.add(chunkOf(x,z));
+}
+/* 경계에 놓인 블록은 옆 청크의 "드러난 면" 계산도 바꾸므로 같이 표시한다 */
+function markDirtyAround(x,z){
+  markDirty(x,z); markDirty(x-1,z); markDirty(x+1,z); markDirty(x,z-1); markDirty(x,z+1);
+}
+
 function setBlock(x,y,z,t,silent){
   if(!inside(x,y,z)) return false;
   const i = IDX(x,y,z);
   if(voxels[i]===t) return false;
   voxels[i]=t;
-  if(t===AIR) filled.delete(i); else filled.add(i);
-  if(!silent) worldDirty = true;
+  const ci = chunkOf(x,z);
+  if(t===AIR) chunkFilled[ci].delete(i); else chunkFilled[ci].add(i);
+  if(!silent) markDirtyAround(x,z);
   return true;
 }
 
@@ -783,7 +803,7 @@ sun.castShadow = true;
 sun.shadow.mapSize.set(1024,1024);
 sun.shadow.camera.near = 1;
 sun.shadow.camera.far = 120;
-const SH = 26;
+const SH = 16;
 sun.shadow.camera.left=-SH; sun.shadow.camera.right=SH;
 sun.shadow.camera.top=SH;  sun.shadow.camera.bottom=-SH;
 sun.shadow.bias = -0.0015;
@@ -806,23 +826,35 @@ function buildSky(){
   sky.frustumCulled=false;
   scene.add(sky);
 
-  // 구름: 납작한 박스 몇 개를 뭉쳐서
-  const cloudMat = new THREE.MeshLambertMaterial({color:0xffffff, emissive:0x777777, fog:false});
-  const cloudGeo = new THREE.BoxGeometry(1,1,1);
-  const clouds = new THREE.Group(); clouds.frustumCulled=false;
+  // 구름: 박스 하나짜리 InstancedMesh 로 전부 그린다 (드로우콜 1번)
   const rng = makeRng(SEED+321);
+  const puffs = [];
   for(let i=0;i<22;i++){
-    const grp = new THREE.Group();
+    const gx = (rng()-.5)*260, gy = 44+rng()*26, gz = (rng()-.5)*260;
     const parts = 3 + ((rng()*4)|0);
     for(let p=0;p<parts;p++){
-      const m = new THREE.Mesh(cloudGeo, cloudMat);
-      m.scale.set(6+rng()*10, 2.5+rng()*2, 5+rng()*8);
-      m.position.set((rng()-.5)*14, (rng()-.5)*2, (rng()-.5)*12);
-      grp.add(m);
+      puffs.push({
+        x: gx + (rng()-.5)*14, y: gy + (rng()-.5)*2, z: gz + (rng()-.5)*12,
+        sx: 6+rng()*10, sy: 2.5+rng()*2, sz: 5+rng()*8
+      });
     }
-    grp.position.set((rng()-.5)*260, 44+rng()*26, (rng()-.5)*260);
-    clouds.add(grp);
   }
+  const cloudMesh = new THREE.InstancedMesh(
+    new THREE.BoxGeometry(1,1,1),
+    new THREE.MeshLambertMaterial({color:0xffffff, emissive:0x777777, fog:false}),
+    puffs.length
+  );
+  cloudMesh.frustumCulled = false;
+  cloudMesh.castShadow = false; cloudMesh.receiveShadow = false;
+  const cm = new THREE.Matrix4();
+  puffs.forEach((p,i)=>{
+    cm.makeScale(p.sx, p.sy, p.sz);
+    cm.setPosition(p.x, p.y, p.z);
+    cloudMesh.setMatrixAt(i, cm);
+  });
+  cloudMesh.instanceMatrix.needsUpdate = true;
+  const clouds = new THREE.Group();
+  clouds.add(cloudMesh);
   scene.add(clouds);
   return clouds;
 }
@@ -832,8 +864,22 @@ const clouds = buildSky();
    5. 블록 렌더링 (InstancedMesh, 보이는 면만)
    ═══════════════════════════════════════════════════ */
 const boxGeo = new THREE.BoxGeometry(1,1,1);
-const instMeshes = {};   // type -> InstancedMesh
-const instCap = {};      // type -> 현재 용량
+const ALL_RENDER = RENDER_TYPES.concat([WATER]);
+
+/* 청크마다 박스 지오메트리를 하나씩 복제해 둔다. 모양은 같지만 경계구(bounding
+   sphere)를 그 청크 크기로 직접 지정해서, three가 화면 밖 청크를 알아서 걸러낸다. */
+const chunkGeo = [];
+const chunkMesh = [];     // chunkMesh[ci][type] -> InstancedMesh
+const chunkCap  = [];     // chunkCap[ci][type]
+for(let ci=0; ci<NCH; ci++){
+  const g = boxGeo.clone();
+  const cx = (ci % CHX) * CH + CH/2, cz = ((ci/CHX)|0) * CH + CH/2;
+  g.boundingSphere = new THREE.Sphere(new THREE.Vector3(cx, H/2, cz), Math.sqrt(2*(CH/2+1)*(CH/2+1) + (H/2+1)*(H/2+1)));
+  chunkGeo.push(g);
+  chunkMesh.push({});
+  chunkCap.push({});
+}
+
 const _m4 = new THREE.Matrix4();
 
 function opaqueAt(x,y,z){
@@ -850,69 +896,109 @@ function isExposed(x,y,z){
 }
 
 let visibleCount = 0;
-function rebuildWorldMesh(){
-  const lists = {};
-  for(const t of RENDER_TYPES) lists[t]=[];
-  const water = [];
+const chunkCount = new Int32Array(NCH);
+let lastRebuildMs = 0;
 
-  for(const i of filled){
-    const x = i % W;
-    const z = ((i / W)|0) % D;
-    const y = (i / (W*D))|0;
+function rebuildChunk(ci){
+  const t0 = performance.now();
+  const lists = {};
+  let minY = H, maxY = 0;
+
+  for(const i of chunkFilled[ci]){
     const t = voxels[i];
     if(t===AIR) continue;
-    if(t===WATER){ if(getBlock(x,y+1,z)!==WATER) water.push(i); continue; }
+    const x = i % W, z = ((i / W)|0) % D, y = (i / (W*D))|0;
+    if(t===WATER){
+      if(getBlock(x,y+1,z)!==WATER){ (lists[WATER] || (lists[WATER]=[])).push(i); if(y<minY)minY=y; if(y>maxY)maxY=y; }
+      continue;
+    }
     if(!isExposed(x,y,z)) continue;
     (lists[t] || (lists[t]=[])).push(i);
+    if(y<minY) minY=y; if(y>maxY) maxY=y;
   }
 
-  visibleCount = 0;
-  for(const t of RENDER_TYPES){
-    const list = lists[t] || [];
-    visibleCount += list.length;
-    let mesh = instMeshes[t];
-    if(!mesh || instCap[t] < list.length){
+  let total = 0;
+  for(const t of ALL_RENDER){
+    const list = lists[t];
+    const n = list ? list.length : 0;
+    total += n;
+    let mesh = chunkMesh[ci][t];
+
+    if(n === 0){
+      if(mesh) mesh.count = 0;
+      continue;
+    }
+    if(!mesh || chunkCap[ci][t] < n){
       if(mesh){ scene.remove(mesh); mesh.dispose(); }
-      const cap = Math.max(64, Math.ceil(list.length*1.4)+128);
-      mesh = new THREE.InstancedMesh(boxGeo, MATS[t], cap);
+      const cap = Math.max(32, Math.ceil(n*1.35) + 32);
+      mesh = new THREE.InstancedMesh(chunkGeo[ci], MATS[t], cap);
       mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-      mesh.castShadow = !BLOCKS[t].transparent;
-      mesh.receiveShadow = true;
-      mesh.frustumCulled = false;
-      mesh.userData.blockType = t;
-      instMeshes[t]=mesh; instCap[t]=cap;
+      mesh.receiveShadow = t !== WATER;
+      mesh.matrixAutoUpdate = false;
+      mesh.userData.chunk = ci;
+      chunkMesh[ci][t] = mesh; chunkCap[ci][t] = cap;
       scene.add(mesh);
     }
-    for(let k=0;k<list.length;k++){
-      const i=list[k];
-      const x=i%W, z=((i/W)|0)%D, y=(i/(W*D))|0;
-      _m4.makeTranslation(x+0.5, y+0.5, z+0.5);
-      mesh.setMatrixAt(k,_m4);
+    for(let k=0;k<n;k++){
+      const i = list[k];
+      const x = i % W, z = ((i / W)|0) % D, y = (i / (W*D))|0;
+      _m4.makeTranslation(x+0.5, (t===WATER ? y+0.43 : y+0.5), z+0.5);
+      mesh.setMatrixAt(k, _m4);
     }
-    mesh.count = list.length;
+    mesh.count = n;
     mesh.instanceMatrix.needsUpdate = true;
   }
 
-  // 물 표면
-  let wm = instMeshes[WATER];
-  if(!wm || instCap[WATER] < water.length){
-    if(wm){ scene.remove(wm); wm.dispose(); }
-    const cap = Math.max(64, water.length+128);
-    wm = new THREE.InstancedMesh(boxGeo, MATS[WATER], cap);
-    wm.frustumCulled=false; wm.receiveShadow=true;
-    instMeshes[WATER]=wm; instCap[WATER]=cap;
-    scene.add(wm);
+  /* 실제로 블록이 있는 높이만 감싸도록 경계구를 좁혀 화면 밖 판정을 정확하게 */
+  if(total > 0){
+    const cy = (minY + maxY) / 2 + 0.5;
+    const hy = (maxY - minY) / 2 + 1;
+    const g = chunkGeo[ci];
+    g.boundingSphere.center.y = cy;
+    g.boundingSphere.radius = Math.sqrt(2*(CH/2+1)*(CH/2+1) + hy*hy);
   }
-  for(let k=0;k<water.length;k++){
-    const i=water[k];
-    const x=i%W, z=((i/W)|0)%D, y=(i/(W*D))|0;
-    _m4.makeTranslation(x+0.5, y+0.43, z+0.5);
-    wm.setMatrixAt(k,_m4);
-  }
-  wm.count = water.length;
-  wm.instanceMatrix.needsUpdate = true;
 
+  visibleCount += total - chunkCount[ci];
+  chunkCount[ci] = total;
+  lastRebuildMs = performance.now() - t0;
+}
+
+function rebuildAll(){
+  visibleCount = 0;
+  chunkCount.fill(0);
+  for(let ci=0; ci<NCH; ci++) rebuildChunk(ci);
+  dirtyChunks.clear();
   worldDirty = false;
+}
+
+/* 한 프레임에 몇 개까지만 다시 만들어 끊김을 막는다 */
+function processDirtyChunks(){
+  if(worldDirty){ rebuildAll(); return; }
+  if(!dirtyChunks.size) return;
+  let n = 0;
+  for(const ci of dirtyChunks){
+    rebuildChunk(ci);
+    dirtyChunks.delete(ci);
+    if(++n >= 2) break;
+  }
+}
+
+/* 그림자는 플레이어 근처 청크만 — 그림자 맵 카메라가 ±26칸만 덮는다 */
+let shadowsWanted = true;
+function updateChunkShadows(){
+  for(let ci=0; ci<NCH; ci++){
+    if(!chunkCount[ci]) continue;
+    const cx = (ci % CHX)*CH + CH/2, cz = ((ci/CHX)|0)*CH + CH/2;
+    const near = shadowsWanted &&
+                 Math.abs(cx - player.x) < CH/2 + SH && Math.abs(cz - player.z) < CH/2 + SH;
+    const m = chunkMesh[ci];
+    for(const t in m){
+      const mesh = m[t];
+      if(!mesh) continue;
+      const want = near && +t !== WATER && !BLOCKS[t].transparent;
+      if(mesh.castShadow !== want) mesh.castShadow = want;
+    }
+  }
 }
 
 /* ═══════════════════════════════════════════════════
@@ -1281,13 +1367,13 @@ const Sound = (function(){
 /* ═══════════════════════════════════════════════════
    10.5 저장 데이터 + 경험치
    ═══════════════════════════════════════════════════ */
-const SAVE_KEY = 'blockworld_save_v6';
+const SAVE_KEY = 'blockworld_save_v7';
 const state = {
   coins:0, exp:0, level:1,
   placed:0, broken:0, starsGot:0,
   coinsEarned:0, maxHeight:0, rainbowPlaced:0, combosMade:0, goldFound:0,
   quests:[], questsDone:{},
-  skin:'basic', skinsOwned:{}, tutorialDone:0, soundOn:1,
+  skin:'basic', skinsOwned:{}, tutorialDone:0, soundOn:1, quality:'auto',
   edits:{},                // "x,y,z" -> 블록 번호 (0 = 부순 자리)
   collected:{},            // 이미 먹은 코인/별
   obbyDone:{}              // 완주한 코스
@@ -1299,13 +1385,13 @@ function saveSoon(){ clearTimeout(saveTimer); saveTimer = setTimeout(saveNow, 70
 function saveNow(){
   try{
     localStorage.setItem(SAVE_KEY, JSON.stringify({
-      v:6, coins:state.coins, exp:state.exp, level:state.level,
+      v:7, coins:state.coins, exp:state.exp, level:state.level,
       placed:state.placed, broken:state.broken, starsGot:state.starsGot,
       coinsEarned:state.coinsEarned, maxHeight:state.maxHeight,
       rainbowPlaced:state.rainbowPlaced, combosMade:state.combosMade, goldFound:state.goldFound,
       quests:state.quests, questsDone:state.questsDone,
       skin:state.skin, skinsOwned:state.skinsOwned,
-      tutorialDone:state.tutorialDone, soundOn:state.soundOn,
+      tutorialDone:state.tutorialDone, soundOn:state.soundOn, quality:state.quality,
       edits:state.edits, collected:state.collected, obbyDone:state.obbyDone,
       pos:{x:player.x, y:player.y, z:player.z}, slot:selectedSlot
     }));
@@ -1316,7 +1402,7 @@ function loadSave(){
   try{ raw = localStorage.getItem(SAVE_KEY); }catch(e){ return; }
   if(!raw) return;
   let d; try{ d = JSON.parse(raw); }catch(e){ return; }
-  if(!d || d.v !== 6) return;
+  if(!d || d.v !== 7) return;
   state.coins = d.coins|0; state.exp = d.exp|0; state.level = Math.max(1, d.level|0);
   state.placed = d.placed|0; state.broken = d.broken|0; state.starsGot = d.starsGot|0;
   state.edits = d.edits || {};
@@ -1331,6 +1417,7 @@ function loadSave(){
   state.skinsOwned = d.skinsOwned || {};
   state.tutorialDone = d.tutorialDone|0;
   state.soundOn = (d.soundOn === 0) ? 0 : 1;
+  state.quality = d.quality || 'auto';
   if(typeof d.slot === 'number') selectedSlot = clamp(d.slot,0,7);
   if(d.pos && isFinite(d.pos.x)){ SPAWN_LOAD = d.pos; }
 }
@@ -1438,6 +1525,7 @@ const Particles = (function(){
   let cursor = 0;
   const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(),
         v3 = new THREE.Vector3(), sc = new THREE.Vector3(), col = new THREE.Color();
+  const SPIN_AXIS = new THREE.Vector3(0.3,1,0.5).normalize();   // 프레임마다 새로 만들지 않기
 
   function burst(x,y,z,color,count,power){
     power = power || 4.2;
@@ -1465,7 +1553,7 @@ const Particles = (function(){
       if(solidAt(Math.floor(p.x),Math.floor(p.y),Math.floor(p.z))){ p.vy = Math.abs(p.vy)*0.35; p.y += 0.06; }
       const k = clamp(p.life/(p.max||1),0,1);
       v3.set(p.x,p.y,p.z);
-      q.setFromAxisAngle(new THREE.Vector3(0.3,1,0.5).normalize(), p.spin*(1-k));
+      q.setFromAxisAngle(SPIN_AXIS, p.spin*(1-k));
       const sz = p.s*k;
       sc.set(sz,sz,sz);
       m4.compose(v3,q,sc);
@@ -1607,7 +1695,10 @@ addEventListener('wheel', e=>{
   selectSlot(selectedSlot + (e.deltaY>0 ? 1 : -1));
 }, {passive:true});
 addEventListener('keydown', e=>{
-  if(e.code==='Escape' && shopOpen){ $('#shopclose').click(); }
+  if(e.code==='Escape'){
+    if(shopOpen){ leaveShop(); e.preventDefault(); }
+    else if($('#help').style.display === 'flex'){ $('#help').style.display='none'; }
+  }
   if(e.code.startsWith('Digit')){
     const n = +e.code.slice(5);
     if(n>=1 && n<=8) selectSlot(n-1);
@@ -2192,9 +2283,12 @@ function buildShopHouse(){
       for(let k=0;k<3;k++) setBlock(x, y+k, z, AIR, true);
     }
   }
-  // 문 (플레이어 쪽 = +x 벽 가운데 2칸)
+  // 문: 가로 2칸 x 세로 2칸. 1칸짜리 문은 아이들이 못 빠져나간다.
   const dz = Math.round((z0+z1)/2);
-  setBlock(x1, y, dz, AIR, true); setBlock(x1, y+1, dz, AIR, true);
+  for(const z of [dz, dz+1]){
+    setBlock(x1, y,   z, AIR, true);
+    setBlock(x1, y+1, z, AIR, true);
+  }
   // 창문
   setBlock(x0, y+1, dz, GLASS, true);
   setBlock(Math.round((x0+x1)/2), y+1, z0, GLASS, true);
@@ -2207,7 +2301,7 @@ function buildShopHouse(){
   setBlock(x0+1, y+1, z0+1, GOLD, true);
   SHOP.inside = {x0:x0+1, x1:x1-1, z0:z0+1, z1:z1-1};
   SHOP.sign = {x:(x0+x1)/2 + 0.5, y:y+5.2, z:(z0+z1)/2 + 0.5};
-  SHOP.door = {x:x1+1.5, y:y, z:dz+0.5};
+  SHOP.door = {x:x1+1.5, y:y, z:dz+1.0};
 }
 
 function buildNPC(){
@@ -2339,6 +2433,19 @@ function closeShop(){
   if(!shopOpen) return;
   shopOpen = false;
   $('#shop').style.display = 'none';
+}
+/* 가게에서 확실히 빠져나오기 — 문 바깥으로 한 걸음 옮기고 잠시 다시 안 열리게 한다 */
+let shopCooldown = 0;
+function leaveShop(){
+  closeShop();
+  player.x = SHOP.door.x + 1.4;
+  player.z = SHOP.door.z;
+  player.y = SHOP.y + 0.2;
+  player.vx = player.vy = player.vz = 0;
+  player.yaw = -Math.PI/2;         // 가게를 등지고 마을 쪽(+x)을 보게
+  shopCooldown = 1.2;
+  Sound.click();
+  showHint('🚪 가게에서 나왔어요!', 1500);
 }
 
 /* ═══════════════════════════════════════════════════
@@ -2547,10 +2654,13 @@ function updateLabels(dt){
 
   // 가게 안에 들어오면 자동으로 열림
   if(SHOP.inside){
+    if(shopCooldown > 0) shopCooldown -= dt;
     const inX = player.x > SHOP.inside.x0 && player.x < SHOP.inside.x1+1;
     const inZ = player.z > SHOP.inside.z0 && player.z < SHOP.inside.z1+1;
     const inY = player.y > SHOP.y-2 && player.y < SHOP.y+3;
-    if(inX && inZ && inY) openShop(); else closeShop();
+    const inShop = inX && inZ && inY;
+    if(inShop && shopCooldown <= 0) openShop();
+    else if(!inShop) closeShop();
   }
 }
 
@@ -2762,6 +2872,53 @@ function buildHelp(){
 }
 
 /* ═══════════════════════════════════════════════════
+   10.22 화질 (느린 기기에서 자동으로 낮춤)
+   ═══════════════════════════════════════════════════ */
+const QUALITY = {mode:'auto', level:'high', notified:false};
+const QLABEL = {auto:'⚙️', high:'✨', low:'🐢'};
+
+function applyQuality(level){
+  QUALITY.level = level;
+  const high = (level === 'high');
+  shadowsWanted = high;
+  renderer.shadowMap.enabled = high;
+  sun.castShadow = high;
+  sun.shadow.mapSize.set(high ? 1024 : 512, high ? 1024 : 512);
+  if(sun.shadow.map){ sun.shadow.map.dispose(); sun.shadow.map = null; }
+  renderer.setPixelRatio(high ? Math.min(devicePixelRatio||1, 2) : 1);
+  scene.fog.near = high ? 55 : 38;
+  scene.fog.far  = high ? 110 : 82;
+  camera.far = high ? 400 : 220;
+  camera.updateProjectionMatrix();
+  updateChunkShadows();
+  resize();
+  $('#btnQuality').textContent = QUALITY.mode === 'auto' ? QLABEL.auto : QLABEL[level];
+}
+function cycleQuality(){
+  QUALITY.mode = QUALITY.mode === 'auto' ? 'high' : (QUALITY.mode === 'high' ? 'low' : 'auto');
+  state.quality = QUALITY.mode;
+  applyQuality(QUALITY.mode === 'low' ? 'low' : 'high');
+  showHint(QUALITY.mode === 'auto' ? '⚙️ 화질: 자동 (느려지면 알아서 낮춰요)'
+         : QUALITY.mode === 'high' ? '✨ 화질: 높음' : '🐢 화질: 낮음 (더 부드러워요)', 2200);
+  Sound.click();
+  saveSoon();
+}
+let slowFor = 0;
+function autoQuality(dt, fps){
+  if(QUALITY.mode !== 'auto') return;
+  if(fps > 0 && fps < 38 && QUALITY.level === 'high'){
+    slowFor += dt;
+    if(slowFor > 3){
+      applyQuality('low');
+      if(!QUALITY.notified){
+        QUALITY.notified = true;
+        showHint('🐢 화면이 조금 무거워서 가볍게 바꿨어요. ⚙️ 로 다시 바꿀 수 있어요', 4000);
+      }
+    }
+  } else slowFor = Math.max(0, slowFor - dt);
+}
+
+/* ═══════════════════════════════════════════════════
    11. 화면 알림
    ═══════════════════════════════════════════════════ */
 let hintTimer = null;
@@ -2785,7 +2942,7 @@ function popText(text, color){
    12. 메인 루프
    ═══════════════════════════════════════════════════ */
 let started = false;
-let lastT = 0, fpsAcc = 0, fpsCount = 0;
+let lastT = 0, fpsAcc = 0, fpsCount = 0, curFps = 0;
 
 function resize(){
   const w = innerWidth, h = innerHeight;
@@ -2823,14 +2980,17 @@ function frame(t){
   if(started) stepGame(dt);
   Particles.update(dt);
   sparkles.update(dt);
-  if(worldDirty) rebuildWorldMesh();
+  processDirtyChunks();
+  updateChunkShadows();
 
   clouds.position.x += dt*0.6;
   if(clouds.position.x > 140) clouds.position.x = -140;
 
   fpsAcc += dt; fpsCount++;
   if(fpsAcc > 0.5){
-    $('#fps').textContent = Math.round(fpsCount/fpsAcc) + ' fps · 블록 ' + visibleCount;
+    curFps = Math.round(fpsCount/fpsAcc);
+    autoQuality(fpsAcc, curFps);
+    $('#fps').textContent = curFps + ' fps · 블록 ' + visibleCount + ' · 드로우 ' + renderer.info.render.calls;
     fpsAcc = 0; fpsCount = 0;
   }
   renderer.render(scene, camera);
@@ -2847,24 +3007,27 @@ buildShopHouse();
 buildObbies();
 applyEdits();
 resize();
-rebuildWorldMesh();
+rebuildAll();
 buildHotbar();
 updateHud();
 Collect.build();
 refillQuests();
 npcGroup = buildNPC();
 applySkin(state.skin);
-$('#shopclose').addEventListener('click', ()=>{
-  closeShop();
-  // 가게 밖으로 한 걸음 밀어내 바로 다시 열리지 않게
-  player.x = SHOP.door.x + 1.2; player.z = SHOP.door.z; player.y = SHOP.y + 0.2;
-});
+$('#shopclose').addEventListener('click', leaveShop);
+$('#helpclose').addEventListener('click', ()=>{ $('#help').style.display='none'; });
+// 어두운 바깥쪽을 눌러도 나가기
+$('#shop').addEventListener('click', e=>{ if(e.target.id === 'shop') leaveShop(); });
+$('#help').addEventListener('click', e=>{ if(e.target.id === 'help') $('#help').style.display='none'; });
 goldEvent.at = performance.now()/1000 - 45;   // 처음엔 15초쯤 뒤에 등장
 setupTouch();
 buildHelp();
 setSoundOn(state.soundOn !== 0);
 $('#btnSound').addEventListener('click', ()=>{ setSoundOn(!Sound.isEnabled()); Sound.resume(); Sound.click(); });
 $('#btnHelp').addEventListener('click', ()=>{ buildHelp(); $('#help').style.display='flex'; });
+QUALITY.mode = state.quality || 'auto';
+applyQuality(QUALITY.mode === 'low' ? 'low' : 'high');
+$('#btnQuality').addEventListener('click', cycleQuality);
 if(IS_TOUCH){
   const k = $('#start').querySelector('.keys');
   if(k) k.innerHTML = '<span>왼쪽 동그라미 = 이동</span><span>화면 문지르기 = 둘러보기</span>' +
@@ -2895,8 +3058,26 @@ window.BW = {player, setBlock, getBlock, scene, camera, renderer, voxels, W,H,D,
   QUEST_POOL, checkQuests, refillQuests, gainCoins, hasUnlock, UNLOCKS,
   comboOn(){ return comboOn; }, registerCoinForCombo,
   SKINS, buySkin, applySkin, openShop, closeShop, shopOpen(){ return shopOpen; },
-  spawnGoldBlock, goldEvent, pets, SHOP, npc(){ return npcGroup; }, npcLine,
-  tut, tutStart, TUT_STEPS, setTouchMode, touchMode(){ return touchMode; }, touch, Sound, setSoundOn};
+  spawnGoldBlock, goldEvent, pets, SHOP, npc(){ return npcGroup; }, npcLine, leaveShop,
+  tut, tutStart, TUT_STEPS, setTouchMode, touchMode(){ return touchMode; }, touch, Sound, setSoundOn,
+  QUALITY, applyQuality, cycleQuality, rebuildAll, rebuildChunk, processDirtyChunks,
+  cullInfo(){
+    const f = new THREE.Frustum(), m = new THREE.Matrix4();
+    camera.updateMatrixWorld();
+    m.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
+    f.setFromProjectionMatrix(m);
+    let inView=0, out=0, meshes=0, shadowOn=0;
+    for(let ci=0;ci<NCH;ci++){
+      if(!chunkCount[ci]) continue;
+      const vis = f.intersectsSphere(chunkGeo[ci].boundingSphere);
+      vis ? inView++ : out++;
+      for(const t in chunkMesh[ci]){ if(chunkMesh[ci][t].count>0){ meshes++; if(chunkMesh[ci][t].castShadow) shadowOn++; } }
+    }
+    return {chunksInView:inView, chunksCulled:out, chunkMeshes:meshes, shadowCasting:shadowOn};
+  },
+  stats(){ return {visible:visibleCount, chunks:NCH, lastRebuildMs:+lastRebuildMs.toFixed(2),
+                   dirty:dirtyChunks.size, calls:renderer.info.render.calls,
+                   tris:renderer.info.render.triangles, fps:curFps}; }};
 })();
 </script>
 </body>
