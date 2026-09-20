@@ -224,6 +224,56 @@
     100%{transform:translateY(112vh) rotate(720deg); opacity:.9;}
   }
 
+  /* 3D 위에 떠 있는 말풍선 / 표지판 */
+  .worldlabel{
+    position:fixed; transform:translate(-50%,-100%); pointer-events:none;
+    background:rgba(255,255,255,.93); border-radius:16px; padding:9px 14px;
+    box-shadow:0 5px 0 rgba(0,0,0,.16), 0 10px 22px rgba(0,0,0,.2);
+    font-size:15px; text-align:center; white-space:pre-line; max-width:230px;
+    display:none; z-index:12; line-height:1.45;
+  }
+  .worldlabel:after{
+    content:''; position:absolute; left:50%; bottom:-9px; margin-left:-9px;
+    border:9px solid transparent; border-top-color:rgba(255,255,255,.93); border-bottom:0;
+  }
+  .worldlabel.bob{animation:lblBob 2.4s ease-in-out infinite;}
+  @keyframes lblBob{0%,100%{margin-top:0}50%{margin-top:-7px}}
+
+  /* 상점 */
+  #shop{
+    position:fixed; inset:0; z-index:38; display:none;
+    align-items:center; justify-content:center; background:rgba(25,20,45,.5);
+    pointer-events:auto;
+  }
+  #shopbox{
+    background:#fffdf7; border-radius:26px; padding:20px 22px 18px;
+    box-shadow:0 12px 0 rgba(0,0,0,.18), 0 24px 50px rgba(0,0,0,.35);
+    width:min(640px,94vw); max-height:88vh; overflow:auto;
+  }
+  #shophead{display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;}
+  #shophead h2{margin:0; font-size:26px;}
+  #shopcoins{font-size:19px; display:flex; align-items:center; gap:7px;}
+  #shopsub{font-size:14px; opacity:.65; margin-bottom:14px;}
+  #shopgrid{display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:12px;}
+  .skin{
+    border-radius:18px; padding:12px 10px; text-align:center; cursor:pointer;
+    background:#f3eefc; box-shadow:0 4px 0 rgba(0,0,0,.12);
+    transition:transform .12s ease, box-shadow .12s ease;
+  }
+  .skin:hover{transform:translateY(-4px); box-shadow:0 8px 0 rgba(0,0,0,.14);}
+  .skin .sic{font-size:38px; line-height:1;}
+  .skin .snm{font-size:15px; margin-top:5px;}
+  .skin .sp{font-size:14px; margin-top:6px; opacity:.8;}
+  .skin.owned{background:#e6f7e9;}
+  .skin.on{background:#fff3cf; box-shadow:0 0 0 4px #ffd93d, 0 6px 0 rgba(0,0,0,.14);}
+  .skin.cant{opacity:.5;}
+  #shopclose{
+    margin-top:16px; width:100%; border:none; border-radius:16px; cursor:pointer;
+    font-family:inherit; font-weight:900; font-size:18px; color:#fff; padding:13px;
+    background:linear-gradient(#7c6df0,#5b4bd6); box-shadow:0 5px 0 #4335ad;
+  }
+  #shopclose:active{transform:translateY(3px); box-shadow:0 2px 0 #4335ad;}
+
   #err{
     position:fixed; inset:0; z-index:99; display:none; align-items:center; justify-content:center;
     background:#2b2140; color:#fff; text-align:center; padding:30px; font-size:20px; line-height:1.7;
@@ -272,6 +322,18 @@
     <span style="opacity:.75">마우스를 써도 돼요 (클릭 = 부수기 / 놓기)</span>
   </div>
 </div>
+
+<div class="worldlabel" id="npclabel"></div>
+<div class="worldlabel bob" id="shoplabel"></div>
+<div class="worldlabel" id="petlabel"></div>
+
+<div id="shop"><div id="shopbox">
+  <div id="shophead"><h2>🛒 블로키 상점</h2>
+    <div id="shopcoins"><div class="coinicon"></div><span id="shopcoinnum">0</span></div></div>
+  <div id="shopsub">코인으로 멋진 옷과 모자를 살 수 있어요. 한 번 사면 계속 쓸 수 있어요!</div>
+  <div id="shopgrid"></div>
+  <button id="shopclose">닫기 (가게 밖으로 나가도 닫혀요)</button>
+</div></div>
 
 <div id="levelfx"></div>
 <div id="err"></div>
@@ -991,6 +1053,7 @@ canvas.addEventListener('contextmenu', e=>e.preventDefault());
 /* 화살표 키로 둘러보기 — 마우스가 없어도 다 할 수 있게 */
 const LOOK_YAW = 2.1, LOOK_PITCH = 1.5;
 function updateLook(dt){
+  if(shopOpen) return;
   let ly = 0, lp = 0;
   if(keys['ArrowLeft'])  ly += 1;
   if(keys['ArrowRight']) ly -= 1;
@@ -1058,6 +1121,10 @@ const Sound = (function(){
     quest(){ [659,880,1109].forEach((f,i)=> setTimeout(()=>blip(f,.2,'triangle',.42), i*80)); },
     combo(){ [440,554,659,880].forEach((f,i)=> setTimeout(()=>blip(f,.14,'square',.35), i*55)); },
     rocket(){ blip(300,.32,'sawtooth',.34,1100); noise(.24,.2,2200); },
+    bark(){ blip(340,.09,'square',.3,200); setTimeout(()=>blip(300,.11,'square',.26,170),110); },
+    buy(){ [659,880,1109,1319].forEach((f,i)=> setTimeout(()=>blip(f,.18,'triangle',.4), i*70)); },
+    shop(){ blip(523,.12,'triangle',.3); setTimeout(()=>blip(784,.16,'triangle',.28),90); },
+    goldSpawn(){ [1047,1319,1568].forEach((f,i)=> setTimeout(()=>blip(f,.26,'sine',.42), i*130)); },
     star(){ [784,988,1319,1568].forEach((f,i)=> setTimeout(()=>blip(f,.16,'triangle',.4), i*60)); },
     fanfare(){ [523,523,523,659,784,1047,1319].forEach((f,i)=> setTimeout(()=>blip(f,.3,'triangle',.5), i*140)); },
     levelUp(){ [523,659,784,1047].forEach((f,i)=> setTimeout(()=>blip(f,.22,'triangle',.45), i*90)); }
@@ -1067,12 +1134,13 @@ const Sound = (function(){
 /* ═══════════════════════════════════════════════════
    10.5 저장 데이터 + 경험치
    ═══════════════════════════════════════════════════ */
-const SAVE_KEY = 'blockworld_save_v4';
+const SAVE_KEY = 'blockworld_save_v5';
 const state = {
   coins:0, exp:0, level:1,
   placed:0, broken:0, starsGot:0,
   coinsEarned:0, maxHeight:0, rainbowPlaced:0, combosMade:0, goldFound:0,
   quests:[], questsDone:{},
+  skin:'basic', skinsOwned:{},
   edits:{},                // "x,y,z" -> 블록 번호 (0 = 부순 자리)
   collected:{},            // 이미 먹은 코인/별
   obbyDone:{}              // 완주한 코스
@@ -1084,11 +1152,12 @@ function saveSoon(){ clearTimeout(saveTimer); saveTimer = setTimeout(saveNow, 70
 function saveNow(){
   try{
     localStorage.setItem(SAVE_KEY, JSON.stringify({
-      v:4, coins:state.coins, exp:state.exp, level:state.level,
+      v:5, coins:state.coins, exp:state.exp, level:state.level,
       placed:state.placed, broken:state.broken, starsGot:state.starsGot,
       coinsEarned:state.coinsEarned, maxHeight:state.maxHeight,
       rainbowPlaced:state.rainbowPlaced, combosMade:state.combosMade, goldFound:state.goldFound,
       quests:state.quests, questsDone:state.questsDone,
+      skin:state.skin, skinsOwned:state.skinsOwned,
       edits:state.edits, collected:state.collected, obbyDone:state.obbyDone,
       pos:{x:player.x, y:player.y, z:player.z}, slot:selectedSlot
     }));
@@ -1099,7 +1168,7 @@ function loadSave(){
   try{ raw = localStorage.getItem(SAVE_KEY); }catch(e){ return; }
   if(!raw) return;
   let d; try{ d = JSON.parse(raw); }catch(e){ return; }
-  if(!d || d.v !== 4) return;
+  if(!d || d.v !== 5) return;
   state.coins = d.coins|0; state.exp = d.exp|0; state.level = Math.max(1, d.level|0);
   state.placed = d.placed|0; state.broken = d.broken|0; state.starsGot = d.starsGot|0;
   state.edits = d.edits || {};
@@ -1110,6 +1179,8 @@ function loadSave(){
   state.goldFound = d.goldFound|0;
   state.quests = Array.isArray(d.quests) ? d.quests : [];
   state.questsDone = d.questsDone || {};
+  state.skin = d.skin || 'basic';
+  state.skinsOwned = d.skinsOwned || {};
   if(typeof d.slot === 'number') selectedSlot = clamp(d.slot,0,7);
   if(d.pos && isFinite(d.pos.x)){ SPAWN_LOAD = d.pos; }
 }
@@ -1313,8 +1384,14 @@ function breakBlock(){
   if(y <= 0){ showHint('🪨 섬의 바닥은 부술 수 없어요', 1500); Sound.deny(); return false; }
   const t = getBlock(x,y,z);
   if(t === AIR) return false;
+  const wasGold = goldEvent.pos && goldEvent.pos.x===x && goldEvent.pos.y===y && goldEvent.pos.z===z;
   setBlock(x,y,z,AIR);
-  recordEdit(x,y,z,AIR);
+  if(!wasGold) recordEdit(x,y,z,AIR);
+  if(wasGold){
+    Particles.burst(x+.5,y+.5,z+.5, 0xffd93d, 40, 8);
+    onGoldBroken();
+    return true;
+  }
   Particles.burst(x+.5, y+.5, z+.5, BLOCK_COLOR[t] || 0xffffff, 16);
   Sound.breakBlock();
   state.broken++;
@@ -1358,6 +1435,7 @@ addEventListener('wheel', e=>{
   selectSlot(selectedSlot + (e.deltaY>0 ? 1 : -1));
 }, {passive:true});
 addEventListener('keydown', e=>{
+  if(e.code==='Escape' && shopOpen){ $('#shopclose').click(); }
   if(e.code.startsWith('Digit')){
     const n = +e.code.slice(5);
     if(n>=1 && n<=8) selectSlot(n-1);
@@ -1365,7 +1443,7 @@ addEventListener('keydown', e=>{
 });
 function updateActions(dt){
   actCooldown -= dt;
-  if(actCooldown > 0) return;
+  if(actCooldown > 0 || shopOpen) return;
   const wantBreak = keys['KeyQ'] || keys['KeyF'] || touch.breaking || (locked && mouseDown[0]);
   const wantPlace = keys['KeyE'] || keys['KeyR'] || touch.placing  || (locked && mouseDown[2]);
   if(wantBreak && breakBlock()) actCooldown = 0.22;
@@ -1924,6 +2002,386 @@ function levelUpShow(lv){
 }
 
 /* ═══════════════════════════════════════════════════
+   10.13 마을: 상점 건물 + NPC 블로키
+   ═══════════════════════════════════════════════════ */
+const VILLAGE = {x:32, z:36, y:10};
+const SHOP = {x0:25, x1:30, z0:31, z1:36, y:10};   // 가게 바깥 벽 범위
+let npcGroup = null;
+
+function buildShopHouse(){
+  const {x0,x1,z0,z1,y} = SHOP;
+  for(let x=x0;x<=x1;x++) for(let z=z0;z<=z1;z++){
+    const edge = (x===x0 || x===x1 || z===z0 || z===z1);
+    setBlock(x, y-1, z, PLANK, true);                 // 바닥
+    if(edge){
+      for(let k=0;k<3;k++) setBlock(x, y+k, z, (k===0? STONE : PLANK), true);
+    } else {
+      for(let k=0;k<3;k++) setBlock(x, y+k, z, AIR, true);
+    }
+  }
+  // 문 (플레이어 쪽 = +x 벽 가운데 2칸)
+  const dz = Math.round((z0+z1)/2);
+  setBlock(x1, y, dz, AIR, true); setBlock(x1, y+1, dz, AIR, true);
+  // 창문
+  setBlock(x0, y+1, dz, GLASS, true);
+  setBlock(Math.round((x0+x1)/2), y+1, z0, GLASS, true);
+  setBlock(Math.round((x0+x1)/2), y+1, z1, GLASS, true);
+  // 지붕 (가운데가 솟은 모양)
+  for(let x=x0-1;x<=x1+1;x++) for(let z=z0-1;z<=z1+1;z++) setBlock(x, y+3, z, WOOD, true);
+  for(let x=x0;x<=x1;x++) for(let z=z0+1;z<=z1-1;z++) setBlock(x, y+4, z, RAINBOW, true);
+  // 가게 안 진열대
+  setBlock(x0+1, y, z0+1, STONE, true);
+  setBlock(x0+1, y+1, z0+1, GOLD, true);
+  SHOP.inside = {x0:x0+1, x1:x1-1, z0:z0+1, z1:z1-1};
+  SHOP.sign = {x:(x0+x1)/2 + 0.5, y:y+5.2, z:(z0+z1)/2 + 0.5};
+  SHOP.door = {x:x1+1.5, y:y, z:dz+0.5};
+}
+
+function buildNPC(){
+  const g = new THREE.Group();
+  const head = boxMesh(.66,.66,.66, 0x66d9a0);
+  head.position.y = 1.45;
+  const eyes = new THREE.Mesh(new THREE.BoxGeometry(.5,.16,.04),
+    new THREE.MeshLambertMaterial({color:0x223322}));
+  eyes.position.set(0,1.52,0.34);
+  const hat = boxMesh(.76,.2,.76, 0xff7043); hat.position.y = 1.86;
+  const tip = boxMesh(.36,.3,.36, 0xff7043); tip.position.y = 2.05;
+  const body = boxMesh(.64,.62,.38, 0x4fc3ff); body.position.y = .95;
+  const armL = boxMesh(.2,.58,.22, 0x66d9a0); armL.position.set(-.43,.95,0);
+  const armR = boxMesh(.2,.58,.22, 0x66d9a0); armR.position.set(.43,.95,0);
+  const legL = boxMesh(.26,.62,.28, 0x3f51b5); legL.position.set(-.16,.33,0);
+  const legR = boxMesh(.26,.62,.28, 0x3f51b5); legR.position.set(.16,.33,0);
+  g.add(head,eyes,hat,tip,body,armL,armR,legL,legR);
+  g.position.set(36.5, VILLAGE.y, 34.5);
+  g.userData = {t:0, armR};
+  scene.add(g);
+  return g;
+}
+
+/* NPC가 해 주는 말 — 지금 퀘스트를 알려 준다 */
+function npcLine(){
+  const a = state.quests.find(q=>!q.done);
+  if(!a) return '안녕! 난 블로키야 👋\n지금은 할 일이 없네. 마음껏 놀아!';
+  const q = questDef(a.id);
+  const {cur, goal} = questProgress(a);
+  return '안녕! 난 블로키야 👋\n「' + q.text.replace('{g}', goal) + '」\n' +
+         '지금 ' + cur + ' / ' + goal + ' 했어!\n가게는 바로 저기야 🛒';
+}
+
+/* ═══════════════════════════════════════════════════
+   10.14 상점 (캐릭터 꾸미기)
+   ═══════════════════════════════════════════════════ */
+const SKINS = [
+  {id:'basic',  name:'기본',        icon:'🙂', price:0,
+   body:0xff5b5b, legs:0x4a90d9, skin:0xffd9a8, hat:null},
+  {id:'explor', name:'탐험가',      icon:'🧢', price:60,
+   body:0xf4a261, legs:0x6b4f2a, skin:0xffd9a8, hat:{color:0xe63946, tall:false}},
+  {id:'ninja',  name:'파란 닌자',   icon:'🥷', price:150,
+   body:0x274690, legs:0x1b2f6b, skin:0x8ecae6, hat:{color:0x1b2f6b, tall:false}},
+  {id:'princess',name:'공주님',     icon:'👑', price:260,
+   body:0xff8fc8, legs:0xffd6ec, skin:0xffd9a8, hat:{color:0xffd93d, tall:true}},
+  {id:'dino',   name:'공룡 친구',   icon:'🦖', price:420,
+   body:0x4caf50, legs:0x2e7d32, skin:0x8bc34a, hat:{color:0x2e7d32, tall:true}},
+  {id:'robot',  name:'로봇',        icon:'🤖', price:600,
+   body:0x9e9e9e, legs:0x616161, skin:0xcfd8dc, hat:{color:0x03a9f4, tall:false}},
+  {id:'star',   name:'무지개 스타', icon:'🌈', price:900,
+   body:0xff7ddb, legs:0x9a7dff, skin:0xfff0c0, hat:{color:0xffe93d, tall:true}},
+];
+let shopOpen = false;
+
+function skinById(id){ return SKINS.find(s=>s.id===id) || SKINS[0]; }
+
+function applySkin(id){
+  const sk = skinById(id);
+  const ud = avatar.userData;
+  ud.body.material.color.setHex(sk.body);
+  ud.pLegL.children[0].material.color.setHex(sk.legs);
+  ud.pLegR.children[0].material.color.setHex(sk.legs);
+  ud.pArmL.children[0].material.color.setHex(sk.skin);
+  ud.pArmR.children[0].material.color.setHex(sk.skin);
+  for(let i=0;i<6;i++) if(i!==4) ud.head.material[i].color.setHex(sk.skin);
+  // 모자
+  if(ud.hatMesh){ avatar.remove(ud.hatMesh); ud.hatMesh = null; }
+  ud.hair.visible = !sk.hat;
+  if(sk.hat){
+    const h = new THREE.Group();
+    const brim = boxMesh(.76,.14,.76, sk.hat.color); brim.position.y = 1.79;
+    h.add(brim);
+    if(sk.hat.tall){
+      const top = boxMesh(.5,.42,.5, sk.hat.color); top.position.y = 2.06; h.add(top);
+      const ball = boxMesh(.2,.2,.2, 0xffffff); ball.position.y = 2.36; h.add(ball);
+    } else {
+      const top = boxMesh(.62,.22,.62, sk.hat.color); top.position.y = 1.96; h.add(top);
+    }
+    avatar.add(h);
+    ud.hatMesh = h;
+  }
+  state.skin = id;
+}
+
+function renderShop(){
+  $('#shopcoinnum').textContent = state.coins;
+  const grid = $('#shopgrid');
+  grid.innerHTML = '';
+  SKINS.forEach(sk=>{
+    const owned = sk.price === 0 || state.skinsOwned[sk.id];
+    const on = state.skin === sk.id;
+    const can = owned || state.coins >= sk.price;
+    const el = document.createElement('div');
+    el.className = 'skin' + (owned?' owned':'') + (on?' on':'') + (can?'':' cant');
+    el.innerHTML = '<div class="sic">'+sk.icon+'</div>' +
+      '<div class="snm">'+sk.name+'</div>' +
+      '<div class="sp">' + (on ? '입고 있어요 ✅' : owned ? '입기' : '🪙 ' + sk.price) + '</div>';
+    el.addEventListener('click', ()=>buySkin(sk.id));
+    grid.appendChild(el);
+  });
+}
+function buySkin(id){
+  const sk = skinById(id);
+  const owned = sk.price === 0 || state.skinsOwned[id];
+  if(!owned){
+    if(state.coins < sk.price){
+      showHint('🪙 코인이 ' + (sk.price - state.coins) + '개 더 필요해요!', 2200);
+      Sound.deny(); renderShop(); return;
+    }
+    state.coins -= sk.price;
+    state.skinsOwned[id] = 1;
+    Sound.buy();
+    popText('🎁 ' + sk.name + ' 구매!', '#7ae582');
+  } else {
+    Sound.click();
+  }
+  applySkin(id);
+  updateHud(); renderShop(); saveSoon();
+}
+function openShop(){
+  if(shopOpen) return;
+  shopOpen = true;
+  $('#shop').style.display = 'flex';
+  if(document.pointerLockElement) document.exitPointerLock();
+  renderShop();
+  Sound.shop();
+}
+function closeShop(){
+  if(!shopOpen) return;
+  shopOpen = false;
+  $('#shop').style.display = 'none';
+}
+
+/* ═══════════════════════════════════════════════════
+   10.15 펫 — 강아지(레벨 5) · 고양이(레벨 10)
+   ═══════════════════════════════════════════════════ */
+function buildPet(kind){
+  const c = kind==='dog'
+    ? {body:0xc8853f, head:0xdca05a, ear:0x8a5a2b, belly:0xf2d6a8}
+    : {body:0x9e9e9e, head:0xb0b0b0, ear:0x707070, belly:0xe0e0e0};
+  const g = new THREE.Group();
+  const body = boxMesh(.42,.34,.62, c.body); body.position.set(0,.34,0);
+  const belly = boxMesh(.3,.12,.5, c.belly); belly.position.set(0,.2,0);
+  const head = boxMesh(.38,.36,.34, c.head); head.position.set(0,.6,-.4);
+  const snout = boxMesh(.18,.14,.14, c.belly); snout.position.set(0,.53,-.6);
+  const nose = boxMesh(.09,.08,.06, 0x332222); nose.position.set(0,.57,-.68);
+  const eyeL = boxMesh(.07,.09,.05, 0x221a14); eyeL.position.set(-.1,.66,-.58);
+  const eyeR = boxMesh(.07,.09,.05, 0x221a14); eyeR.position.set(.1,.66,-.58);
+  const earL = kind==='dog' ? boxMesh(.1,.22,.1, c.ear) : boxMesh(.12,.18,.08, c.ear);
+  const earR = earL.clone();
+  earL.position.set(-.15,.8,-.4); earR.position.set(.15,.8,-.4);
+  const tail = boxMesh(.09,.09, kind==='dog'?.34:.5, c.body);
+  tail.position.set(0,.5,.34);
+  const legs = [];
+  for(const [lx,lz] of [[-.14,-.2],[.14,-.2],[-.14,.2],[.14,.2]]){
+    const l = boxMesh(.12,.34,.12, c.ear); l.position.set(lx,.17,lz); legs.push(l); g.add(l);
+  }
+  g.add(body,belly,head,snout,nose,eyeL,eyeR,earL,earR,tail);
+  g.userData = {tail, legs, kind, t:Math.random()*5, bark:0, vx:0, vz:0};
+  g.visible = false;
+  scene.add(g);
+  return g;
+}
+const pets = {dog:null, cat:null};
+let petBarkAt = 0, petTarget = null;
+
+function surfaceHeight(x, z, fromY){
+  const bx = Math.floor(x), bz = Math.floor(z);
+  const start = Math.min(H-1, Math.max(0, Math.round(fromY) + 3));
+  for(let y=start; y>=0; y--) if(solidAt(bx,y,bz)) return y+1;
+  return 0;
+}
+
+function updatePets(dt){
+  const list = [['dog','강아지 친구'], ['cat','고양이 친구']];
+  let order = 0;
+  list.forEach(([kind, unlockName])=>{
+    const has = hasUnlock(unlockName);
+    if(has && !pets[kind]) pets[kind] = buildPet(kind);
+    const pet = pets[kind];
+    if(!pet) return;
+    if(!has){ pet.visible = false; return; }
+    if(!pet.visible){
+      pet.visible = true;
+      pet.position.set(player.x, player.y, player.z);
+    }
+    order++;
+    const ud = pet.userData;
+    ud.t += dt;
+
+    // 플레이어 뒤쪽 옆자리를 따라다닌다
+    const back = order * 1.5;
+    const side = (order === 1 ? -0.9 : 0.9);
+    const fx = Math.sin(avatar.rotation.y), fz = Math.cos(avatar.rotation.y);
+    const tx = player.x - fx*back + fz*side;
+    const tz = player.z - fz*back - fx*side;
+    const dx = tx - pet.position.x, dz = tz - pet.position.z;
+    const d = Math.hypot(dx,dz);
+
+    if(d > 14){                                    // 너무 멀어지면 순간이동으로 따라붙기
+      pet.position.set(tx, player.y, tz);
+    } else if(d > 0.55){
+      const sp = clamp(d*2.6, 1.2, 9.5);
+      pet.position.x += dx/d * sp * dt;
+      pet.position.z += dz/d * sp * dt;
+      pet.rotation.y = lerp2angle(pet.rotation.y, Math.atan2(dx,dz), dt*9);
+    }
+    const gy = surfaceHeight(pet.position.x, pet.position.z, Math.max(player.y, pet.position.y));
+    const hop = d > 0.6 ? Math.abs(Math.sin(ud.t*9))*0.16 : 0;
+    pet.position.y = lerp(pet.position.y, gy + hop, clamp(dt*10,0,1));
+
+    ud.tail.rotation.x = Math.sin(ud.t*(ud.bark>0?16:7))*0.5;
+    const swing = d > 0.6 ? Math.sin(ud.t*11)*0.5 : 0;
+    ud.legs[0].rotation.x = swing;  ud.legs[1].rotation.x = -swing;
+    ud.legs[2].rotation.x = -swing; ud.legs[3].rotation.x = swing;
+    if(ud.bark > 0) ud.bark -= dt;
+  });
+
+  // 강아지가 가까운 코인을 찾아 짖어 준다
+  const dog = pets.dog;
+  if(dog && dog.visible){
+    const now = performance.now()/1000;
+    if(now - petBarkAt > 4){
+      petBarkAt = now;
+      const near = Collect.nearestUncollected();
+      if(near && near.d < 16 && near.d > 2.5){
+        petTarget = {c:near.c, until: now + 3.2};
+        dog.userData.bark = 0.9;
+        Sound.bark();
+      }
+    }
+    if(petTarget && performance.now()/1000 > petTarget.until) petTarget = null;
+  }
+}
+
+/* ═══════════════════════════════════════════════════
+   10.16 1분마다 나타나는 황금 블록
+   ═══════════════════════════════════════════════════ */
+const goldEvent = {pos:null, at:0, beam:null};
+
+function makeBeam(){
+  const m = new THREE.Mesh(
+    new THREE.CylinderGeometry(.55,.55,16,10,1,true),
+    new THREE.MeshBasicMaterial({color:0xffe066, transparent:true, opacity:.22,
+                                side:THREE.DoubleSide, depthWrite:false})
+  );
+  m.visible = false;
+  scene.add(m);
+  return m;
+}
+
+function spawnGoldBlock(){
+  if(!goldEvent.beam) goldEvent.beam = makeBeam();
+  clearGoldBlock(false);
+  for(let i=0;i<300;i++){
+    const x = 5 + ((Math.random()*(W-10))|0), z = 5 + ((Math.random()*(D-10))|0);
+    let y = -1;
+    for(let k=H-1;k>=0;k--) if(solidAt(x,k,z)){ y = k+1; break; }
+    if(y < 9 || y >= H-2) continue;
+    if(getBlock(x,y,z) !== AIR) continue;
+    if(Math.hypot(x-VILLAGE.x, z-VILLAGE.z) < 4) continue;
+    setBlock(x,y,z,GOLD);
+    goldEvent.pos = {x,y,z};
+    goldEvent.at = performance.now()/1000;
+    goldEvent.beam.position.set(x+0.5, y+8.5, z+0.5);
+    goldEvent.beam.visible = true;
+    GOLD_EVENT_READY = true;
+    showHint('✨ 황금 블록이 섬 어딘가에 나타났어요! 노란 빛기둥을 찾아보세요', 4500);
+    Sound.goldSpawn();
+    return;
+  }
+}
+function clearGoldBlock(announce){
+  if(goldEvent.pos){
+    const {x,y,z} = goldEvent.pos;
+    if(getBlock(x,y,z) === GOLD){ setBlock(x,y,z,AIR); }
+    goldEvent.pos = null;
+  }
+  if(goldEvent.beam) goldEvent.beam.visible = false;
+}
+function onGoldBroken(){
+  state.goldFound = (state.goldFound||0) + 1;
+  const amount = gainCoins(100, true);
+  addExp(150);
+  showBanner('✨ 황금 블록 발견!', '코인 +' + amount + '  ·  EXP +150');
+  Sound.fanfare();
+  goldEvent.pos = null;
+  if(goldEvent.beam) goldEvent.beam.visible = false;
+  goldEvent.at = performance.now()/1000;
+  checkQuests();
+  saveSoon();
+}
+function updateGold(dt){
+  const now = performance.now()/1000;
+  if(!goldEvent.pos && now - goldEvent.at > 60) spawnGoldBlock();
+  if(goldEvent.pos && now - goldEvent.at > 120){       // 2분 동안 못 찾으면 자리 옮김
+    spawnGoldBlock();
+  }
+  if(goldEvent.beam && goldEvent.beam.visible){
+    goldEvent.beam.rotation.y += dt*0.8;
+    goldEvent.beam.material.opacity = 0.16 + Math.sin(now*3)*0.08;
+  }
+}
+
+/* ═══════════════════════════════════════════════════
+   10.17 화면에 붙는 말풍선 / 표지판 갱신
+   ═══════════════════════════════════════════════════ */
+const _proj = new THREE.Vector3();
+function placeLabel(el, x, y, z, maxDist){
+  const dx = x-player.x, dy = y-(player.y+1), dz = z-player.z;
+  const dist = Math.sqrt(dx*dx+dy*dy+dz*dz);
+  if(dist > maxDist){ el.style.display='none'; return false; }
+  _proj.set(x,y,z).project(camera);
+  if(_proj.z > 1){ el.style.display='none'; return false; }
+  el.style.display = 'block';
+  el.style.left = ((_proj.x*0.5+0.5)*innerWidth) + 'px';
+  el.style.top  = ((-_proj.y*0.5+0.5)*innerHeight) + 'px';
+  return true;
+}
+function updateLabels(dt){
+  if(npcGroup){
+    npcGroup.userData.t += dt;
+    npcGroup.rotation.y = Math.atan2(player.x-npcGroup.position.x, player.z-npcGroup.position.z);
+    npcGroup.userData.armR.rotation.x = Math.sin(npcGroup.userData.t*4)*0.6 - 0.3;
+    const shown = placeLabel($('#npclabel'), npcGroup.position.x, npcGroup.position.y+2.7, npcGroup.position.z, 7);
+    if(shown) $('#npclabel').textContent = npcLine();
+  }
+  if(SHOP.sign) placeLabel($('#shoplabel'), SHOP.sign.x, SHOP.sign.y, SHOP.sign.z, 26) &&
+    ($('#shoplabel').textContent = '🛒 상점\n안으로 들어오세요!');
+
+  // 강아지가 알려 주는 코인 위치
+  const pl = $('#petlabel');
+  if(petTarget && pets.dog && pets.dog.visible){
+    if(placeLabel(pl, pets.dog.position.x, pets.dog.position.y+1.5, pets.dog.position.z, 20))
+      pl.textContent = '🐶 멍멍! 저쪽에 코인 있어!\n(' + Math.round(petTarget.d || 0 || Math.hypot(petTarget.c.x-player.x, petTarget.c.z-player.z)) + '칸쯤)';
+  } else pl.style.display = 'none';
+
+  // 가게 안에 들어오면 자동으로 열림
+  if(SHOP.inside){
+    const inX = player.x > SHOP.inside.x0 && player.x < SHOP.inside.x1+1;
+    const inZ = player.z > SHOP.inside.z0 && player.z < SHOP.inside.z1+1;
+    const inY = player.y > SHOP.y-2 && player.y < SHOP.y+3;
+    if(inX && inZ && inY) openShop(); else closeShop();
+  }
+}
+
+/* ═══════════════════════════════════════════════════
    11. 화면 알림
    ═══════════════════════════════════════════════════ */
 let hintTimer = null;
@@ -1966,6 +2424,9 @@ function stepGame(dt){
   updateObby(dt);
   Collect.update(dt);
   updateCombo();
+  updatePets(dt);
+  updateGold(dt);
+  updateLabels(dt);
 }
 
 function frame(t){
@@ -2000,6 +2461,7 @@ buildTextures();
 buildMaterials();
 loadSave();
 generateWorld();
+buildShopHouse();
 buildObbies();
 applyEdits();
 resize();
@@ -2008,6 +2470,14 @@ buildHotbar();
 updateHud();
 Collect.build();
 refillQuests();
+npcGroup = buildNPC();
+applySkin(state.skin);
+$('#shopclose').addEventListener('click', ()=>{
+  closeShop();
+  // 가게 밖으로 한 걸음 밀어내 바로 다시 열리지 않게
+  player.x = SHOP.door.x + 1.2; player.z = SHOP.door.z; player.y = SHOP.y + 0.2;
+});
+goldEvent.at = performance.now()/1000 - 45;   // 처음엔 15초쯤 뒤에 등장
 player.x=SPAWN.x; player.y=SPAWN.y+1; player.z=SPAWN.z;
 if(SPAWN_LOAD){ player.x=SPAWN_LOAD.x; player.y=SPAWN_LOAD.y+0.5; player.z=SPAWN_LOAD.z; }
 addEventListener('beforeunload', saveNow);
@@ -2029,7 +2499,9 @@ window.BW = {player, setBlock, getBlock, scene, camera, renderer, voxels, W,H,D,
   aim(){ return aimed; }, hotbarSlot(){ return selectedSlot; },
   OBBIES, Collect, finishObby, remaining(){ return Collect.remaining(); },
   QUEST_POOL, checkQuests, refillQuests, gainCoins, hasUnlock, UNLOCKS,
-  comboOn(){ return comboOn; }, registerCoinForCombo};
+  comboOn(){ return comboOn; }, registerCoinForCombo,
+  SKINS, buySkin, applySkin, openShop, closeShop, shopOpen(){ return shopOpen; },
+  spawnGoldBlock, goldEvent, pets, SHOP, npc(){ return npcGroup; }, npcLine};
 })();
 </script>
 </body>
