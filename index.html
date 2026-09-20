@@ -7,17 +7,9 @@
 <style>
   :root{
     --ink:#2b2140;
-    --panel:rgba(255,255,255,.92);
-    --shadow:0 6px 0 rgba(0,0,0,.14), 0 10px 24px rgba(0,0,0,.16);
-    --radius:20px;
-    /* 참고 그림의 쨍한 색들 — 화면 위 아이콘·막대가 이 색만 쓴다 */
-    --sun:#ffc62e;   --sun-d:#d59000;
-    --leaf:#6bd24a;  --leaf-d:#3f9433;
-    --sea:#4fb0e8;   --sea-d:#2a7cb5;
-    --berry:#9a7dff; --berry-d:#6b52d6;
-    --coral:#ff7a8a; --coral-d:#d9455a;
-    /* 카드 안쪽에 흰 테두리를 한 겹 둘러 또렷하게 */
-    --ring:inset 0 0 0 2px rgba(255,255,255,.75);
+    --panel:rgba(255,255,255,.86);
+    --shadow:0 6px 0 rgba(0,0,0,.18), 0 10px 24px rgba(0,0,0,.18);
+    --radius:18px;
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
   html,body{margin:0;padding:0;height:100%;overflow:hidden;background:#87ceeb;}
@@ -31,7 +23,7 @@
   #ui{position:fixed; inset:0; pointer-events:none; z-index:10;}
   .card{
     background:var(--panel); border-radius:var(--radius);
-    box-shadow:var(--shadow), var(--ring); padding:11px 15px;
+    box-shadow:var(--shadow); padding:10px 14px;
     backdrop-filter:blur(3px);
   }
 
@@ -62,28 +54,16 @@
     animation:bob 2.2s ease-in-out infinite;
   }
   #start .sub{font-size:clamp(15px,3.4vw,22px); color:#fff; text-shadow:0 2px 6px rgba(0,0,0,.35);}
-  /* 제목 옆 도도는 이모지가 아니라 게임 속 도도를 그대로 그린 그림이다 */
-  #titledodo{
-    display:inline-block; width:1.15em; height:1.15em; margin-right:.22em;
-    vertical-align:-.18em;
-    background-repeat:no-repeat; background-position:center; background-size:contain;
-    filter:drop-shadow(0 4px 3px rgba(0,0,0,.28));
-  }
   @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
   .bigbtn{
     pointer-events:auto; cursor:pointer; border:none; border-radius:999px;
     font-family:inherit; font-weight:900; font-size:clamp(20px,4.5vw,30px);
-    color:#fff; padding:16px 44px;
-    background:linear-gradient(#ffdc6b,var(--sun));
-    text-shadow:0 2px 0 rgba(160,95,0,.55);
-    box-shadow:0 7px 0 var(--sun-d), 0 14px 26px rgba(0,0,0,.28),
-               inset 0 0 0 3px rgba(255,255,255,.55);
+    color:#fff; padding:16px 44px; background:linear-gradient(#ffcf3f,#ff9f1a);
+    box-shadow:0 7px 0 #c9700a, 0 14px 26px rgba(0,0,0,.28);
     transition:transform .1s ease, box-shadow .1s ease;
   }
-  .bigbtn:hover{transform:translateY(-3px);
-    box-shadow:0 10px 0 var(--sun-d), 0 18px 30px rgba(0,0,0,.3), inset 0 0 0 3px rgba(255,255,255,.55);}
-  .bigbtn:active{transform:translateY(4px);
-    box-shadow:0 3px 0 var(--sun-d), inset 0 0 0 3px rgba(255,255,255,.55);}
+  .bigbtn:hover{transform:translateY(-3px); box-shadow:0 10px 0 #c9700a, 0 18px 30px rgba(0,0,0,.3);}
+  .bigbtn:active{transform:translateY(4px); box-shadow:0 3px 0 #c9700a;}
   #start .keys{
     display:flex; gap:10px; flex-wrap:wrap; justify-content:center; max-width:560px;
     font-size:clamp(13px,3vw,17px);
@@ -101,21 +81,14 @@
   #hud-left{position:fixed; left:14px; top:14px; display:flex; flex-direction:column; gap:8px;}
   #coinbox{display:flex; align-items:center; gap:8px; font-size:22px;}
   .coinicon{
-    width:27px;height:27px;border-radius:50%; position:relative;
-    background:radial-gradient(circle at 35% 30%, #fff6b0, var(--sun) 58%, var(--sun-d));
-    box-shadow:0 2px 0 #a86f00, inset 0 0 0 2px rgba(255,255,255,.55);
-  }
-  .coinicon:after{
-    content:''; position:absolute; inset:6px;
-    background:var(--sun-d); opacity:.55;
-    clip-path:polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);
+    width:26px;height:26px;border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, #fff6b0, #ffc82e 60%, #d99400);
+    box-shadow:0 2px 0 #a86f00, inset 0 0 0 2px rgba(255,255,255,.45);
   }
   #lvlbox{min-width:180px;}
   #lvlrow{display:flex; justify-content:space-between; font-size:15px; margin-bottom:5px;}
   #expbar{height:12px; background:#e5e0ef; border-radius:999px; overflow:hidden; box-shadow:inset 0 2px 4px rgba(0,0,0,.18);}
-  #expfill{height:100%; width:0%; border-radius:999px;
-    background:linear-gradient(90deg,#9ae86f,var(--leaf)); transition:width .3s ease;
-    box-shadow:inset 0 2px 0 rgba(255,255,255,.45);}
+  #expfill{height:100%; width:0%; border-radius:999px; background:linear-gradient(90deg,#7ae582,#38d39f); transition:width .3s ease;}
 
   /* 힌트 */
   #hint{
@@ -152,29 +125,21 @@
     max-width:min(96vw, calc(100vw - 260px));
   }
   .slot{
-    width:62px; height:70px; border-radius:16px; cursor:pointer;
-    background:linear-gradient(#ffffff,#f0ecf8);
-    box-shadow:0 4px 0 rgba(0,0,0,.16), inset 0 0 0 2px rgba(255,255,255,.9);
-    display:flex; flex-direction:column; align-items:center; justify-content:flex-end;
-    gap:1px; padding-bottom:6px;
+    width:60px; height:66px; border-radius:14px; cursor:pointer;
+    background:rgba(255,255,255,.82); box-shadow:0 4px 0 rgba(0,0,0,.18);
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1px;
     transition:transform .12s ease, box-shadow .12s ease, background .12s ease;
     position:relative;
   }
-  /* 블록 그림은 글자가 아니라 코드로 그린 작은 입체 블록이다 */
-  .slot .ic{
-    width:40px; height:40px; margin-top:4px;
-    background-repeat:no-repeat; background-position:center; background-size:contain;
-    filter:drop-shadow(0 2px 1px rgba(0,0,0,.18));
-  }
-  .slot .nm{font-size:11px; opacity:.85;}
+  .slot .ic{font-size:26px; line-height:1;}
+  .slot .nm{font-size:11px; opacity:.8;}
   .slot .num{
     position:absolute; top:3px; left:6px; font-size:11px; opacity:.55;
   }
   .slot:hover{transform:translateY(-4px);}
   .slot.sel{
-    background:linear-gradient(#fffdf4,#fff2cf); transform:translateY(-10px) scale(1.1);
-    box-shadow:0 8px 0 var(--sun-d), 0 0 0 4px var(--sun), 0 12px 22px rgba(0,0,0,.25),
-               inset 0 0 0 2px rgba(255,255,255,.9);
+    background:#fff; transform:translateY(-10px) scale(1.1);
+    box-shadow:0 8px 0 #ffab2e, 0 0 0 4px #ffd93d, 0 12px 22px rgba(0,0,0,.25);
   }
   .slot.lock{filter:grayscale(1); opacity:.5; cursor:not-allowed;}
   .slot.lock:after{
@@ -207,26 +172,15 @@
     border-top:2px dotted rgba(0,0,0,.10);
   }
   .quest:first-child{border-top:none;}
-  .quest .qic{width:24px; height:24px; flex:0 0 24px; font-size:19px; line-height:1.15;}
-  .quest .qic svg{display:block; width:100%; height:100%; overflow:visible;}
+  .quest .qic{font-size:19px; line-height:1.15;}
   .quest .qbody{flex:1; min-width:0;}
   .quest .qtx{font-size:13px; line-height:1.3;}
   .quest .qbar{height:7px; background:#e8e3f0; border-radius:99px; margin-top:4px; overflow:hidden;}
-  .quest .qfill{height:100%; width:0%; border-radius:99px;
-    background:linear-gradient(90deg,#ffe07a,var(--sun)); transition:width .35s ease;
-    box-shadow:inset 0 2px 0 rgba(255,255,255,.45);}
-  .quest .qnum{font-size:11px; opacity:.72; margin-top:3px; display:flex; align-items:center; gap:2px;}
-  /* 보상 표시 — 이모지 대신 팔레트 색 동그라미 */
-  .pip{
-    display:inline-block; width:12px; height:12px; border-radius:50%;
-    margin:0 2px 0 8px; vertical-align:-2px;
-    box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.65);
-  }
-  .pip.coin{background:radial-gradient(circle at 35% 30%, #fff0b0, var(--sun) 60%, var(--sun-d));}
-  .pip.exp{background:radial-gradient(circle at 35% 30%, #d7f7bc, var(--leaf) 60%, var(--leaf-d));}
+  .quest .qfill{height:100%; width:0%; border-radius:99px; background:linear-gradient(90deg,#ffd93d,#ff9f1a); transition:width .35s ease;}
+  .quest .qnum{font-size:11px; opacity:.6; margin-top:2px;}
   .quest.done{animation:questDone .9s ease-out;}
   .quest.done .qtx{text-decoration:line-through; opacity:.55;}
-  .quest.done .qfill{background:linear-gradient(90deg,#9ae86f,var(--leaf));}
+  .quest.done .qfill{background:linear-gradient(90deg,#7ae582,#38d39f);}
   @keyframes questDone{
     0%{transform:scale(1);} 30%{transform:scale(1.09); background:rgba(122,229,130,.35);}
     100%{transform:scale(1); background:transparent;}
@@ -315,22 +269,16 @@
     transition:transform .12s ease, box-shadow .12s ease;
   }
   .skin:hover{transform:translateY(-4px); box-shadow:0 8px 0 rgba(0,0,0,.14);}
-  .skin .sic{
-    width:66px; height:66px; margin:0 auto;
-    background-repeat:no-repeat; background-position:center; background-size:contain;
-    filter:drop-shadow(0 3px 2px rgba(0,0,0,.18));
-  }
+  .skin .sic{font-size:38px; line-height:1;}
   .skin .snm{font-size:15px; margin-top:5px;}
   .skin .sp{font-size:14px; margin-top:6px; opacity:.8;}
   .skin.owned{background:#e6f7e9;}
-  .skin.on{background:#fff6dc; box-shadow:0 0 0 4px var(--sun), 0 6px 0 rgba(0,0,0,.14);}
+  .skin.on{background:#fff3cf; box-shadow:0 0 0 4px #ffd93d, 0 6px 0 rgba(0,0,0,.14);}
   .skin.cant{opacity:.5;}
   .bigclose{
     margin-top:16px; width:100%; border:none; border-radius:16px; cursor:pointer;
     font-family:inherit; font-weight:900; font-size:18px; color:#fff; padding:13px;
-    background:linear-gradient(#a99bff,var(--berry));
-    text-shadow:0 2px 0 rgba(60,40,140,.45);
-    box-shadow:0 5px 0 var(--berry-d), inset 0 0 0 2px rgba(255,255,255,.35);
+    background:linear-gradient(#7c6df0,#5b4bd6); box-shadow:0 5px 0 #4335ad;
   }
   .bigclose:active{transform:translateY(3px); box-shadow:0 2px 0 #4335ad;}
 
@@ -361,8 +309,7 @@
   .tbtn:active{transform:translateY(4px); box-shadow:0 1px 0 rgba(0,0,0,.2);}
   .tbtn.jump{
     grid-column:1 / span 2; width:auto; height:70px; border-radius:38px; font-size:26px;
-    background:linear-gradient(#a8ef8a,var(--leaf)); color:#12401b;
-    box-shadow:0 5px 0 var(--leaf-d), inset 0 0 0 3px rgba(255,255,255,.5);
+    background:linear-gradient(#9be7a0,#4fc86a); color:#0f3d1c;
   }
   body.touchmode #hotbar{bottom:118px; transform:translateX(-50%) scale(.92);}
   body.touchmode #fps{top:4px;}
@@ -390,19 +337,12 @@
     pointer-events:auto; flex-wrap:wrap; width:100px; justify-content:flex-end;
   }
   .tool{
-    width:46px; height:46px; border-radius:50%; border:none; cursor:pointer;
-    padding:10px; font-size:21px;
-    background:linear-gradient(#ffffff,#eae5f4);
-    box-shadow:0 4px 0 rgba(0,0,0,.16), inset 0 0 0 2px rgba(255,255,255,.95);
-    font-family:inherit; display:flex; align-items:center; justify-content:center;
-    transition:transform .1s ease, box-shadow .1s ease;
+    width:46px; height:46px; border-radius:50%; border:none; cursor:pointer; font-size:21px;
+    background:rgba(255,255,255,.88); box-shadow:0 4px 0 rgba(0,0,0,.16); font-family:inherit;
   }
-  .tool svg{display:block; width:100%; height:100%; overflow:visible;}
-  .tool:hover{transform:translateY(-2px); box-shadow:0 6px 0 rgba(0,0,0,.16), inset 0 0 0 2px rgba(255,255,255,.95);}
-  .tool:active{transform:translateY(3px); box-shadow:0 1px 0 rgba(0,0,0,.16), inset 0 0 0 2px rgba(255,255,255,.95);}
+  .tool:active{transform:translateY(3px); box-shadow:0 1px 0 rgba(0,0,0,.16);}
   .tool.big{
-    background:linear-gradient(#ffdc6b,var(--sun));
-    box-shadow:0 4px 0 var(--sun-d), inset 0 0 0 2px rgba(255,255,255,.5);
+    background:linear-gradient(#ffcf3f,#ff9f1a); box-shadow:0 4px 0 #c9700a;
   }
   .tool.big:active{box-shadow:0 1px 0 #c9700a;}
   body.touchmode #tools{right:10px;}
@@ -428,9 +368,7 @@
     transition:transform .12s ease, box-shadow .12s ease;
   }
   .bagcard:hover{transform:translateY(-4px); box-shadow:0 8px 0 rgba(0,0,0,.14);}
-  .bagcard .cic{font-size:36px; line-height:1; height:38px;
-    display:flex; align-items:center; justify-content:center;}
-  .bagcard .cic svg{display:block; width:36px; height:36px; overflow:visible;}
+  .bagcard .cic{font-size:36px; line-height:1;}
   .bagcard .cnm{font-size:16px; margin-top:6px;}
   .bagcard .cds{font-size:12px; opacity:.62; margin-top:3px; line-height:1.35;}
 
@@ -466,14 +404,10 @@
   .mbtn{
     margin-top:16px; width:100%; border:none; border-radius:16px; cursor:pointer;
     font-family:inherit; font-weight:900; font-size:18px; color:#fff; padding:13px;
-    background:linear-gradient(#a99bff,var(--berry));
-    text-shadow:0 2px 0 rgba(60,40,140,.45);
-    box-shadow:0 5px 0 var(--berry-d), inset 0 0 0 2px rgba(255,255,255,.35);
+    background:linear-gradient(#7c6df0,#5b4bd6); box-shadow:0 5px 0 #4335ad;
   }
   .mbtn:active{transform:translateY(3px); box-shadow:0 2px 0 #4335ad;}
-  .mbtn.green{background:linear-gradient(#9ae86f,var(--leaf));
-    box-shadow:0 5px 0 var(--leaf-d), inset 0 0 0 2px rgba(255,255,255,.35);
-    text-shadow:0 2px 0 rgba(30,90,25,.4);}
+  .mbtn.green{background:linear-gradient(#7ae582,#38b862); box-shadow:0 5px 0 #2a8c4a;}
   .mbtn.green:active{box-shadow:0 2px 0 #2a8c4a;}
   .mbtn.gray{background:linear-gradient(#cfc9da,#a9a2b8); box-shadow:0 5px 0 #857d96; color:#3b3350;}
   .mbtn.gray:active{box-shadow:0 2px 0 #857d96;}
@@ -506,11 +440,9 @@
   .makebtn{
     border:none; border-radius:14px; cursor:pointer; font-family:inherit; font-weight:900;
     font-size:15px; color:#fff; padding:11px 15px; white-space:nowrap;
-    background:linear-gradient(#ffdc6b,var(--sun));
-    text-shadow:0 2px 0 rgba(160,95,0,.5);
-    box-shadow:0 4px 0 var(--sun-d), inset 0 0 0 2px rgba(255,255,255,.4);
+    background:linear-gradient(#ffcf3f,#ff9f1a); box-shadow:0 4px 0 #c9700a;
   }
-  .makebtn:active{transform:translateY(3px); box-shadow:0 1px 0 var(--sun-d);}
+  .makebtn:active{transform:translateY(3px); box-shadow:0 1px 0 #c9700a;}
   .makebtn:disabled{background:#d8d3e0; box-shadow:0 4px 0 #b2abc0; color:#8a8398; cursor:default;}
 
   /* 배지 */
@@ -715,7 +647,7 @@
     #quests{width:46vw; max-width:206px; right:8px; top:8px; padding:8px 10px;}
     #qtitle{font-size:12px; margin-bottom:4px;}
     .quest{padding:4px 0; gap:6px;}
-    .quest .qic{width:20px; height:20px; flex:0 0 20px; font-size:15px;}
+    .quest .qic{font-size:15px;}
     .quest .qtx{font-size:11px;}
     .quest .qbar{height:5px;}
     .quest .qnum{font-size:9px;}
@@ -821,7 +753,7 @@
   <div class="card" id="hint"></div>
   <div id="pops"></div>
   <div class="card" id="quests">
-    <div id="qtitle">퀘스트</div>
+    <div id="qtitle">📋 퀘스트</div>
     <div id="qlist"></div>
   </div>
   <div id="hotbar"></div>
@@ -839,7 +771,7 @@
 <div id="resume"><div class="card">🖱️ 마우스로 둘러보려면 화면을 클릭 · 키보드만 쓸 거면 그냥 하세요</div></div>
 
 <div id="start">
-  <h1><i id="titledodo"></i>도도블록</h1>
+  <h1>🦤 도도블록</h1>
   <div class="sub">멸종된 도도새들이 모여 사는 신비의 블록섬</div>
   <button class="bigbtn" id="startbtn">▶ 섬으로 가기</button>
   <div class="keys">
@@ -1201,11 +1133,11 @@ const BLOCKS = {
   [ICE]:    {name:'얼음',   icon:'🧊', transparent:true},
 };
 const BLOCK_COLOR = {
-  [GRASS]:0x6bd24a, [DIRT]:0xa06a3e, [STONE]:0xa3abb6, [WOOD]:0x9d6a3e,
-  [LEAF]:0x56c84c, [SAND]:0xf4dfa4, [GLASS]:0xbfeeff, [RAINBOW]:0xff7ddb,
-  [WATER]:0x3fa8e0, [GOLD]:0xffc62e, [PATH_B]:0xc87137, [PATH_S]:0xd3dae2,
-  [PATH_G]:0xffc62e, [PLANK]:0xd7a96b,
-  [TRAMP]:0x46cf67, [LAMP]:0xffe08a, [ICE]:0xa8e4ff
+  [GRASS]:0x63c64d, [DIRT]:0x96653f, [STONE]:0x9aa0a8, [WOOD]:0x9c6b3f,
+  [LEAF]:0x4fbf52, [SAND]:0xf0dfa8, [GLASS]:0xbeebff, [RAINBOW]:0xff7ddb,
+  [WATER]:0x49aee0, [GOLD]:0xffc82e, [PATH_B]:0xc87137, [PATH_S]:0xd5dae0,
+  [PATH_G]:0xffd93d, [PLANK]:0xd7a96b,
+  [TRAMP]:0x4fd86a, [LAMP]:0xffe9a0, [ICE]:0xa8e4ff
 };
 const RENDER_TYPES = [GRASS,DIRT,STONE,WOOD,LEAF,SAND,GLASS,RAINBOW,GOLD,PATH_B,PATH_S,PATH_G,PLANK,TRAMP,LAMP,ICE];
 const isLiquid = t => t===WATER;
@@ -1214,34 +1146,7 @@ const isSolidType = t => t!==AIR && !isLiquid(t);
 /* ═══════════════════════════════════════════════════
    2. 블록 그림(텍스처)을 코드로 그리기
    ═══════════════════════════════════════════════════ */
-const TS = 32;
-
-/* ── 색 팔레트 ───────────────────────────────────────
-   참고한 저폴리 디오라마 그림처럼 밝고 쨍한 색으로 통일한다.
-   한 재료당 [밝은끝, 기본, 어두운끝] 세 단계. 블록 텍스처도, 화면 위
-   아이콘도 전부 이 표만 보고 그리므로 색이 따로 놀지 않는다. */
-const PAL = {
-  grass : ['#95ec72','#6bd24a','#47a637'],
-  dirt  : ['#c48d58','#a06a3e','#7b4d2b'],
-  stone : ['#c6ccd4','#a3abb6','#7c848f'],
-  wood  : ['#c08a56','#9d6a3e','#784e2a'],
-  leaf  : ['#86e872','#56c84c','#37953a'],
-  sand  : ['#fff2c8','#f4dfa4','#d7bc79'],
-  glass : ['#eafcff','#bfeeff','#8fd7f0'],
-  gold  : ['#ffe986','#ffc62e','#d59000'],
-  copper: ['#ea9760','#c87137','#985022'],
-  silver: ['#f5f8fc','#d3dae2','#a6b0bd'],
-  plank : ['#f2cb96','#d7a96b','#a97c42'],
-  tramp : ['#8bf2a0','#46cf67','#289647'],
-  lamp  : ['#fff8d4','#ffe08a','#d6a22a'],
-  ice   : ['#e6f9ff','#a8e4ff','#6cc1e7'],
-  water : ['#79d5f7','#3fa8e0','#2a7cb5'],
-  sky   : ['#bdeaff','#8fd8f7','#4fb0e8'],
-};
-const hexNum = s => parseInt(s.slice(1), 16);
-
-/* ── 캔버스로 블록 그림 그리기 ────────────────────────
-   그림 파일을 못 쓰니 한 칸(32x32)씩 코드로 직접 그린다. */
+const TS = 16;
 function pixelTexture(draw, key){
   const c = document.createElement('canvas'); c.width=c.height=TS;
   const g = c.getContext('2d');
@@ -1252,489 +1157,97 @@ function pixelTexture(draw, key){
   t.anisotropy = 1;
   return t;
 }
-
-const px = (g,color,x,y,w,h) => { g.fillStyle=color; g.fillRect(x,y,w,h); };
-
-function roundRect(g,x,y,w,h,r){
-  r = Math.min(r, w/2, h/2);
-  g.beginPath();
-  g.moveTo(x+r,y);
-  g.arcTo(x+w,y,x+w,y+h,r); g.arcTo(x+w,y+h,x,y+h,r);
-  g.arcTo(x,y+h,x,y,r);     g.arcTo(x,y,x+w,y,r);
-  g.closePath(); g.fill();
-}
-
-/* 다섯 갈래 별 — 아이콘과 코인 무늬에 두루 쓴다 */
-function starPath(g,cx,cy,rOut,rIn,n){
-  n = n || 5;
-  g.beginPath();
-  for(let i=0;i<n*2;i++){
-    const a = -Math.PI/2 + i*Math.PI/n, r = (i%2===0) ? rOut : rIn;
-    const x = cx + Math.cos(a)*r, y = cy + Math.sin(a)*r;
-    i ? g.lineTo(x,y) : g.moveTo(x,y);
-  }
-  g.closePath();
-}
-
-/* 면 안쪽에 두르는 테두리 음영. 위/왼쪽은 환하고 아래/오른쪽은 어둡다.
-   이것만 있어도 납작한 사각형이 "모서리가 둥근 덩어리"처럼 보인다. */
-function bevel(g, lightA, darkA, n){
-  n = n || 3;
-  for(let i=0;i<n;i++){
-    const f = 1 - i/n;
-    px(g,'rgba(255,255,255,'+(lightA*f).toFixed(3)+')', i,i,TS-i*2,1);
-    px(g,'rgba(255,255,255,'+(lightA*f*.7).toFixed(3)+')', i,i,1,TS-i*2);
-    px(g,'rgba(0,0,0,'+(darkA*f).toFixed(3)+')', i,TS-1-i,TS-i*2,1);
-    px(g,'rgba(0,0,0,'+(darkA*f*.7).toFixed(3)+')', TS-1-i,i,1,TS-i*2);
-  }
-  // 네 귀퉁이를 살짝 눌러 둥글어 보이게
-  px(g,'rgba(0,0,0,.14)',0,0,2,2); px(g,'rgba(0,0,0,.14)',TS-2,0,2,2);
-  px(g,'rgba(0,0,0,.14)',0,TS-2,2,2); px(g,'rgba(0,0,0,.14)',TS-2,TS-2,2,2);
-}
-
-/* 동글동글한 얼룩. 가장자리를 넘어가는 얼룩은 반대편에도 그려서
-   블록끼리 이어 붙여도 이음매가 안 보이게 한다. */
-function blobs(g, rng, colors, n, rMin, rMax){
+function speckle(g,rng,colors,n){
   for(let i=0;i<n;i++){
     g.fillStyle = colors[(rng()*colors.length)|0];
-    const r = rMin + rng()*(rMax-rMin);
-    const cx = rng()*TS, cy = rng()*TS;
-    const put = (x,y)=>{ g.beginPath(); g.arc(x,y,r,0,7); g.fill(); };
-    put(cx,cy);
-    if(cx<r)      put(cx+TS,cy);
-    if(cx>TS-r)   put(cx-TS,cy);
-    if(cy<r)      put(cx,cy+TS);
-    if(cy>TS-r)   put(cx,cy-TS);
+    g.fillRect((rng()*TS)|0,(rng()*TS)|0,1,1);
   }
 }
-
-/* ---- 자연 블록 ---- */
+function flat(base, spots, n){
+  return (g,rng)=>{ g.fillStyle=base; g.fillRect(0,0,TS,TS); speckle(g,rng,spots,n||55); };
+}
 function grassTop(g,rng){
-  px(g,PAL.grass[1],0,0,TS,TS);
-  g.globalAlpha = .45;                       // 얼룩은 은은하게 — 진하면 표범무늬처럼 보인다
-  blobs(g,rng,[PAL.grass[0]],7,3,6);
-  blobs(g,rng,[PAL.grass[2]],4,2.5,4.5);
-  g.globalAlpha = 1;
-  for(let i=0;i<12;i++) px(g,'rgba(174,244,137,.55)',(rng()*TS)|0,(rng()*TS)|0,1,2);
-  bevel(g,.26,.13,3);
+  g.fillStyle='#63c64d'; g.fillRect(0,0,TS,TS);
+  speckle(g,rng,['#78d95f','#55b043','#8ae56e'],90);
 }
 function grassSide(g,rng){
-  px(g,PAL.dirt[1],0,0,TS,TS);
-  blobs(g,rng,[PAL.dirt[0],PAL.dirt[2]],8,2,4.5);
-  px(g,PAL.grass[1],0,0,TS,9);                       // 잔디 띠
-  for(let x=0;x<TS;x++) px(g,PAL.grass[1],x,9,1,(rng()*4)|0);  // 아래쪽을 울퉁불퉁하게
-  px(g,PAL.grass[0],0,0,TS,3);                       // 윗면과 닿는 밝은 선
-  bevel(g,.24,.20,3);
-}
-function dirtTex(g,rng){
-  px(g,PAL.dirt[1],0,0,TS,TS);
-  g.globalAlpha = .6;
-  blobs(g,rng,[PAL.dirt[0]],6,2.5,5);
-  blobs(g,rng,[PAL.dirt[2]],6,2,4);
-  g.globalAlpha = 1;
-  for(let i=0;i<4;i++) px(g,PAL.stone[0],(rng()*TS)|0,(rng()*TS)|0,2,2);
-  bevel(g,.24,.16,3);
-}
-function stoneTex(g,rng){
-  px(g,PAL.stone[1],0,0,TS,TS);
-  g.globalAlpha = .55;
-  blobs(g,rng,[PAL.stone[0]],6,3,6.5);
-  blobs(g,rng,[PAL.stone[2]],5,2.5,5);
-  g.globalAlpha = 1;
-  bevel(g,.32,.18,3);
+  g.fillStyle='#96653f'; g.fillRect(0,0,TS,TS);
+  speckle(g,rng,['#7d5433','#a97a4d'],60);
+  for(let x=0;x<TS;x++){
+    const h = 4 + ((rng()*3)|0);
+    g.fillStyle='#63c64d'; g.fillRect(x,0,1,h);
+    g.fillStyle='#78d95f'; g.fillRect(x,0,1,1+((rng()*2)|0));
+  }
 }
 function woodSide(g,rng){
-  px(g,PAL.wood[1],0,0,TS,TS);
-  for(let x=0;x<TS;x+=4){
-    px(g, rng()<.5?PAL.wood[0]:PAL.wood[2], x+((rng()*2)|0), 0, 2, TS);
-  }
-  bevel(g,.24,.22,3);
+  g.fillStyle='#9c6b3f'; g.fillRect(0,0,TS,TS);
+  for(let x=0;x<TS;x+=2){ g.fillStyle = rng()<.5?'#8a5c34':'#ad7a4c'; g.fillRect(x,0,1,TS); }
+  speckle(g,rng,['#734a28'],25);
 }
 function woodTop(g,rng){
-  px(g,PAL.wood[0],0,0,TS,TS);
-  g.strokeStyle=PAL.wood[2]; g.lineWidth=2;
-  for(let r=4;r<17;r+=5){ g.beginPath(); g.arc(16,16,r,0,7); g.stroke(); }
-  px(g,PAL.wood[2],15,15,3,3);
-  bevel(g,.30,.16,3);
+  g.fillStyle='#c79a63'; g.fillRect(0,0,TS,TS);
+  g.strokeStyle='#8a5c34'; g.lineWidth=1;
+  for(let r=2;r<8;r+=2){ g.beginPath(); g.arc(8,8,r,0,7); g.stroke(); }
 }
-function leafTex(g,rng){
-  px(g,PAL.leaf[1],0,0,TS,TS);
-  g.globalAlpha = .55;
-  blobs(g,rng,[PAL.leaf[0]],9,4,7.5);
-  blobs(g,rng,[PAL.leaf[2]],6,2.5,5);
-  g.globalAlpha = 1;
-  bevel(g,.28,.16,2);
-}
-function sandTex(g,rng){
-  px(g,PAL.sand[1],0,0,TS,TS);
-  blobs(g,rng,[PAL.sand[0]],6,3,6);
-  blobs(g,rng,[PAL.sand[2]],4,2,4);
-  for(let i=0;i<18;i++) px(g,PAL.sand[0],(rng()*TS)|0,(rng()*TS)|0,1,1);
-  bevel(g,.32,.14,3);
-}
-function glassTex(g){
+function glassTex(g,rng){
   g.clearRect(0,0,TS,TS);
-  px(g,'rgba(190,238,255,.34)',0,0,TS,TS);
-  px(g,'rgba(255,255,255,.92)',0,0,TS,2); px(g,'rgba(255,255,255,.92)',0,TS-2,TS,2);
-  px(g,'rgba(255,255,255,.92)',0,0,2,TS); px(g,'rgba(255,255,255,.92)',TS-2,0,2,TS);
-  px(g,'rgba(255,255,255,.55)',6,6,10,2); px(g,'rgba(255,255,255,.55)',6,6,2,10);
-  px(g,'rgba(255,255,255,.28)',19,20,8,2);
+  g.fillStyle='rgba(190,235,255,.30)'; g.fillRect(0,0,TS,TS);
+  g.fillStyle='rgba(255,255,255,.85)';
+  g.fillRect(0,0,TS,1); g.fillRect(0,TS-1,TS,1); g.fillRect(0,0,1,TS); g.fillRect(TS-1,0,1,TS);
+  g.fillStyle='rgba(255,255,255,.6)'; g.fillRect(3,3,4,1); g.fillRect(3,3,1,4);
 }
 function rainbowTex(g){
-  const cols=['#ff6b6b','#ffa63d','#ffe93d','#6ee86e','#4fc3ff','#9a7dff','#ff7ddb'];
-  const bh = TS/cols.length;
-  for(let i=0;i<cols.length;i++) px(g,cols[i],0,Math.round(i*bh),TS,Math.ceil(bh)+1);
-  px(g,'rgba(255,255,255,.40)',0,0,TS,3);
-  bevel(g,.20,.18,2);
+  const cols=['#ff5d5d','#ffa53d','#ffe93d','#6ee86e','#4fc3ff','#9a7dff','#ff7ddb'];
+  for(let i=0;i<TS;i++){ g.fillStyle=cols[i%cols.length]; g.fillRect(0,i,TS,1); }
+  g.fillStyle='rgba(255,255,255,.35)'; g.fillRect(0,0,TS,2);
 }
 function goldTex(g,rng){
-  px(g,PAL.gold[1],0,0,TS,TS);
-  blobs(g,rng,[PAL.gold[0]],6,3,6);
-  blobs(g,rng,[PAL.gold[2]],4,2,4);
-  px(g,'#fffaf0',14,7,4,18); px(g,'#fffaf0',7,14,18,4);   // 반짝 십자
-  bevel(g,.42,.20,3);
+  g.fillStyle='#ffc82e'; g.fillRect(0,0,TS,TS);
+  speckle(g,rng,['#ffe97a','#e0a200','#fff3b0'],80);
+  g.fillStyle='#fff8d0'; g.fillRect(4,4,3,3);
 }
 
-/* ---- 길 블록: 동글동글한 조약돌 ---- */
-function cobble(pal){
-  return (g,rng)=>{
-    px(g,pal[2],0,0,TS,TS);
-    const rows=4, cols=4, w=TS/cols, h=TS/rows;
-    for(let r=0;r<rows;r++) for(let c=0;c<cols;c++){
-      const off = (r%2) ? w/2 : 0;
-      const x = c*w + off, y = r*h;
-      const face = rng()<.35 ? pal[0] : pal[1];
-      const draw = (bx)=>{
-        g.fillStyle = face;            roundRect(g,bx+1.5,y+1.5,w-3,h-3,3.5);
-        g.fillStyle = 'rgba(255,255,255,.26)'; roundRect(g,bx+2.5,y+2.5,w-5,2,1);
-      };
-      draw(x); if(off) draw(x-TS);     // 어긋난 줄은 반대편에도 이어 그린다
-    }
-    bevel(g,.22,.20,2);
-  };
-}
-
-/* ---- 제작 블록 ---- */
-function plankTex(g,rng){
-  px(g,PAL.plank[2],0,0,TS,TS);
-  for(let r=0;r<4;r++){
-    const y = r*8;
-    px(g, rng()<.4?PAL.plank[0]:PAL.plank[1], 0, y+1, TS, 6);
-    px(g,'rgba(255,255,255,.22)',0,y+1,TS,1);
-    px(g,PAL.wood[2],3,y+3,2,2); px(g,PAL.wood[2],TS-5,y+3,2,2);   // 못
-  }
-  bevel(g,.22,.20,2);
-}
+/* ---- 제작 블록 3종 ---- */
 function trampTex(g,rng){
-  px(g,PAL.tramp[2],0,0,TS,TS);
-  g.fillStyle=PAL.tramp[1]; roundRect(g,2,2,TS-4,TS-4,7);
-  g.fillStyle=PAL.tramp[0]; roundRect(g,6,6,TS-12,TS-12,5);
-  g.strokeStyle='rgba(255,255,255,.55)'; g.lineWidth=2;
-  g.beginPath(); g.moveTo(9,9); g.lineTo(TS-9,TS-9); g.moveTo(TS-9,9); g.lineTo(9,TS-9); g.stroke();
-  bevel(g,.30,.24,2);
+  g.fillStyle='#3fb95a'; g.fillRect(0,0,TS,TS);
+  g.fillStyle='#63e87e';
+  for(let i=2;i<TS;i+=4){ g.fillRect(i,0,2,TS); g.fillRect(0,i,TS,2); }
+  g.fillStyle='rgba(255,255,255,.55)'; g.fillRect(0,0,TS,2);
+  g.fillStyle='rgba(0,0,0,.18)'; g.fillRect(0,TS-2,TS,2);
 }
 function lampTex(g,rng){
-  px(g,PAL.lamp[2],0,0,TS,TS);
-  g.fillStyle=PAL.lamp[1]; roundRect(g,3,3,TS-6,TS-6,8);
-  g.fillStyle=PAL.lamp[0]; roundRect(g,7,7,TS-14,TS-14,6);
-  g.fillStyle='#ffffff';   roundRect(g,12,12,8,8,3);
-  bevel(g,.34,.22,2);
+  g.fillStyle='#c98a2e'; g.fillRect(0,0,TS,TS);
+  g.fillStyle='#ffe9a0'; g.fillRect(2,2,TS-4,TS-4);
+  g.fillStyle='#fffbe0'; g.fillRect(5,5,TS-10,TS-10);
+  speckle(g,rng,['#fff6c8','#ffdc7a'],24);
 }
 function iceTex(g,rng){
-  px(g,PAL.ice[1],0,0,TS,TS);
-  blobs(g,rng,[PAL.ice[0]],5,4,7);
-  blobs(g,rng,[PAL.ice[2]],3,3,5);
-  px(g,'rgba(255,255,255,.75)',6,6,13,2); px(g,'rgba(255,255,255,.75)',6,6,2,13);
-  px(g,'rgba(255,255,255,.45)',19,21,8,2);
-  bevel(g,.45,.14,2);
-}
-function waterTex(g,rng){
-  px(g,PAL.water[1],0,0,TS,TS);
-  blobs(g,rng,[PAL.water[0]],4,5,9);
-  g.fillStyle='rgba(255,255,255,.32)';
-  for(let i=0;i<3;i++) g.fillRect((rng()*TS)|0,(rng()*TS)|0,8,2);
+  g.fillStyle='#a8e4ff'; g.fillRect(0,0,TS,TS);
+  speckle(g,rng,['#cdf1ff','#8ad3f5'],40);
+  g.fillStyle='rgba(255,255,255,.85)';
+  g.fillRect(0,0,TS,1); g.fillRect(0,0,1,TS);
+  g.fillStyle='rgba(255,255,255,.55)'; g.fillRect(3,9,7,1); g.fillRect(9,3,1,7);
 }
 
 const TEX = {};
 function buildTextures(){
-  TEX[GRASS]   = [grassSide, grassSide, grassTop, dirtTex, grassSide, grassSide];
-  TEX[DIRT]    = dirtTex;
-  TEX[STONE]   = stoneTex;
-  TEX[WOOD]    = [woodSide, woodSide, woodTop, woodTop, woodSide, woodSide];
-  TEX[LEAF]    = leafTex;
-  TEX[SAND]    = sandTex;
+  TEX[GRASS]   = [grassSide, grassSide, grassTop, flat('#96653f',['#7d5433','#a97a4d']), grassSide, grassSide];
+  TEX[DIRT]    = flat('#96653f',['#7d5433','#a97a4d','#855a38']);
+  TEX[STONE]   = flat('#9aa0a8',['#868d96','#b2b8bf','#7b828a']);
+  TEX[WOOD]    = [woodSide,woodSide,woodTop,woodTop,woodSide,woodSide];
+  TEX[LEAF]    = flat('#4fbf52',['#3fa445','#6ad46d','#2f8a38'],110);
+  TEX[SAND]    = flat('#f0dfa8',['#e2cd8e','#fbefc4'],70);
   TEX[GLASS]   = glassTex;
   TEX[RAINBOW] = rainbowTex;
   TEX[GOLD]    = goldTex;
-  TEX[PATH_B]  = cobble(PAL.copper);
-  TEX[PATH_S]  = cobble(PAL.silver);
-  TEX[PATH_G]  = cobble(PAL.gold);
-  TEX[PLANK]   = plankTex;
+  TEX[PATH_B]  = flat('#c87137',['#a85a29','#e08a4c']);
+  TEX[PATH_S]  = flat('#d5dae0',['#bcc3cb','#eef2f6']);
+  TEX[PATH_G]  = flat('#ffd93d',['#e6b800','#fff0a0']);
+  TEX[PLANK]   = flat('#d7a96b',['#c1904f','#e8c390'],40);
   TEX[TRAMP]   = trampTex;
   TEX[LAMP]    = lampTex;
   TEX[ICE]     = iceTex;
-  TEX[WATER]   = waterTex;
 }
-/* ═══════════════════════════════════════════════════
-   2-b. 화면 위 아이콘도 코드로 그린다
-   그림 파일을 못 쓰니 이모지를 쓰고 있었는데, 이모지는 기기마다 모양이
-   달라서 게임과 따로 논다. 블록 아이콘은 작은 입체 블록으로 직접 그리고,
-   버튼 아이콘은 SVG 로 그려서 어디서나 똑같이 보이게 한다.
-   ═══════════════════════════════════════════════════ */
-
-/* 블록별 [윗면, 왼쪽면, 오른쪽면] 색 */
-const ICON_FACE = {
-  [GRASS] : [PAL.grass[0], PAL.dirt[1],   PAL.dirt[2]],
-  [DIRT]  : [PAL.dirt[0],  PAL.dirt[1],   PAL.dirt[2]],
-  [STONE] : [PAL.stone[0], PAL.stone[1],  PAL.stone[2]],
-  [WOOD]  : [PAL.wood[0],  PAL.wood[1],   PAL.wood[2]],
-  [LEAF]  : [PAL.leaf[0],  PAL.leaf[1],   PAL.leaf[2]],
-  [SAND]  : [PAL.sand[0],  PAL.sand[1],   PAL.sand[2]],
-  [GLASS] : [PAL.glass[0], PAL.glass[1],  PAL.glass[2]],
-  [RAINBOW]:['#ffe93d',    '#6ee86e',     '#4fc3ff'],
-  [WATER] : [PAL.water[0], PAL.water[1],  PAL.water[2]],
-  [GOLD]  : [PAL.gold[0],  PAL.gold[1],   PAL.gold[2]],
-  [PATH_B]: [PAL.copper[0],PAL.copper[1], PAL.copper[2]],
-  [PATH_S]: [PAL.silver[0],PAL.silver[1], PAL.silver[2]],
-  [PATH_G]: [PAL.gold[0],  PAL.gold[1],   PAL.gold[2]],
-  [PLANK] : [PAL.plank[0], PAL.plank[1],  PAL.plank[2]],
-  [TRAMP] : [PAL.tramp[0], PAL.tramp[1],  PAL.tramp[2]],
-  [LAMP]  : [PAL.lamp[0],  PAL.lamp[1],   PAL.lamp[2]],
-  [ICE]   : [PAL.ice[0],   PAL.ice[1],    PAL.ice[2]],
-};
-
-const _iconCache = {};
-/* 비스듬히 본 블록 한 개를 그려서 그림 주소(data URL)로 돌려준다 */
-function blockIcon(t){
-  if(_iconCache[t]) return _iconCache[t];
-  const S = 72, c = document.createElement('canvas'); c.width=c.height=S;
-  const g = c.getContext('2d');
-  const face = ICON_FACE[t] || [PAL.stone[0],PAL.stone[1],PAL.stone[2]];
-  const cx = S/2, ty = 10, w = 26, th = 13, sh = 27;
-  const top   = [[cx,ty],[cx+w,ty+th],[cx,ty+th*2],[cx-w,ty+th]];
-  const left  = [[cx-w,ty+th],[cx,ty+th*2],[cx,ty+th*2+sh],[cx-w,ty+th+sh]];
-  const right = [[cx+w,ty+th],[cx,ty+th*2],[cx,ty+th*2+sh],[cx+w,ty+th+sh]];
-  const poly = (pts, fill)=>{
-    g.beginPath(); g.moveTo(pts[0][0],pts[0][1]);
-    for(let i=1;i<pts.length;i++) g.lineTo(pts[i][0],pts[i][1]);
-    g.closePath(); g.fillStyle=fill; g.fill();
-  };
-  const clipPoly = (pts, fn)=>{
-    g.save(); g.beginPath(); g.moveTo(pts[0][0],pts[0][1]);
-    for(let i=1;i<pts.length;i++) g.lineTo(pts[i][0],pts[i][1]);
-    g.closePath(); g.clip(); fn(); g.restore();
-  };
-
-  g.globalAlpha = (t===GLASS || t===WATER || t===ICE) ? 0.82 : 1;
-  poly(top, face[0]); poly(left, face[1]); poly(right, face[2]);
-
-  // 블록마다 알아볼 수 있는 표시 하나씩
-  if(t===GRASS){
-    clipPoly(top, ()=>{ g.fillStyle=PAL.grass[2];
-      [[cx-11,ty+13],[cx+7,ty+10],[cx-2,ty+20]].forEach(([x,y])=>{ g.beginPath(); g.arc(x,y,4,0,7); g.fill(); }); });
-  } else if(t===WOOD){
-    clipPoly(top, ()=>{ g.strokeStyle=PAL.wood[2]; g.lineWidth=2.5;
-      for(let r=5;r<20;r+=6){ g.save(); g.translate(cx,ty+th); g.scale(1,th/w);
-        g.beginPath(); g.arc(0,0,r,0,7); g.restore(); g.stroke(); } });
-  } else if(t===RAINBOW){
-    const cols=['#ff6b6b','#ffa63d','#ffe93d','#6ee86e','#4fc3ff','#9a7dff','#ff7ddb'];
-    clipPoly(left,  ()=>cols.forEach((col,i)=>{ g.fillStyle=col; g.fillRect(cx-w, ty+th+i*5.2, w, 5.4); }));
-    clipPoly(right, ()=>cols.forEach((col,i)=>{ g.fillStyle=col; g.fillRect(cx, ty+th+i*5.2, w, 5.4); }));
-  } else if(t===GOLD || t===PATH_G){
-    clipPoly(top, ()=>{ g.fillStyle='#fffbe8'; starPath(g,cx,ty+th,10,4.4,5); g.fill(); });
-  } else if(t===GLASS){
-    g.globalAlpha=1; g.strokeStyle='rgba(255,255,255,.95)'; g.lineWidth=3;
-    [top,left,right].forEach(pts=>{ g.beginPath(); g.moveTo(pts[0][0],pts[0][1]);
-      for(let i=1;i<pts.length;i++) g.lineTo(pts[i][0],pts[i][1]); g.closePath(); g.stroke(); });
-  } else if(t===LAMP){
-    clipPoly(top, ()=>{ g.fillStyle='#ffffff'; g.beginPath(); g.arc(cx,ty+th,8,0,7); g.fill(); });
-  } else if(t===ICE){
-    clipPoly(left, ()=>{ g.fillStyle='rgba(255,255,255,.8)'; g.fillRect(cx-20,ty+th+8,14,3); });
-  } else if(t===TRAMP){
-    clipPoly(top, ()=>{ g.strokeStyle='rgba(255,255,255,.75)'; g.lineWidth=3;
-      g.beginPath(); g.moveTo(cx-16,ty+th); g.lineTo(cx+16,ty+th);
-      g.moveTo(cx,ty+4); g.lineTo(cx,ty+th*2-4); g.stroke(); });
-  } else if(t===PLANK){
-    clipPoly(left,  ()=>{ g.fillStyle='rgba(0,0,0,.14)'; for(let i=0;i<3;i++) g.fillRect(cx-w,ty+th+9+i*9,w,2); });
-    clipPoly(right, ()=>{ g.fillStyle='rgba(0,0,0,.14)'; for(let i=0;i<3;i++) g.fillRect(cx,ty+th+9+i*9,w,2); });
-  } else if(t===PATH_B || t===PATH_S){
-    clipPoly(top, ()=>{ g.fillStyle='rgba(255,255,255,.35)';
-      [[cx-10,ty+12],[cx+9,ty+11],[cx,ty+20]].forEach(([x,y])=>{ g.beginPath(); g.arc(x,y,5,0,7); g.fill(); }); });
-  } else if(t===WATER){
-    clipPoly(top, ()=>{ g.strokeStyle='rgba(255,255,255,.7)'; g.lineWidth=2.5;
-      g.beginPath(); g.moveTo(cx-14,ty+th); g.quadraticCurveTo(cx-6,ty+th-5,cx,ty+th);
-      g.quadraticCurveTo(cx+7,ty+th+5,cx+14,ty+th); g.stroke(); });
-  }
-  g.globalAlpha = 1;
-
-  // 또렷하게 보이도록 바깥선 한 겹
-  g.strokeStyle='rgba(43,33,64,.42)'; g.lineWidth=2.5; g.lineJoin='round';
-  [top,left,right].forEach(pts=>{
-    g.beginPath(); g.moveTo(pts[0][0],pts[0][1]);
-    for(let i=1;i<pts.length;i++) g.lineTo(pts[i][0],pts[i][1]);
-    g.closePath(); g.stroke();
-  });
-  return (_iconCache[t] = c.toDataURL());
-}
-
-/* 버튼 아이콘 — 작은 SVG 그림. 기기가 달라도 똑같은 모양이 나온다. */
-const INK = '#3b3350';
-function svgWrap(inner, vb){
-  return '<svg viewBox="0 0 '+(vb||24)+' '+(vb||24)+'" width="100%" height="100%" ' +
-         'fill="none" stroke-linecap="round" stroke-linejoin="round">'+inner+'</svg>';
-}
-const UI_ICON = {
-  /* 장로가 준 말하는 깃털 — 도도AI 를 부르는 물건 */
-  feather: svgWrap('<path d="M18.6 4.4c1.4 5.2-.8 10.2-5.4 12-2 .8-3.8.9-5 .4 0-5.6 4.2-11.7 10.4-12.4z" ' +
-                   'fill="#8fd9cf" stroke="'+INK+'" stroke-width="1.8"/>' +
-                   '<path d="M17.4 6.2 5.5 20.5" stroke="'+INK+'" stroke-width="2.2"/>' +
-                   '<path d="M13.6 8.6c-1.7 1-3 2.6-3.8 4.6" stroke="'+INK+'" stroke-width="1.4" opacity=".55"/>'),
-  undo:  svgWrap('<path d="M5 9h9a5 5 0 1 1 0 10h-6" stroke="'+INK+'" stroke-width="2.6"/>'+
-                 '<path d="M8.5 4.5 4 9l4.5 4.5z" fill="'+INK+'"/>'),
-  craft: svgWrap('<path d="M4.5 19.5 13 11" stroke="#a9762f" stroke-width="3.2"/>'+
-                 '<path d="M11.5 5.5 18.5 12.5 16 15 9 8z" fill="#8e98a6" stroke="'+INK+'" stroke-width="1.6"/>'),
-  plan:  svgWrap('<rect x="3.5" y="4.5" width="17" height="15" rx="2.5" fill="#dbeeff" stroke="'+INK+'" stroke-width="1.8"/>'+
-                 '<path d="M7 16 12 8l5 8z" fill="#4fb0e8" stroke="'+INK+'" stroke-width="1.6"/>'),
-  shorts:svgWrap('<rect x="3.5" y="5.5" width="17" height="13" rx="3" fill="#ff6b6b" stroke="'+INK+'" stroke-width="1.8"/>'+
-                 '<path d="M10.5 9.5 15.5 12l-5 2.5z" fill="#fff"/>'),
-  friend:svgWrap('<circle cx="9" cy="8.5" r="3.2" fill="#ffc62e" stroke="'+INK+'" stroke-width="1.6"/>'+
-                 '<circle cx="16" cy="9.5" r="2.6" fill="#6bd24a" stroke="'+INK+'" stroke-width="1.6"/>'+
-                 '<path d="M3.8 19c.6-3.2 2.6-4.8 5.2-4.8s4.6 1.6 5.2 4.8z" fill="#ffc62e" stroke="'+INK+'" stroke-width="1.6"/>'+
-                 '<path d="M14.4 19c.4-2.6 1.9-4 3.6-4s3.2 1.4 3.6 4z" fill="#6bd24a" stroke="'+INK+'" stroke-width="1.6"/>'),
-  idea:  svgWrap('<path d="M4 6.5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-6l-4.5 3.8V15.5H6a2 2 0 0 1-2-2z" fill="#9a7dff" stroke="'+INK+'" stroke-width="1.8"/>'+
-                 '<circle cx="9" cy="10" r="1.3" fill="#fff"/><circle cx="12" cy="10" r="1.3" fill="#fff"/><circle cx="15" cy="10" r="1.3" fill="#fff"/>'),
-  badge: svgWrap('<path d="M8.5 12.5 6 21l6-2.6L18 21l-2.5-8.5z" fill="#ef4c53" stroke="'+INK+'" stroke-width="1.6"/>'+
-                 '<circle cx="12" cy="8" r="5.2" fill="#ffc62e" stroke="'+INK+'" stroke-width="1.8"/>'),
-  share: svgWrap('<path d="M12 3.5 12 14" stroke="'+INK+'" stroke-width="2.6"/>'+
-                 '<path d="M8 7.2 12 3.2l4 4z" fill="'+INK+'"/>'+
-                 '<path d="M4.5 13.5v5a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-5" stroke="'+INK+'" stroke-width="2.2"/>'),
-  auto:  svgWrap('<circle cx="12" cy="12" r="7.5" fill="#ffc62e" stroke="'+INK+'" stroke-width="1.8"/>'+
-                 '<path d="M12 4.5a7.5 7.5 0 0 0 0 15z" fill="#4a5bb8"/>'),
-  day:   svgWrap('<circle cx="12" cy="12" r="5" fill="#ffc62e" stroke="'+INK+'" stroke-width="1.8"/>'+
-                 '<g stroke="#ffc62e" stroke-width="2.4">'+
-                 '<path d="M12 2.2v2.6M12 19.2v2.6M2.2 12h2.6M19.2 12h2.6M5 5l1.9 1.9M17.1 17.1 19 19M19 5l-1.9 1.9M6.9 17.1 5 19"/></g>'),
-  night: svgWrap('<path d="M19 14.5A7.6 7.6 0 0 1 9.5 5 7.8 7.8 0 1 0 19 14.5z" fill="#cfd9ff" stroke="'+INK+'" stroke-width="1.8"/>'),
-  sound: svgWrap('<path d="M5 9.5h3.2L13 5.5v13l-4.8-4H5z" fill="#4fb0e8" stroke="'+INK+'" stroke-width="1.7"/>'+
-                 '<path d="M16 9.2a4 4 0 0 1 0 5.6M18.4 6.8a7.5 7.5 0 0 1 0 10.4" stroke="'+INK+'" stroke-width="2"/>'),
-  mute:  svgWrap('<path d="M5 9.5h3.2L13 5.5v13l-4.8-4H5z" fill="#c9c3d4" stroke="'+INK+'" stroke-width="1.7"/>'+
-                 '<path d="M16.4 9.6 21 14.2M21 9.6l-4.6 4.6" stroke="#ef4c53" stroke-width="2.4"/>'),
-  gear:  svgWrap('<circle cx="12" cy="12" r="3.2" fill="#fff" stroke="'+INK+'" stroke-width="1.8"/>'+
-                 '<path d="M12 3.4l1.5 2.4 2.8-.5.4 2.8 2.5 1.3-1.4 2.5 1.4 2.5-2.5 1.3-.4 2.8-2.8-.5L12 20.6l-1.5-2.4-2.8.5-.4-2.8L4.8 14.6 6.2 12 4.8 9.5l2.5-1.3.4-2.8 2.8.5z" '+
-                 'fill="#8e98a6" stroke="'+INK+'" stroke-width="1.6"/>'+
-                 '<circle cx="12" cy="12" r="3.2" fill="#fff" stroke="'+INK+'" stroke-width="1.8"/>'),
-  qauto: svgWrap('<circle cx="12" cy="12" r="3.2" fill="#fff" stroke="'+INK+'" stroke-width="1.8"/>'+
-                 '<path d="M12 3.4l1.5 2.4 2.8-.5.4 2.8 2.5 1.3-1.4 2.5 1.4 2.5-2.5 1.3-.4 2.8-2.8-.5L12 20.6l-1.5-2.4-2.8.5-.4-2.8L4.8 14.6 6.2 12 4.8 9.5l2.5-1.3.4-2.8 2.8.5z" '+
-                 'fill="#8e98a6" stroke="'+INK+'" stroke-width="1.6"/>'+
-                 '<circle cx="12" cy="12" r="3.2" fill="#fff" stroke="'+INK+'" stroke-width="1.8"/>'),
-  qhigh: svgWrap('<rect x="3.5" y="14" width="4.2" height="6" rx="1.4" fill="#6bd24a" stroke="'+INK+'" stroke-width="1.5"/>'+
-                 '<rect x="9.9" y="9.5" width="4.2" height="10.5" rx="1.4" fill="#6bd24a" stroke="'+INK+'" stroke-width="1.5"/>'+
-                 '<rect x="16.3" y="4.5" width="4.2" height="15.5" rx="1.4" fill="#6bd24a" stroke="'+INK+'" stroke-width="1.5"/>'),
-  qlow:  svgWrap('<rect x="3.5" y="14" width="4.2" height="6" rx="1.4" fill="#ffc62e" stroke="'+INK+'" stroke-width="1.5"/>'+
-                 '<rect x="9.9" y="9.5" width="4.2" height="10.5" rx="1.4" fill="#e6e1ee" stroke="'+INK+'" stroke-width="1.5"/>'+
-                 '<rect x="16.3" y="4.5" width="4.2" height="15.5" rx="1.4" fill="#e6e1ee" stroke="'+INK+'" stroke-width="1.5"/>'),
-  help:  svgWrap('<circle cx="12" cy="12" r="8.4" fill="#4fb0e8" stroke="'+INK+'" stroke-width="1.8"/>'+
-                 '<path d="M9.4 9.4a2.7 2.7 0 1 1 3.4 2.6v1.6" stroke="#fff" stroke-width="2.4"/>'+
-                 '<circle cx="12.1" cy="17" r="1.4" fill="#fff"/>'),
-
-  island:svgWrap('<path d="M3 18.5c2-1.6 3.6-1.6 5.6 0 2 1.6 3.6 1.6 5.6 0 2-1.6 3.6-1.6 5.6 0" stroke="'+PAL.water[1]+'" stroke-width="2.4"/>'+
-                 '<path d="M4.5 15.5c1.8-3.4 11.2-3.4 14.2 0z" fill="'+PAL.sand[1]+'" stroke="'+INK+'" stroke-width="1.6"/>'+
-                 '<path d="M12 14.5V6" stroke="'+PAL.wood[1]+'" stroke-width="2.2"/>'+
-                 '<path d="M12 6c-2.6-2.2-5-1.6-6 .6 2-.9 3.8-.5 6 1.2zM12 6c2.6-2.2 5-1.6 6 .6-2-.9-3.8-.5-6 1.2z" fill="'+PAL.leaf[1]+'" stroke="'+INK+'" stroke-width="1.3"/>'),
-  rec:   svgWrap('<rect x="2.6" y="6.5" width="13" height="11" rx="2.6" fill="#ef4c53" stroke="'+INK+'" stroke-width="1.7"/>'+
-                 '<path d="M16.4 11.2 21.2 8v8l-4.8-3.2z" fill="'+PAL.stone[1]+'" stroke="'+INK+'" stroke-width="1.6"/>'+
-                 '<circle cx="9.1" cy="12" r="2.6" fill="#fff"/>'),
-  bag:   svgWrap('<path d="M4.5 9h15l-1.1 10.3a1.8 1.8 0 0 1-1.8 1.6H7.4a1.8 1.8 0 0 1-1.8-1.6z" fill="'+'#ffc62e'+'" stroke="'+INK+'" stroke-width="1.8"/>'+
-                 '<path d="M8.6 9V7.2a3.4 3.4 0 0 1 6.8 0V9" stroke="'+INK+'" stroke-width="2"/>'+
-                 '<path d="M5.6 12.6h12.8" stroke="rgba(0,0,0,.22)" stroke-width="2"/>'),
-
-  /* 퀘스트 줄에 붙는 작은 그림들 */
-  coin:  svgWrap('<circle cx="12" cy="12" r="8.6" fill="'+PAL.gold[1]+'" stroke="'+INK+'" stroke-width="1.8"/>'+
-                 '<circle cx="12" cy="12" r="6" fill="'+PAL.gold[0]+'"/>'+
-                 '<path d="M12 7.2l1.5 3.2 3.5.4-2.6 2.4.7 3.5L12 15l-3.1 1.7.7-3.5-2.6-2.4 3.5-.4z" fill="'+PAL.gold[2]+'"/>'),
-  brick: svgWrap('<rect x="3" y="6" width="18" height="5" rx="1.2" fill="'+PAL.copper[1]+'" stroke="'+INK+'" stroke-width="1.5"/>'+
-                 '<rect x="3" y="12.5" width="8" height="5" rx="1.2" fill="'+PAL.copper[1]+'" stroke="'+INK+'" stroke-width="1.5"/>'+
-                 '<rect x="13" y="12.5" width="8" height="5" rx="1.2" fill="'+PAL.copper[1]+'" stroke="'+INK+'" stroke-width="1.5"/>'),
-  castle:svgWrap('<path d="M4 20V9h2.6V6.2h2.8V9h5.2V6.2h2.8V9H20v11z" fill="'+PAL.stone[1]+'" stroke="'+INK+'" stroke-width="1.7"/>'+
-                 '<rect x="10.2" y="14" width="3.6" height="6" rx="1.4" fill="'+PAL.wood[1]+'"/>'),
-  pick:  svgWrap('<path d="M4.5 19.5 13 11" stroke="'+PAL.wood[1]+'" stroke-width="3"/>'+
-                 '<path d="M8 8.6C11.4 5.6 16.4 5.2 19.4 7c-2.4 1-3.6 3-3.6 5.6-2.4-2.6-5.2-3.4-7.8-4z" fill="'+PAL.stone[0]+'" stroke="'+INK+'" stroke-width="1.6"/>'),
-  star:  svgWrap('<path d="M12 3l2.6 5.7 6.2.7-4.6 4.2 1.3 6.1L12 16.6 6.5 19.7l1.3-6.1L3.2 9.4l6.2-.7z" fill="'+PAL.gold[1]+'" stroke="'+INK+'" stroke-width="1.7"/>'),
-  star2: svgWrap('<path d="M12 2.4l2.7 6 6.5.7-4.9 4.4 1.4 6.4L12 16.6 6.3 19.9l1.4-6.4-4.9-4.4 6.5-.7z" fill="#fff0a8" stroke="'+INK+'" stroke-width="1.7"/>'+
-                 '<path d="M12 6.6l1.5 3.3 3.6.4-2.7 2.4.8 3.5L12 14.4 8.8 16.2l.8-3.5-2.7-2.4 3.6-.4z" fill="'+PAL.gold[1]+'"/>'),
-  ladder:svgWrap('<path d="M7.5 3v18M16.5 3v18" stroke="'+PAL.wood[1]+'" stroke-width="2.8"/>'+
-                 '<path d="M7.5 7.5h9M7.5 12h9M7.5 16.5h9" stroke="'+PAL.wood[2]+'" stroke-width="2.4"/>'),
-  rainbow:svgWrap('<path d="M3.5 19a8.5 8.5 0 0 1 17 0" stroke="#ff6b6b" stroke-width="3"/>'+
-                 '<path d="M6.3 19a5.7 5.7 0 0 1 11.4 0" stroke="#ffe93d" stroke-width="3"/>'+
-                 '<path d="M9.1 19a2.9 2.9 0 0 1 5.8 0" stroke="#4fc3ff" stroke-width="3"/>'),
-  fire:  svgWrap('<path d="M12 2.8c3.6 3.4 6.4 6 6.4 9.9A6.4 6.4 0 0 1 5.6 12.7c0-2 .9-3.4 2.2-4.8.2 1.4.9 2.3 2 2.6-.5-3.2.6-5.8 2.2-7.7z" fill="#ff7a3d" stroke="'+INK+'" stroke-width="1.6"/>'+
-                 '<path d="M12 11c1.8 1.7 2.8 2.9 2.8 4.4a2.8 2.8 0 1 1-5.6 0c0-1.5 1-2.7 2.8-4.4z" fill="#ffe07a"/>'),
-  spark: svgWrap('<path d="M12 2.6l1.9 6.1 6.1 1.9-6.1 1.9L12 18.6l-1.9-6.1L4 10.6l6.1-1.9z" fill="#fff0a8" stroke="'+INK+'" stroke-width="1.5"/>'+
-                 '<path d="M18.6 15.4l.9 2.6 2.6.9-2.6.9-.9 2.6-.9-2.6-2.6-.9 2.6-.9z" fill="'+PAL.gold[1]+'"/>'),
-};
-/* 메달 세 개는 색만 다르다 */
-['#b5763d','#c8d2dc','#ffc62e'].forEach((col,i)=>{
-  UI_ICON['medal'+i] = svgWrap(
-    '<path d="M8.6 2.5 12 9l3.4-6.5" stroke="#ef4c53" stroke-width="2.4"/>'+
-    '<circle cx="12" cy="15" r="6.4" fill="'+col+'" stroke="'+INK+'" stroke-width="1.8"/>'+
-    '<path d="M12 11.4l1.2 2.5 2.8.3-2.1 1.9.6 2.8L12 17.5l-2.5 1.4.6-2.8-2.1-1.9 2.8-.3z" fill="rgba(255,255,255,.75)"/>');
-});
-function setIcon(id, name){ const el = $(id); if(el && UI_ICON[name]) el.innerHTML = UI_ICON[name]; }
-
-/* 상점에 보여 줄 도도 얼굴 — 그 스킨의 진짜 색으로 그린다 */
-const _dodoCache = {};
-function dodoFace(sk){
-  if(_dodoCache[sk.id]) return _dodoCache[sk.id];
-  const S = 96, c = document.createElement('canvas'); c.width=c.height=S;
-  const g = c.getContext('2d');
-  const hx = n => '#'+n.toString(16).padStart(6,'0');
-  const cx = S/2, cy = S/2 + 6;
-  g.lineJoin = 'round'; g.lineWidth = 3; g.strokeStyle = 'rgba(43,33,64,.45)';
-  // 몸
-  g.fillStyle = hx(sk.body);
-  g.beginPath(); g.ellipse(cx, cy+22, 30, 24, 0, 0, 7); g.fill(); g.stroke();
-  // 머리
-  g.fillStyle = hx(sk.skin);
-  g.beginPath(); g.arc(cx, cy-10, 23, 0, 7); g.fill(); g.stroke();
-  // 모자 또는 머리 깃털
-  if(sk.hat){
-    g.fillStyle = hx(sk.hat.color);
-    if(sk.hat.tall){
-      g.beginPath(); g.ellipse(cx, cy-28, 27, 7, 0, 0, 7); g.fill(); g.stroke();
-      g.beginPath(); g.moveTo(cx-13,cy-29); g.lineTo(cx-10,cy-52);
-      g.lineTo(cx+10,cy-52); g.lineTo(cx+13,cy-29); g.closePath(); g.fill(); g.stroke();
-      g.fillStyle='#fff'; g.beginPath(); g.arc(cx,cy-56,6,0,7); g.fill(); g.stroke();
-    } else {
-      // 납작한 모자는 챙 위에 동그란 뚜껑까지 그려야 모자로 보인다
-      g.beginPath(); g.arc(cx, cy-26, 22, Math.PI, 0); g.closePath(); g.fill(); g.stroke();
-      g.beginPath(); g.ellipse(cx, cy-26, 27, 6, 0, 0, 7); g.fill(); g.stroke();
-    }
-  } else {
-    g.fillStyle = hx(sk.skin);
-    [[-9,-36],[0,-41],[9,-36]].forEach(([dx,dy])=>{
-      g.beginPath(); g.ellipse(cx+dx, cy+dy, 4.5, 8, 0, 0, 7); g.fill(); g.stroke(); });
-  }
-  // 부리
-  g.fillStyle = '#ffc23d';
-  g.beginPath(); g.moveTo(cx-9,cy-7); g.lineTo(cx+9,cy-7); g.lineTo(cx,cy+7); g.closePath();
-  g.fill(); g.stroke();
-  // 눈 + 볼
-  g.fillStyle = '#2b2233';
-  g.beginPath(); g.arc(cx-10,cy-16,5,0,7); g.fill();
-  g.beginPath(); g.arc(cx+10,cy-16,5,0,7); g.fill();
-  g.fillStyle = '#fff';
-  g.beginPath(); g.arc(cx-12,cy-18,1.8,0,7); g.fill();
-  g.beginPath(); g.arc(cx+8,cy-18,1.8,0,7); g.fill();
-  g.fillStyle = 'rgba(255,150,165,.6)';
-  g.beginPath(); g.ellipse(cx-18,cy-7,5,3.5,0,0,7); g.fill();
-  g.beginPath(); g.ellipse(cx+18,cy-7,5,3.5,0,0,7); g.fill();
-  // 발
-  g.fillStyle = hx(sk.legs);
-  [[-11,44],[11,44]].forEach(([dx,dy])=>{
-    g.beginPath(); g.ellipse(cx+dx, cy+dy-4, 8, 4, 0, 0, 7); g.fill(); g.stroke(); });
-  return (_dodoCache[sk.id] = c.toDataURL());
-}
-/* 이름이 그림 묶음에 있으면 그림을, 없으면 원래 글자를 그대로 쓴다 */
-function iconHTML(name){ return UI_ICON[name] || name; }
 
 const MATS = {};
 function buildMaterials(){
@@ -1742,21 +1255,18 @@ function buildMaterials(){
     const def = BLOCKS[t], spec = TEX[t];
     const mk = (drawFn, i) => {
       const map = pixelTexture(drawFn, t*17+i*7+3);
-      /* vertexColors: 아래 boxGeo 에 미리 구워 둔 "면별 밝기"를 쓴다는 뜻.
-         윗면은 환하고 아랫면은 어두워져서 블록이 납작하지 않고 덩어리로 보인다. */
-      const o = {map:map, vertexColors:true};
-      if(def.transparent){ o.transparent=true; o.opacity=0.74; o.depthWrite=true; }
+      const o = {map:map};
+      if(def.transparent){ o.transparent=true; o.opacity=0.72; o.depthWrite=true; }
       if(def.glow){ o.emissive = new THREE.Color(0x553311); o.emissiveIntensity=0.55; o.emissiveMap=map; }
       if(t===LAMP){ o.emissive = new THREE.Color(0xffd98a); o.emissiveIntensity=0.5; o.emissiveMap=map; }
-      if(t===ICE){ o.transparent=true; o.opacity=0.84; o.depthWrite=true; }
+      if(t===ICE){ o.transparent=true; o.opacity=0.82; o.depthWrite=true; }
       return new THREE.MeshLambertMaterial(o);
     };
     MATS[t] = Array.isArray(spec) ? spec.map(mk) : mk(spec,0);
   }
-  // 물은 맑고 밝은 하늘빛 — 잔물결 무늬를 깔아 심심하지 않게
+  // 물은 살짝 파랗고 반투명
   MATS[WATER] = new THREE.MeshLambertMaterial({
-    map: pixelTexture(waterTex, 4242), vertexColors:true,
-    transparent:true, opacity:0.70, depthWrite:false
+    color:0x49aee0, transparent:true, opacity:0.62, depthWrite:false
   });
 }
 
@@ -1894,16 +1404,14 @@ renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x8fd8f7);
-scene.fog = new THREE.Fog(0xd3f0ff, 58, 116);
+scene.background = new THREE.Color(0x87ceeb);
+scene.fog = new THREE.Fog(0xbfe8ff, 55, 110);
 
 const camera = new THREE.PerspectiveCamera(70, 1, 0.1, 400);
 
-/* 하늘빛(위) + 땅에서 되비치는 빛(아래). 아래쪽을 밝게 잡아 두면
-   그림자 속이 새카맣게 죽지 않고 참고 그림처럼 화사하게 남는다. */
-const hemi = new THREE.HemisphereLight(0xffffff, 0xbfe3a6, 0.78);
+const hemi = new THREE.HemisphereLight(0xffffff, 0x9dd48a, 0.62);
 scene.add(hemi);
-const sun = new THREE.DirectionalLight(0xfff6e2, 0.80);
+const sun = new THREE.DirectionalLight(0xfff3d0, 0.72);
 sun.castShadow = true;
 sun.shadow.mapSize.set(1024,1024);
 sun.shadow.camera.near = 1;
@@ -1921,8 +1429,8 @@ function buildSky(){
   const c=document.createElement('canvas'); c.width=8; c.height=128;
   const g=c.getContext('2d');
   const grad=g.createLinearGradient(0,0,0,128);
-  grad.addColorStop(0,'#3fa5ec'); grad.addColorStop(.42,'#8fd8f7');
-  grad.addColorStop(.76,'#d3f0ff'); grad.addColorStop(1,'#f2fbff');
+  grad.addColorStop(0,'#3ba2e8'); grad.addColorStop(.45,'#87ceeb');
+  grad.addColorStop(.78,'#cfefff'); grad.addColorStop(1,'#eaf8ff');
   g.fillStyle=grad; g.fillRect(0,0,8,128);
   const tex=new THREE.CanvasTexture(c);
   const sky=new THREE.Mesh(
@@ -1971,19 +1479,6 @@ const clouds = buildSky();
    5. 블록 렌더링 (InstancedMesh, 보이는 면만)
    ═══════════════════════════════════════════════════ */
 const boxGeo = new THREE.BoxGeometry(1,1,1);
-/* 면마다 밝기를 미리 칠해 둔다 — 윗면 제일 환하게, 옆면 중간, 아랫면 어둡게.
-   참고한 저폴리 그림처럼 블록 하나하나가 또렷한 덩어리로 보이게 하는 장치다.
-   재질(머티리얼)은 그대로 하나만 쓰므로 그리는 횟수(드로우콜)는 늘지 않는다.
-   BoxGeometry 의 면 순서: +X, -X, +Y(위), -Y(아래), +Z, -Z */
-(function bakeFaceShade(){
-  const FACE = [0.86, 0.80, 1.00, 0.60, 0.95, 0.88];
-  const col = new Float32Array(24*3);
-  for(let f=0; f<6; f++){
-    const v = FACE[f];
-    for(let k=0;k<4;k++){ const i=(f*4+k)*3; col[i]=col[i+1]=col[i+2]=v; }
-  }
-  boxGeo.setAttribute('color', new THREE.BufferAttribute(col,3));
-})();
 const ALL_RENDER = RENDER_TYPES.concat([WATER]);
 
 /* 청크마다 박스 지오메트리를 하나씩 복제해 둔다. 모양은 같지만 경계구(bounding
@@ -2130,83 +1625,57 @@ function boxMesh(w,h,d,color){
   m.castShadow = true;
   return m;
 }
-
-/* 동글동글한 덩어리 한 개.
-   면 수가 적은 공을 눌러서 쓰기 때문에 참고 그림처럼 각이 살짝 보이는
-   "저폴리" 느낌이 나면서도 상자보다 훨씬 부드럽고 귀엽다. */
-function blobGeo(w,h,d,seg){
-  const s = seg || 9;
-  const g = new THREE.SphereGeometry(0.5, s, Math.max(4, s-3));
-  g.scale(w,h,d);
-  return g;
-}
-function blobMesh(w,h,d,color,seg){
-  const m = new THREE.Mesh(blobGeo(w,h,d,seg),
-    new THREE.MeshLambertMaterial({color:color, flatShading:true}));
-  m.castShadow = true;
-  return m;
-}
-/* 눈·볼처럼 빛을 받지 않아야 또렷한 것들 */
-function flatMesh(w,h,d,color,seg){
-  const m = new THREE.Mesh(blobGeo(w,h,d,seg||7),
-    new THREE.MeshBasicMaterial({color:color}));
-  return m;
+/* 도도새 얼굴 — 머리 상자의 앞면(+Z)에 붙는다 */
+function faceTexture(){
+  return pixelTexture((g)=>{
+    g.fillStyle='#e8e2ea'; g.fillRect(0,0,TS,TS);
+    g.fillStyle='#2f2530';
+    g.fillRect(3,5,3,4); g.fillRect(10,5,3,4);                     // 큰 눈
+    g.fillStyle='#ffffff'; g.fillRect(4,6,1,1); g.fillRect(11,6,1,1);
+    g.fillStyle='rgba(255,150,160,.55)'; g.fillRect(1,10,3,2); g.fillRect(12,10,3,2);  // 볼터치
+  }, 777);
 }
 
 /* 기본 도도: 민트빛 깃털 + 노란 부리 + 주황 발 */
-const SKIN = {body:0x5fcfbe, legs:0xff9e3d, arms:0x9fe8da, head:0x9fe8da};
+const SKIN = {body:0x8fd9cf, legs:0xf3a03d, arms:0xd9efe9, head:0xd9efe9};
 
 function buildAvatar(colors){
   const g = new THREE.Group();
+  const face = faceTexture();
+  const headMats = [];
+  for(let i=0;i<6;i++){
+    headMats.push(new THREE.MeshLambertMaterial(
+      i===4 ? {map:face} : {color:colors.head}));
+  }
+  // 머리는 작고 동글, 몸은 뚱뚱 — 도도새 비율
+  const head = new THREE.Mesh(new THREE.BoxGeometry(.56,.50,.50), headMats);
+  head.castShadow=true; head.position.set(0, 1.30, .02);
 
-  // 작고 동글한 머리
-  const head = blobMesh(.62,.58,.56, colors.head, 10);
-  head.position.set(0, 1.32, .02);
-
-  /* 눈은 그림이 아니라 진짜 덩어리로 붙인다 — 어느 방향에서 봐도 또렷하다 */
-  const eyeL = flatMesh(.15,.17,.13, 0x2b2233); eyeL.position.set(-.16,1.38,.23);
-  const eyeR = flatMesh(.15,.17,.13, 0x2b2233); eyeR.position.set( .16,1.38,.23);
-  const shL  = flatMesh(.06,.06,.05, 0xffffff); shL.position.set(-.19,1.43,.28);
-  const shR  = flatMesh(.06,.06,.05, 0xffffff); shR.position.set( .13,1.43,.28);
-  const chkL = flatMesh(.16,.10,.08, 0xffa8b4); chkL.position.set(-.26,1.24,.18);
-  const chkR = flatMesh(.16,.10,.08, 0xffa8b4); chkR.position.set( .26,1.24,.18);
-
-  // 큼직하고 구부러진 부리 (도도새의 상징)
-  const beak = new THREE.Mesh(new THREE.ConeGeometry(.17,.36,7),
-    new THREE.MeshLambertMaterial({color:0xffc23d, flatShading:true}));
-  beak.castShadow = true;
-  beak.rotation.x = Math.PI/2; beak.position.set(0, 1.24, .36);
-  const beakTip = blobMesh(.17,.15,.16, 0xe8912a, 7); beakTip.position.set(0, 1.14, .48);
+  // 큼직한 부리 (도도새의 상징)
+  const beak    = boxMesh(.22,.20,.30, 0xffc043); beak.position.set(0, 1.23, .34);
+  const beakTip = boxMesh(.17,.13,.13, 0xe08a20); beakTip.position.set(0, 1.16, .52);
 
   // 머리 깃털 세 가닥 (모자를 쓰면 숨는다)
   const hair = new THREE.Group();
-  // 뾰족한 뿔이 아니라 부드러운 물방울 모양 깃털 세 가닥
-  [[-.16,1.62,-.07,.18,-.42],[0,1.68,-.05,.22,0],[.16,1.62,-.07,.18,.42]].forEach(([x,y,z,h,rz])=>{
-    const f = blobMesh(.09,h,.09, 0xcaf0e6, 7);
-    f.position.set(x,y,z); f.rotation.z = rz; f.rotation.x = -.25; hair.add(f);
+  [[-.14,1.60,-.04,.10],[0,1.65,-.02,.12],[.14,1.60,-.04,.10]].forEach(([x,y,z,h])=>{
+    const f = boxMesh(.09,h,.09, 0xbfe9e0); f.position.set(x,y,z); hair.add(f);
   });
   g.add(hair);
 
   // 뚱뚱한 몸통 + 뽀얀 배
-  const body  = blobMesh(.92,.88,.82, colors.body, 11); body.position.set(0,.82,0);
-  const belly = blobMesh(.58,.60,.56, 0xfff3e2, 9);     belly.position.set(0,.74,.24);
+  const body  = boxMesh(.80,.72,.66, colors.body); body.position.set(0,.82,0);
+  const belly = boxMesh(.52,.46,.16, 0xfdf6ef);    belly.position.set(0,.76,.30);
+  const tail  = boxMesh(.34,.28,.20, colors.body); tail.position.set(0,1.02,-.42);
 
-  // 꽁지깃 세 장
-  const tail = new THREE.Group();
-  [[-.14,1.02,-.40,-.5],[0,1.10,-.44,0],[.14,1.02,-.40,.5]].forEach(([x,y,z,rz])=>{
-    const f = blobMesh(.16,.30,.22, colors.body, 7);
-    f.position.set(x,y,z); f.rotation.z = rz*0.5; tail.add(f);
-  });
+  // 날지 못하는 짧은 날개
+  const armL = boxMesh(.15,.44,.42, colors.arms); armL.position.set(-.46,.92,0);
+  const armR = boxMesh(.15,.44,.42, colors.arms); armR.position.set( .46,.92,0);
 
-  // 날지 못하는 짧고 통통한 날개
-  const armL = blobMesh(.17,.50,.46, colors.arms, 8); armL.position.set(-.48,.92,0);
-  const armR = blobMesh(.17,.50,.46, colors.arms, 8); armR.position.set( .48,.92,0);
-
-  // 가늘고 긴 다리 + 넓적한 물갈퀴 발
-  const legL = blobMesh(.16,.46,.16, colors.legs, 7); legL.position.set(-.18,.24,0);
-  const legR = blobMesh(.16,.46,.16, colors.legs, 7); legR.position.set( .18,.24,0);
-  const footL = blobMesh(.30,.11,.38, colors.legs, 8); footL.position.set(-.18,.05,.08);
-  const footR = blobMesh(.30,.11,.38, colors.legs, 8); footR.position.set( .18,.05,.08);
+  // 가늘고 긴 다리 + 넓적한 발
+  const legL = boxMesh(.15,.44,.15, colors.legs); legL.position.set(-.18,.24,0);
+  const legR = boxMesh(.15,.44,.15, colors.legs); legR.position.set( .18,.24,0);
+  const footL = boxMesh(.24,.10,.34, colors.legs); footL.position.set(-.18,.05,.07);
+  const footR = boxMesh(.24,.10,.34, colors.legs); footR.position.set( .18,.05,.07);
 
   // 팔/다리는 위쪽을 중심으로 흔들리게 pivot 그룹 사용
   const pv = (meshes, x, y) => {
@@ -2214,17 +1683,14 @@ function buildAvatar(colors){
     meshes.forEach(m=>{ m.position.set(m.position.x - x, m.position.y - y, m.position.z); p.add(m); });
     g.add(p); return p;
   };
-  // 머리에 붙는 것들은 머리와 함께 움직이도록 머리 그룹으로 묶는다
-  const headG = new THREE.Group();
-  headG.add(head, eyeL, eyeR, shL, shR, chkL, chkR, beak, beakTip);
-  g.add(headG, body, belly, tail);
-  const pArmL = pv([armL], -.48, 1.12), pArmR = pv([armR], .48, 1.12);
-  const pLegL = pv([legL, footL], -.18, .50), pLegR = pv([legR, footR], .18, .50);
+  g.add(head, beak, beakTip, body, belly, tail);
+  const pArmL = pv([armL], -.46, 1.12), pArmR = pv([armR], .46, 1.12);
+  const pLegL = pv([legL, footL], -.18, .48), pLegR = pv([legR, footR], .18, .48);
 
-  g.userData = {head, headG, hair, body, belly, tail, beak, beakTip,
-                cheeks:[chkL,chkR], pArmL, pArmR, pLegL, pLegR};
+  g.userData = {head, hair, body, belly, tail, beak, beakTip, pArmL, pArmR, pLegL, pLegR};
   return g;
 }
+
 const avatar = buildAvatar(SKIN);
 scene.add(avatar);
 
@@ -2771,7 +2237,7 @@ function buildHotbar(){
     const el = document.createElement('div');
     el.className = 'slot' + (i===selectedSlot?' sel':'') + (ok?'':' lock');
     el.innerHTML = '<div class="num">'+(SLOT_KEY[i]||'')+'</div>' +
-                   '<div class="ic" style="background-image:url('+blockIcon(t)+')"></div>' +
+                   '<div class="ic">'+BLOCKS[t].icon+'</div>' +
                    '<div class="nm">'+
                      (made ? BLOCKS[t].name + ' ' + n
                            : (blockUnlocked(t) ? BLOCKS[t].name : '레벨 '+UNLOCK_LEVEL[t]))+
@@ -3179,35 +2645,12 @@ function makeFlag(x,y,z,color,ci){
    10.10 코인 · 별 모으기
    ═══════════════════════════════════════════════════ */
 const Collect = (function(){
-  /* 코인 — 가운데에 별이 찍힌 두툼한 금화 */
-  const coinGeo = new THREE.CylinderGeometry(.30,.30,.10,14);
+  const coinGeo = new THREE.CylinderGeometry(.30,.30,.09,14);
   coinGeo.rotateX(Math.PI/2);
-  const coinFace = pixelTexture((g)=>{
-    px(g,PAL.gold[1],0,0,TS,TS);
-    g.fillStyle=PAL.gold[0]; roundRect(g,3,3,TS-6,TS-6,9);
-    g.fillStyle=PAL.gold[2]; starPath(g,16,16,10,4.6,5); g.fill();
-    px(g,'rgba(255,255,255,.55)',9,7,8,2);
-  }, 9911);
-  const coinMat = new THREE.MeshLambertMaterial({
-    map:coinFace, color:0xffffff, emissive:0xffa000, emissiveIntensity:.35, flatShading:true});
-
-  /* 별 — 진짜 다섯 갈래 별 모양으로 뽑는다 */
-  const starShape = new THREE.Shape();
-  (function(){
-    const pts=[];
-    for(let i=0;i<10;i++){
-      const a = -Math.PI/2 + i*Math.PI/5, r = (i%2===0) ? .40 : .17;
-      pts.push([Math.cos(a)*r, Math.sin(a)*r]);
-    }
-    starShape.moveTo(pts[0][0], pts[0][1]);
-    for(let i=1;i<pts.length;i++) starShape.lineTo(pts[i][0], pts[i][1]);
-    starShape.closePath();
-  })();
-  const starGeo = new THREE.ExtrudeGeometry(starShape,
-    {depth:.13, bevelEnabled:true, bevelSize:.045, bevelThickness:.045, bevelSegments:1, curveSegments:1});
-  starGeo.center();
-  const starMat = new THREE.MeshLambertMaterial({
-    color:0xffe066, emissive:0xffc62e, emissiveIntensity:.55, flatShading:true});
+  const coinMat = new THREE.MeshLambertMaterial({color:0xffc82e, emissive:0xffa000, emissiveIntensity:.45});
+  const starGeo = new THREE.OctahedronGeometry(.38,0);
+  starGeo.scale(1,1.35,1);
+  const starMat = new THREE.MeshLambertMaterial({color:0xfff2a0, emissive:0xffd93d, emissiveIntensity:.6});
 
   let coins = [], stars = [], coinMesh = null, starMesh = null;
   const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(),
@@ -3452,20 +2895,20 @@ function hasUnlock(name){
 
 /* ---- 퀘스트 목록 ---- */
 const QUEST_POOL = [
-  {id:'coin10',  icon:'coin', text:'코인 {g}개 모으기',      goal:10, coins:20, exp:35, track:()=>state.coinsEarned},
-  {id:'coin25',  icon:'coin', text:'코인 {g}개 모으기',      goal:25, coins:45, exp:70, track:()=>state.coinsEarned},
-  {id:'build20', icon:'brick', text:'블록 {g}개 쌓기',        goal:20, coins:25, exp:45, track:()=>state.placed},
-  {id:'build50', icon:'castle', text:'블록 {g}개 쌓기',        goal:50, coins:60, exp:90, track:()=>state.placed},
-  {id:'dig15',   icon:'pick', text:'블록 {g}개 부수기',      goal:15, coins:20, exp:35, track:()=>state.broken},
-  {id:'star2',   icon:'star', text:'별 {g}개 찾기',           goal:2,  coins:50, exp:80, track:()=>state.starsGot},
-  {id:'star4',   icon:'star2', text:'별 {g}개 찾기',           goal:4,  coins:90, exp:140, track:()=>state.starsGot},
-  {id:'high22',  icon:'ladder', text:'높이 {g}칸까지 올라가기', goal:22, coins:40, exp:60, track:()=>state.maxHeight},
-  {id:'rain8',   icon:'rainbow', text:'무지개 블록 {g}개 놓기',  goal:8,  coins:55, exp:85, track:()=>state.rainbowPlaced, need:'무지개 블록'},
-  {id:'obbyB',   icon:'medal0', text:'동 코스 완주하기',        goal:1,  coins:80, exp:120, track:()=>state.obbyDone.bronze?1:0},
-  {id:'obbyS',   icon:'medal1', text:'은 코스 완주하기',        goal:1,  coins:150, exp:220, track:()=>state.obbyDone.silver?1:0},
-  {id:'obbyG',   icon:'medal2', text:'금 코스 완주하기',        goal:1,  coins:300, exp:400, track:()=>state.obbyDone.gold?1:0},
-  {id:'combo1',  icon:'fire', text:'콤보 {g}번 터뜨리기',     goal:1,  coins:45, exp:70, track:()=>state.combosMade},
-  {id:'gold1',   icon:'spark', text:'황금 블록 {g}개 찾기',    goal:1,  coins:100, exp:150, track:()=>state.goldFound},
+  {id:'coin10',  icon:'🪙', text:'코인 {g}개 모으기',      goal:10, coins:20, exp:35, track:()=>state.coinsEarned},
+  {id:'coin25',  icon:'🪙', text:'코인 {g}개 모으기',      goal:25, coins:45, exp:70, track:()=>state.coinsEarned},
+  {id:'build20', icon:'🧱', text:'블록 {g}개 쌓기',        goal:20, coins:25, exp:45, track:()=>state.placed},
+  {id:'build50', icon:'🏰', text:'블록 {g}개 쌓기',        goal:50, coins:60, exp:90, track:()=>state.placed},
+  {id:'dig15',   icon:'⛏️', text:'블록 {g}개 부수기',      goal:15, coins:20, exp:35, track:()=>state.broken},
+  {id:'star2',   icon:'⭐', text:'별 {g}개 찾기',           goal:2,  coins:50, exp:80, track:()=>state.starsGot},
+  {id:'star4',   icon:'🌟', text:'별 {g}개 찾기',           goal:4,  coins:90, exp:140, track:()=>state.starsGot},
+  {id:'high22',  icon:'🪜', text:'높이 {g}칸까지 올라가기', goal:22, coins:40, exp:60, track:()=>state.maxHeight},
+  {id:'rain8',   icon:'🌈', text:'무지개 블록 {g}개 놓기',  goal:8,  coins:55, exp:85, track:()=>state.rainbowPlaced, need:'무지개 블록'},
+  {id:'obbyB',   icon:'🥉', text:'동 코스 완주하기',        goal:1,  coins:80, exp:120, track:()=>state.obbyDone.bronze?1:0},
+  {id:'obbyS',   icon:'🥈', text:'은 코스 완주하기',        goal:1,  coins:150, exp:220, track:()=>state.obbyDone.silver?1:0},
+  {id:'obbyG',   icon:'🥇', text:'금 코스 완주하기',        goal:1,  coins:300, exp:400, track:()=>state.obbyDone.gold?1:0},
+  {id:'combo1',  icon:'🔥', text:'콤보 {g}번 터뜨리기',     goal:1,  coins:45, exp:70, track:()=>state.combosMade},
+  {id:'gold1',   icon:'✨', text:'황금 블록 {g}개 찾기',    goal:1,  coins:100, exp:150, track:()=>state.goldFound},
 ];
 const questDef = id => QUEST_POOL.find(q=>q.id===id);
 
@@ -3514,13 +2957,11 @@ function renderQuests(){
     el.className = 'quest' + (a.done ? ' done' : '');
     el.dataset.qid = a.id;
     el.innerHTML =
-      '<div class="qic">'+iconHTML(q.icon)+'</div>' +
+      '<div class="qic">'+q.icon+'</div>' +
       '<div class="qbody">' +
         '<div class="qtx">'+q.text.replace('{g}', goal)+'</div>' +
         '<div class="qbar"><div class="qfill" style="width:'+(cur/goal*100)+'%"></div></div>' +
-        '<div class="qnum">'+cur+' / '+goal+
-          '<i class="pip coin"></i>'+q.coins+
-          '<i class="pip exp"></i>'+q.exp+'</div>' +
+        '<div class="qnum">'+cur+' / '+goal+'  ·  🪙'+q.coins+' ✨'+q.exp+'</div>' +
       '</div>';
     list.appendChild(el);
   });
@@ -3664,32 +3105,24 @@ function buildShopHouse(){
 /* 도도 장로 — 주인공보다 크고, 회색 깃털에 초록 밀짚모자 */
 function buildNPC(){
   const g = new THREE.Group();
-  // 나이 지긋한 도도 — 주인공과 같은 동글동글 몸에 흰 깃털과 초록 모자
-  const head = blobMesh(.62,.58,.56, 0xe8e2dc, 10); head.position.set(0, 1.46, .02);
-  const eyeL = flatMesh(.14,.16,.12, 0x2f2530); eyeL.position.set(-.16,1.52,.23);
-  const eyeR = flatMesh(.14,.16,.12, 0x2f2530); eyeR.position.set( .16,1.52,.23);
-  const shL  = flatMesh(.05,.05,.05, 0xffffff); shL.position.set(-.19,1.56,.27);
-  const shR  = flatMesh(.05,.05,.05, 0xffffff); shR.position.set( .13,1.56,.27);
-  const brow = boxMesh(.44,.07,.06, 0xcfc7bf); brow.position.set(0,1.62,.24);  // 흰 눈썹
-  const beak = new THREE.Mesh(new THREE.ConeGeometry(.18,.38,7),
-    new THREE.MeshLambertMaterial({color:0xffc23d, flatShading:true}));
-  beak.rotation.x = Math.PI/2; beak.position.set(0, 1.38, .38); beak.castShadow = true;
-  const tipB = blobMesh(.18,.16,.17, 0xe8912a, 7); tipB.position.set(0, 1.28, .50);
-  const hat = new THREE.Mesh(new THREE.CylinderGeometry(.46,.48,.11,14),
-    new THREE.MeshLambertMaterial({color:0x5eb84e, flatShading:true}));
-  hat.position.y = 1.74; hat.castShadow = true;
-  const tip = new THREE.Mesh(new THREE.ConeGeometry(.30,.36,10),
-    new THREE.MeshLambertMaterial({color:0x5eb84e, flatShading:true}));
-  tip.position.y = 1.96; tip.castShadow = true;
-  const body  = blobMesh(.92,.86,.80, 0xcbc4be, 11); body.position.y = .92;
-  const belly = blobMesh(.58,.58,.54, 0xfaf4ea, 9);  belly.position.set(0,.86,.26);
-  const armL = blobMesh(.17,.50,.46, 0xe8e2dc, 8); armL.position.set(-.50,1.00,0);
-  const armR = blobMesh(.17,.50,.46, 0xe8e2dc, 8); armR.position.set( .50,1.00,0);
-  const legL = blobMesh(.16,.46,.16, 0xff9e3d, 7); legL.position.set(-.19,.26,0);
-  const legR = blobMesh(.16,.46,.16, 0xff9e3d, 7); legR.position.set( .19,.26,0);
-  const ftL  = blobMesh(.30,.11,.38, 0xff9e3d, 8); ftL.position.set(-.19,.05,.08);
-  const ftR  = blobMesh(.30,.11,.38, 0xff9e3d, 8); ftR.position.set( .19,.05,.08);
-  g.add(head,eyeL,eyeR,shL,shR,brow,beak,tipB,hat,tip,body,belly,armL,armR,legL,legR,ftL,ftR);
+  const head = boxMesh(.58,.52,.52, 0xd6d0cc);
+  head.position.set(0, 1.46, .02);
+  const eyes = new THREE.Mesh(new THREE.BoxGeometry(.42,.14,.04),
+    new THREE.MeshLambertMaterial({color:0x2f2530}));
+  eyes.position.set(0, 1.52, .27);
+  const beak = boxMesh(.23,.21,.32, 0xffc043);  beak.position.set(0, 1.38, .36);
+  const tipB = boxMesh(.18,.14,.14, 0xe08a20);  tipB.position.set(0, 1.31, .55);
+  const hat = boxMesh(.82,.16,.82, 0x6dbf5a); hat.position.y = 1.76;
+  const tip = boxMesh(.44,.28,.44, 0x6dbf5a); tip.position.y = 1.94;
+  const body  = boxMesh(.86,.78,.70, 0xb9b2ad); body.position.y = .92;
+  const belly = boxMesh(.56,.50,.16, 0xf3ece4); belly.position.set(0,.86,.32);
+  const armL = boxMesh(.15,.46,.44, 0xd6d0cc); armL.position.set(-.50,1.00,0);
+  const armR = boxMesh(.15,.46,.44, 0xd6d0cc); armR.position.set( .50,1.00,0);
+  const legL = boxMesh(.16,.46,.16, 0xf3a03d); legL.position.set(-.19,.26,0);
+  const legR = boxMesh(.16,.46,.16, 0xf3a03d); legR.position.set( .19,.26,0);
+  const ftL  = boxMesh(.26,.10,.36, 0xf3a03d); ftL.position.set(-.19,.05,.08);
+  const ftR  = boxMesh(.26,.10,.36, 0xf3a03d); ftR.position.set( .19,.05,.08);
+  g.add(head,eyes,beak,tipB,hat,tip,body,belly,armL,armR,legL,legR,ftL,ftR);
   g.position.set(36.5, VILLAGE.y, 34.5);
   g.userData = {t:0, armR};
   scene.add(g);
@@ -3714,22 +3147,21 @@ function npcLine(){
 /* ═══════════════════════════════════════════════════
    10.14 상점 (캐릭터 꾸미기)
    ═══════════════════════════════════════════════════ */
-/* 스킨 색은 참고 그림처럼 쨍하게 — 몸과 머리/날개의 밝기 차이를 확실히 둔다 */
 const SKINS = [
   {id:'basic',  name:'민트 도도',    icon:'🦤', price:0,
-   body:0x5fcfbe, legs:0xff9e3d, skin:0x9fe8da, hat:null},
+   body:0x8fd9cf, legs:0xf3a03d, skin:0xd9efe9, hat:null},
   {id:'explor', name:'탐험가 도도',  icon:'🧢', price:60,
-   body:0xf0a052, legs:0x8a5a2b, skin:0xffd9a2, hat:{color:0xef4c53, tall:false}},
+   body:0xf0b070, legs:0x8a5a2b, skin:0xffe6c4, hat:{color:0xe63946, tall:false}},
   {id:'ninja',  name:'밤하늘 도도',  icon:'🌙', price:150,
-   body:0x4a5bb8, legs:0x2a3570, skin:0x93a8e8, hat:{color:0x25397a, tall:false}},
+   body:0x3d4c93, legs:0x2a3570, skin:0x9fb4e8, hat:{color:0x1b2f6b, tall:false}},
   {id:'princess',name:'공주 도도',   icon:'👑', price:260,
-   body:0xff8fcb, legs:0xff7ab8, skin:0xffc4e2, hat:{color:0xffc62e, tall:true}},
+   body:0xffa6d5, legs:0xffd6ec, skin:0xffe3f2, hat:{color:0xffd93d, tall:true}},
   {id:'dino',   name:'공룡 도도',    icon:'🦖', price:420,
-   body:0x5fc95f, legs:0x2e7d32, skin:0x9ade82, hat:{color:0x2e7d32, tall:true}},
+   body:0x5bbf5f, legs:0x2e7d32, skin:0xa8dd8f, hat:{color:0x2e7d32, tall:true}},
   {id:'robot',  name:'로봇 도도',    icon:'🤖', price:600,
-   body:0xa6b0bd, legs:0x5c6672, skin:0xd8e2ea, hat:{color:0x2fb6f5, tall:false}},
+   body:0xaab2ba, legs:0x616161, skin:0xdde5ea, hat:{color:0x03a9f4, tall:false}},
   {id:'star',   name:'무지개 도도',  icon:'🌈', price:900,
-   body:0xff8fd8, legs:0x9a7dff, skin:0xffe27a, hat:{color:0xffe93d, tall:true}},
+   body:0xff9ee0, legs:0x9a7dff, skin:0xfff0c0, hat:{color:0xffe93d, tall:true}},
 ];
 let shopOpen = false;
 
@@ -3739,32 +3171,26 @@ function applySkin(id){
   let sk = skinById(id);
   const ud = avatar.userData;
   ud.body.material.color.setHex(sk.body);
-  ud.tail.children.forEach(f => f.material.color.setHex(sk.body));
-  ud.pLegL.children.forEach(m => m.material.color.setHex(sk.legs));
-  ud.pLegR.children.forEach(m => m.material.color.setHex(sk.legs));
+  ud.pLegL.children[0].material.color.setHex(sk.legs);
+  ud.pLegR.children[0].material.color.setHex(sk.legs);
   ud.pArmL.children[0].material.color.setHex(sk.skin);
   ud.pArmR.children[0].material.color.setHex(sk.skin);
-  ud.head.material.color.setHex(sk.skin);
-  ud.hair.children.forEach(f => f.material.color.setHex(sk.skin));
+  for(let i=0;i<6;i++) if(i!==4) ud.head.material[i].color.setHex(sk.skin);
   // 모자 (친구 3명을 모으면 황금 왕관이 스킨 모자를 이긴다)
-  if(ud.hatMesh){ ud.headG.remove(ud.hatMesh); ud.hatMesh = null; }
+  if(ud.hatMesh){ avatar.remove(ud.hatMesh); ud.hatMesh = null; }
   if(giftLevel() >= 3) sk = Object.assign({}, sk, {hat:{color:0xffd93d, tall:true}});
   ud.hair.visible = !sk.hat;
   if(sk.hat){
     const h = new THREE.Group();
-    const cyl = (rt,rb,ht,seg,col,y)=>{
-      const m = new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,ht,seg||12),
-        new THREE.MeshLambertMaterial({color:col, flatShading:true}));
-      m.castShadow = true; m.position.y = y; return m;
-    };
-    h.add(cyl(.40,.42,.09,14, sk.hat.color, 1.58));          // 챙
+    const brim = boxMesh(.70,.13,.70, sk.hat.color); brim.position.y = 1.60;
+    h.add(brim);
     if(sk.hat.tall){
-      h.add(cyl(.24,.27,.42,12, sk.hat.color, 1.83));        // 높은 모자
-      const ball = blobMesh(.20,.20,.20, 0xffffff, 8); ball.position.y = 2.12; h.add(ball);
+      const top = boxMesh(.46,.40,.46, sk.hat.color); top.position.y = 1.86; h.add(top);
+      const ball = boxMesh(.18,.18,.18, 0xffffff); ball.position.y = 2.13; h.add(ball);
     } else {
-      const cap = blobMesh(.62,.44,.62, sk.hat.color, 10); cap.position.y = 1.56; h.add(cap);
+      const top = boxMesh(.58,.20,.58, sk.hat.color); top.position.y = 1.78; h.add(top);
     }
-    ud.headG.add(h);
+    avatar.add(h);
     ud.hatMesh = h;
   }
   state.skin = id;
@@ -3780,7 +3206,7 @@ function renderShop(){
     const can = owned || state.coins >= sk.price;
     const el = document.createElement('div');
     el.className = 'skin' + (owned?' owned':'') + (on?' on':'') + (can?'':' cant');
-    el.innerHTML = '<div class="sic" style="background-image:url('+dodoFace(sk)+')"></div>' +
+    el.innerHTML = '<div class="sic">'+sk.icon+'</div>' +
       '<div class="snm">'+sk.name+'</div>' +
       '<div class="sp">' + (on ? '입고 있어요 ✅' : owned ? '입기' : '🪙 ' + sk.price) + '</div>';
     el.addEventListener('click', ()=>buySkin(sk.id));
@@ -3842,41 +3268,31 @@ function buildPet(kind){
     ? {body:0xfff1f6, head:0xffffff, ear:0xffb3d1, belly:0xffd9e8}
     : {body:0x9e9e9e, head:0xb0b0b0, ear:0x707070, belly:0xe0e0e0};
   const g = new THREE.Group();
-  // 주인공과 같은 동글동글 덩어리로 — 작고 통통하게
-  const body = blobMesh(.48,.42,.68, c.body, 9); body.position.set(0,.34,0);
-  const belly = blobMesh(.34,.24,.54, c.belly, 8); belly.position.set(0,.24,.02);
-  const head = blobMesh(.42,.40,.38, c.head, 9); head.position.set(0,.62,-.40);
+  const body = boxMesh(.42,.34,.62, c.body); body.position.set(0,.34,0);
+  const belly = boxMesh(.3,.12,.5, c.belly); belly.position.set(0,.2,0);
+  const head = boxMesh(.38,.36,.34, c.head); head.position.set(0,.6,-.4);
   // 아기 도도는 주둥이 대신 노란 부리
-  const snout = kind==='dodo'
-    ? (()=>{ const m = new THREE.Mesh(new THREE.ConeGeometry(.11,.24,7),
-        new THREE.MeshLambertMaterial({color:0xffc23d, flatShading:true}));
-        m.rotation.x = -Math.PI/2; m.castShadow = true; return m; })()
-    : blobMesh(.20,.16,.16, c.belly, 7);
-  snout.position.set(0,.56,-.62);
-  const nose = kind==='dodo' ? blobMesh(.11,.10,.10, 0xe8912a, 6) : blobMesh(.10,.09,.07, 0x332222, 6);
-  nose.position.set(0, kind==='dodo' ? .50 : .58, -.72);
-  const eyeL = flatMesh(.10,.11,.08, 0x221a14); eyeL.position.set(-.11,.68,-.56);
-  const eyeR = flatMesh(.10,.11,.08, 0x221a14); eyeR.position.set( .11,.68,-.56);
-  const shL  = flatMesh(.04,.04,.04, 0xffffff); shL.position.set(-.13,.71,-.59);
-  const shR  = flatMesh(.04,.04,.04, 0xffffff); shR.position.set( .09,.71,-.59);
-  const earL = kind==='dodo'
-    ? (()=>{ const m = new THREE.Mesh(new THREE.ConeGeometry(.045,.17,6),
-        new THREE.MeshLambertMaterial({color:0xcaf0e6, flatShading:true}));
-        m.castShadow = true; return m; })()                       // 도도는 머리 깃털
-    : kind==='rabbit' ? blobMesh(.12,.44,.10, c.ear, 7)            // 토끼는 귀가 쫑긋 길다
-    : blobMesh(.14,.20,.09, c.ear, 7);
+  const snout = kind==='dodo' ? boxMesh(.16,.15,.22, 0xffc043) : boxMesh(.18,.14,.14, c.belly);
+  snout.position.set(0,.55,-.62);
+  const nose = kind==='dodo' ? boxMesh(.11,.09,.09, 0xe08a20) : boxMesh(.09,.08,.06, 0x332222);
+  nose.position.set(0, kind==='dodo' ? .50 : .57, -.74);
+  const eyeL = boxMesh(.07,.09,.05, 0x221a14); eyeL.position.set(-.1,.66,-.58);
+  const eyeR = boxMesh(.07,.09,.05, 0x221a14); eyeR.position.set(.1,.66,-.58);
+  const earL = kind==='dodo' ? boxMesh(.07,.14,.07, 0xbfe9e0)   // 도도는 머리 깃털
+             : kind==='rabbit' ? boxMesh(.11,.42,.09, c.ear)     // 토끼는 귀가 쫑긋 길다
+             : boxMesh(.12,.18,.08, c.ear);
   const earR = earL.clone();
-  const eh = kind==='rabbit' ? .96 : (kind==='dodo' ? .88 : .82);
+  const eh = kind==='rabbit' ? .95 : (kind==='dodo' ? .84 : .8);
   earL.position.set(-.13,eh,-.4); earR.position.set(.13,eh,-.4);
-  const tail = kind==='rabbit' ? blobMesh(.18,.18,.18, 0xffffff, 8)
-             : kind==='dodo' ? blobMesh(.22,.20,.16, c.body, 7)
-             : blobMesh(.10,.10,.52, c.body, 6);
-  tail.position.set(0,.50,.34);
+  const tail = kind==='rabbit' ? boxMesh(.16,.16,.16, 0xffffff)
+             : kind==='dodo' ? boxMesh(.2,.18,.14, c.body)
+             : boxMesh(.09,.09,.5, c.body);
+  tail.position.set(0,.5,.34);
   const legs = [];
   for(const [lx,lz] of [[-.14,-.2],[.14,-.2],[-.14,.2],[.14,.2]]){
-    const l = blobMesh(.13,.34,.13, c.ear, 6); l.position.set(lx,.17,lz); legs.push(l); g.add(l);
+    const l = boxMesh(.12,.34,.12, c.ear); l.position.set(lx,.17,lz); legs.push(l); g.add(l);
   }
-  g.add(body,belly,head,snout,nose,eyeL,eyeR,shL,shR,earL,earR,tail);
+  g.add(body,belly,head,snout,nose,eyeL,eyeR,earL,earR,tail);
   g.userData = {tail, legs, kind, t:Math.random()*5, bark:0, vx:0, vz:0};
   g.visible = false;
   scene.add(g);
@@ -4247,7 +3663,7 @@ function updateAmbient(dt){
 function setSoundOn(on){
   state.soundOn = on ? 1 : 0;
   Sound.setEnabled(on);
-  setIcon('#btnSound', on ? 'sound' : 'mute');
+  $('#btnSound').textContent = on ? '🔊' : '🔇';
   saveSoon();
 }
 
@@ -4296,7 +3712,7 @@ function buildHelp(){
    10.22 화질 (느린 기기에서 자동으로 낮춤)
    ═══════════════════════════════════════════════════ */
 const QUALITY = {mode:'auto', level:'high', notified:false};
-const QLABEL = {auto:'qauto', high:'qhigh', low:'qlow'};
+const QLABEL = {auto:'⚙️', high:'✨', low:'🐢'};
 
 function applyQuality(level){
   QUALITY.level = level;
@@ -4313,8 +3729,8 @@ function applyQuality(level){
   camera.updateProjectionMatrix();
   updateChunkShadows();
   resize();
-  // 가방 안으로 옮겨서 단추가 없을 수도 있다 — setIcon 이 알아서 넘긴다
-  setIcon('#btnQuality', QUALITY.mode === 'auto' ? QLABEL.auto : QLABEL[level]);
+  const qb = $('#btnQuality');                      // 가방 안으로 옮겨서 없을 수도 있다
+  if(qb) qb.textContent = QUALITY.mode === 'auto' ? QLABEL.auto : QLABEL[level];
   if(bagOpen) renderBag();
 }
 function cycleQuality(){
@@ -4543,10 +3959,10 @@ const DayNight = (function(){
   const KEYS = [
     {t:0.00, sky:0x101838, fog:0x1b2450, sun:0.05, hemi:0.30, sunCol:0x8fa6ff},
     {t:0.21, sky:0x2b3f72, fog:0x455184, sun:0.10, hemi:0.34, sunCol:0x9fb0ff},
-    {t:0.27, sky:0xffab6e, fog:0xffd2ac, sun:0.52, hemi:0.60, sunCol:0xffbc84},
-    {t:0.35, sky:0x8fd8f7, fog:0xd3f0ff, sun:0.80, hemi:0.78, sunCol:0xfff6e2},
-    {t:0.65, sky:0x8fd8f7, fog:0xd3f0ff, sun:0.80, hemi:0.78, sunCol:0xfff6e2},
-    {t:0.73, sky:0xff9d63, fog:0xffcba1, sun:0.50, hemi:0.58, sunCol:0xffb478},
+    {t:0.27, sky:0xff9a5c, fog:0xffc49a, sun:0.46, hemi:0.50, sunCol:0xffb070},
+    {t:0.35, sky:0x87ceeb, fog:0xbfe8ff, sun:0.72, hemi:0.62, sunCol:0xfff3d0},
+    {t:0.65, sky:0x87ceeb, fog:0xbfe8ff, sun:0.72, hemi:0.62, sunCol:0xfff3d0},
+    {t:0.73, sky:0xff8a4c, fog:0xffbb8e, sun:0.44, hemi:0.48, sunCol:0xffa860},
     {t:0.80, sky:0x2b3f72, fog:0x455184, sun:0.10, hemi:0.34, sunCol:0x9fb0ff},
     {t:1.00, sky:0x101838, fog:0x1b2450, sun:0.05, hemi:0.30, sunCol:0x8fa6ff},
   ];
@@ -4653,7 +4069,8 @@ const DayNight = (function(){
 /* 값을 직접 정한다 — 도도AI가 "밤으로 바꿔 줘" 를 처리하려면 순환이 아니라 지정이 필요하다 */
 function setTimeMode(mode){
   state.timeMode = mode;
-  setIcon('#btnTime', {auto:'auto', day:'day', night:'night'}[mode]);
+  const b = $('#btnTime');                       // 가방 안으로 옮겨져 없을 수도 있다
+  if(b) b.textContent = {auto:'🌗', day:'☀️', night:'🌙'}[mode];
   saveSoon();
 }
 function cycleTimeMode(){
@@ -5666,23 +5083,23 @@ function closeShorts(){ shortsOpen = false; $('#shorts').style.display = 'none';
    ═══════════════════════════════════════════════════ */
 let bagOpen = false;
 const BAG_ITEMS = [
-  {icon:'feather', name:'도도 장로',     desc:'말하면 만들어 줘요 (T)',  go:()=>openDodo()},
-  {icon:'island', name:'내 섬',          desc:'꾸미고 이름 짓고 자랑하기', go:()=>openIsland()},
-  {icon:'rec', name:'녹화',
+  {icon:'🪶', name:'도도 장로',     desc:'말하면 만들어 줘요 (T)',  go:()=>openDodo()},
+  {icon:'🏝️', name:'내 섬',          desc:'꾸미고 이름 짓고 자랑하기', go:()=>openIsland()},
+  {icon:'🎥', name:'녹화',
    get desc(){ return Rec.isOn() ? '지금 녹화 중 — 눌러서 멈추기' : '쇼츠 모양(세로)으로 찍기'; },
    go:()=>Rec.toggle()},
-  {icon:'plan', name:'청사진 건축학교', desc:'따라 지으면 돼요',      go:()=>openPlans()},
-  {icon:'shorts', name:'15초 도전',      desc:'영상으로 찍어 자랑하기', go:()=>openShorts()},
-  {icon:'friend', name:'친구',           desc:'초대 코드 주고받기',     go:()=>openFriends()},
-  {icon:'idea', name:'아이디어',       desc:'넣고 싶은 걸 말해요',    go:()=>openIdeas()},
-  {icon:'badge', name:'내 배지',        desc:'모은 배지 구경하기',     go:()=>openBadges()},
-  {icon:'share', name:'월드 나누기',    desc:'내 건축물을 친구에게',   go:()=>openShare()},
-  {icon:'craft', name:'제작대',         desc:'부순 재료로 특별 블록',  go:()=>openCraft()},
-  {icon:'auto', name:'밤낮 바꾸기',
+  {icon:'📐', name:'청사진 건축학교', desc:'따라 지으면 돼요',      go:()=>openPlans()},
+  {icon:'🎬', name:'15초 도전',      desc:'영상으로 찍어 자랑하기', go:()=>openShorts()},
+  {icon:'👫', name:'친구',           desc:'초대 코드 주고받기',     go:()=>openFriends()},
+  {icon:'💬', name:'아이디어',       desc:'넣고 싶은 걸 말해요',    go:()=>openIdeas()},
+  {icon:'🏅', name:'내 배지',        desc:'모은 배지 구경하기',     go:()=>openBadges()},
+  {icon:'📤', name:'월드 나누기',    desc:'내 건축물을 친구에게',   go:()=>openShare()},
+  {icon:'🔨', name:'제작대',         desc:'부순 재료로 특별 블록',  go:()=>openCraft()},
+  {icon:'🌗', name:'밤낮 바꾸기',
    get desc(){ return {auto:'지금: 저절로 흘러요', day:'지금: 낮 고정', night:'지금: 밤 고정'}[state.timeMode||'auto']; },
    go:()=>{ cycleTimeMode(); openBag(); }},
-  {icon:'help', name:'조작법',         desc:'어떻게 하는지 보기',     go:()=>{ buildHelp(); $('#help').style.display='flex'; }},
-  {icon:'qauto', name:'화질',
+  {icon:'❓', name:'조작법',         desc:'어떻게 하는지 보기',     go:()=>{ buildHelp(); $('#help').style.display='flex'; }},
+  {icon:'⚙️', name:'화질',
    get desc(){ return {auto:'지금: 자동', high:'지금: 예쁘게 ✨', low:'지금: 빠르게 🐢'}[QUALITY.mode==='auto'?'auto':QUALITY.level]; },
    go:()=>{ cycleQuality(); openBag(); }},
 ];
@@ -5692,7 +5109,7 @@ function renderBag(){
   BAG_ITEMS.forEach(it=>{
     const el = document.createElement('div');
     el.className = 'bagcard';
-    el.innerHTML = '<div class="cic">' + iconHTML(it.icon) + '</div>' +
+    el.innerHTML = '<div class="cic">' + it.icon + '</div>' +
                    '<div class="cnm">' + it.name + '</div>' +
                    '<div class="cds">' + it.desc + '</div>';
     el.addEventListener('click', ()=>{
@@ -6410,15 +5827,7 @@ DayNight.build();
 DayNight.apply();
 Lamps.scanAll();
 Blueprint.restore();
-setIcon('#btnTime', {auto:'auto', day:'day', night:'night'}[state.timeMode || 'auto']);
-/* 나머지 단추 아이콘도 한 번에 끼워 넣는다 */
-(function(){ const el = $('#titledodo');
-  if(el) el.style.backgroundImage = 'url(' + dodoFace(SKINS[0]) + ')'; })();
-[['#btnDodo','feather'],
- ['#btnUndo','undo'],['#btnCraft','craft'],['#btnPlan','plan'],['#btnShorts','shorts'],
- ['#btnFriend','friend'],['#btnIdea','idea'],['#btnBadge','badge'],['#btnShare','share'],
- ['#btnRec','rec'],['#btnBag','bag'],['#btnIsland','island'],
- ['#btnHelp','help']].forEach(([id,n])=>setIcon(id,n));
+$('#btnTime').textContent = {auto:'🌗', day:'☀️', night:'🌙'}[state.timeMode || 'auto'];
 
 /* ── 새 단추들 ── */
 /* 창이 이미 떠 있으면 그 위에 또 열지 않는다 */
