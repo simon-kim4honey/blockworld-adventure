@@ -591,6 +591,45 @@
   #nick .mbox{width:min(420px,92vw); text-align:center;}
   #nick .dbig{font-size:52px; line-height:1;}
   #nickrow, .fieldrow{display:flex; gap:8px; margin-top:12px;}
+
+  /* ── 🪶 도도 장로(도도AI) ── */
+  #dodoai .mbox{width:min(560px,94vw);}
+  #dochat{
+    background:#f3eefc; border-radius:18px; padding:12px; margin-bottom:11px;
+    height:min(44vh,300px); overflow-y:auto; display:flex; flex-direction:column; gap:9px;
+  }
+  .dobub{
+    max-width:88%; padding:9px 13px; border-radius:16px; font-size:16px; line-height:1.55;
+    white-space:pre-line; word-break:break-word;
+  }
+  .dobub.me{align-self:flex-end; background:linear-gradient(#7c6df0,#5b4bd6); color:#fff; border-bottom-right-radius:5px;}
+  .dobub.ai{align-self:flex-start; background:#fffdf7; color:#3b3350; border-bottom-left-radius:5px; box-shadow:0 3px 0 rgba(0,0,0,.09);}
+  .dobtns{display:flex; flex-wrap:wrap; gap:7px; align-self:flex-start; max-width:96%;}
+  #dochips{display:flex; flex-wrap:wrap; gap:7px; margin-bottom:11px;}
+  .dochip{
+    background:#fff3d6; border:none; border-radius:13px; padding:8px 12px; cursor:pointer;
+    font-family:inherit; font-weight:800; font-size:14px; color:#6b4a12;
+    box-shadow:0 3px 0 rgba(0,0,0,.13);
+  }
+  .dochip:active{transform:translateY(2px); box-shadow:0 1px 0 rgba(0,0,0,.13);}
+  .dochip.idea{background:#e3ffe8; color:#1e6b34;}
+  #dorow{display:flex; gap:8px;}
+  #dorow .mfield{flex:1; font-size:16px;}
+  #dosend{
+    border:none; border-radius:14px; cursor:pointer; font-family:inherit; font-weight:900;
+    font-size:17px; color:#fff; padding:0 18px; white-space:nowrap;
+    background:linear-gradient(#7ae582,#38b862); box-shadow:0 4px 0 #2a8c4a;
+  }
+  #dosend:active{transform:translateY(2px); box-shadow:0 2px 0 #2a8c4a;}
+
+  /* ── 아이디어 세 칸 · 명예의 전당 ── */
+  .ifield{margin-bottom:9px;}
+  .ifield label{display:block; font-size:13px; opacity:.72; margin:0 0 4px 3px;}
+  .hallrow{
+    width:100%; background:#fff8e6; border-radius:14px; padding:10px 12px;
+    box-shadow:0 3px 0 rgba(0,0,0,.09); font-size:14px; line-height:1.55;
+  }
+  .hallrow .said{opacity:.72;}
   .fieldrow > button{white-space:nowrap; flex:0 0 auto;}
   #nickdice{
     border:none; border-radius:14px; cursor:pointer; font-size:22px; padding:0 16px;
@@ -825,6 +864,7 @@
 <div id="tools">
   <button class="tool" id="btnUndo"  title="되감기 (Z)">⏪</button>
   <button class="tool" id="btnRec"   title="녹화 시작/멈추기 (Shift+R)">🎥</button>
+  <button class="tool" id="btnDodo" title="도도 장로에게 말하기 (T)">🪶</button>
   <button class="tool big" id="btnBag" title="도도 가방 (탭)">🎒</button>
   <button class="tool" id="btnTime"  title="밤낮 바꾸기">🌗</button>
   <button class="tool" id="btnSound" title="소리 켜기/끄기">🔊</button>
@@ -1028,15 +1068,34 @@
   <div class="mhead"><h2>💬 내 아이디어</h2></div>
   <div class="msub">블록섬에 넣고 싶은 걸 말해 주세요. 만드는 사람이 보고 <b>다음 버전에 진짜로 넣어 줘요.</b>
     들어가면 아래 명예의 전당에 내 이름이 남아요!</div>
-  <input class="mfield" id="ideainput" placeholder="예) 무지개 슬라이드 넣어 주세요!" maxlength="120">
+  <div class="ifield"><label>무엇을 넣고 싶어요? <b>(꼭 써 주세요)</b></label>
+    <input class="mfield" id="ideainput" placeholder="예) 무지개 슬라이드" maxlength="60"></div>
+  <div class="ifield"><label>어디에 있으면 좋겠어요?</label>
+    <input class="mfield" id="ideawhere" placeholder="예) 상점 옆에" maxlength="40"></div>
+  <div class="ifield"><label>왜 그게 좋아요?</label>
+    <input class="mfield" id="ideawhy" placeholder="예) 높은 데서 미끄럼 타고 싶어서" maxlength="60"></div>
   <button class="mbtn green" id="ideago">💡 아이디어 보내기</button>
-  <textarea class="mcode" id="ideacode" spellcheck="false" readonly style="margin-top:10px"></textarea>
+  <textarea class="mcode" id="ideacode" spellcheck="false" readonly style="margin-top:10px;display:none"></textarea>
   <div id="ideamsg"></div>
   <div class="mlabel">내가 보낸 아이디어</div>
   <div id="idealist"></div>
   <div class="mlabel">🏆 명예의 전당 — 진짜로 게임에 들어간 아이디어</div>
   <div id="hall"></div>
   <button class="mbtn gray" id="ideaclose">닫기</button>
+</div></div>
+
+<!-- 🪶 도도 장로 (도도AI) -->
+<div class="modal" id="dodoai"><div class="mbox">
+  <div class="mhead"><h2>🪶 도도 장로</h2></div>
+  <div class="msub">장로가 준 <b>말하는 깃털</b>이에요. 하고 싶은 말을 그냥 써 보세요.
+    내가 못 하는 건 <b>만드는 사람한테 보내 줄게요!</b></div>
+  <div id="dochat"></div>
+  <div id="dochips"></div>
+  <div id="dorow">
+    <input class="mfield" id="doinput" placeholder="예) 무지개 미끄럼틀 만들어 줘" maxlength="60" spellcheck="false">
+    <button id="dosend">말하기</button>
+  </div>
+  <button class="mbtn gray" id="doclose">닫기</button>
 </div></div>
 
 <!-- 이름 정하기 -->
@@ -1524,6 +1583,11 @@ function svgWrap(inner, vb){
          'fill="none" stroke-linecap="round" stroke-linejoin="round">'+inner+'</svg>';
 }
 const UI_ICON = {
+  /* 장로가 준 말하는 깃털 — 도도AI 를 부르는 물건 */
+  feather: svgWrap('<path d="M18.6 4.4c1.4 5.2-.8 10.2-5.4 12-2 .8-3.8.9-5 .4 0-5.6 4.2-11.7 10.4-12.4z" ' +
+                   'fill="#8fd9cf" stroke="'+INK+'" stroke-width="1.8"/>' +
+                   '<path d="M17.4 6.2 5.5 20.5" stroke="'+INK+'" stroke-width="2.2"/>' +
+                   '<path d="M13.6 8.6c-1.7 1-3 2.6-3.8 4.6" stroke="'+INK+'" stroke-width="1.4" opacity=".55"/>'),
   undo:  svgWrap('<path d="M5 9h9a5 5 0 1 1 0 10h-6" stroke="'+INK+'" stroke-width="2.6"/>'+
                  '<path d="M8.5 4.5 4 9l4.5 4.5z" fill="'+INK+'"/>'),
   craft: svgWrap('<path d="M4.5 19.5 13 11" stroke="#a9762f" stroke-width="3.2"/>'+
@@ -2398,7 +2462,7 @@ function panelOpen(){
   const el = document.activeElement;
   if(el && (el.tagName==='TEXTAREA' || el.tagName==='INPUT')) return true;
   return shopOpen || craftOpen || plansOpen || friendsOpen || ideaOpen || shortsOpen || bagOpen ||
-         islandOpen ||
+         islandOpen || dodoOpen ||
          $('#bragbox').style.display==='flex' || $('#recbox').style.display==='flex' ||
          $('#badges').style.display==='flex' ||
          $('#share').style.display==='flex' ||
@@ -3632,13 +3696,18 @@ function buildNPC(){
 }
 
 /* NPC가 해 주는 말 — 지금 퀘스트를 알려 준다 */
-function npcLine(){
+/* 지금 퀘스트 한 줄 — 장로도 쓰고 도도AI("나 뭐 해야 돼?")도 쓴다 */
+function questLine(){
   const a = state.quests.find(q=>!q.done);
-  if(!a) return '반가워! 난 이 섬의 도도 장로야 👋\n지금은 할 일이 없네. 마음껏 놀아!';
+  if(!a) return null;
   const q = questDef(a.id);
   const {cur, goal} = questProgress(a);
-  return '반가워! 난 도도 장로야 👋\n「' + q.text.replace('{g}', goal) + '」\n' +
-         '지금 ' + cur + ' / ' + goal + ' 했어!\n가게는 바로 저기야 🛒';
+  return '「' + q.text.replace('{g}', goal) + '」\n지금 ' + cur + ' / ' + goal + ' 했어!';
+}
+function npcLine(){
+  const line = questLine();
+  if(!line) return '반가워! 난 이 섬의 도도 장로야 👋\n지금은 할 일이 없네. 마음껏 놀아!';
+  return '반가워! 난 도도 장로야 👋\n' + line + '\n가게는 바로 저기야 🛒';
 }
 
 /* ═══════════════════════════════════════════════════
@@ -4195,6 +4264,7 @@ function buildHelp(){
     ['가게 안으로','상점 열기'],
     ['⏪ 단추','실수한 블록 되돌리기'],
     ['🎥 단추','녹화 시작 / 멈추기 — 유튜브 쇼츠 모양(세로)으로 저장돼요'],
+    ['깃털 단추','도도 장로 — 말하면 만들어 줘요'],
     ['🎒 단추','도도 가방 — 내 섬 · 청사진 · 15초도전 · 친구 · 아이디어 · 제작대'],
     ['🎒 → 🏝️','내 섬 — 꾸미기 · 섬 이름 · 자랑 카드 · 섬 코드'],
     ['🌗 단추','낮 / 밤 고정하기'],
@@ -4210,6 +4280,7 @@ function buildHelp(){
     ['Z  또는 ⏪','실수한 블록 되돌리기 (80번까지)'],
     ['C','제작대 — 부순 재료로 특별 블록 만들기'],
     ['Tab 또는 🎒','도도 가방 — 내 섬 · 청사진 · 15초도전 · 친구 · 아이디어'],
+    ['T  또는 깃털 단추','도도 장로에게 말하기 — "무지개 미끄럼틀 만들어 줘"'],
     ['I','🏝️ 내 섬 — 꾸미기 · 섬 이름 · 자랑 카드 · 섬 코드'],
     ['Shift + R  또는 🎥','녹화 시작 / 멈추기 (쇼츠 모양 세로 영상)'],
     ['B','청사진 건축학교'],
@@ -4578,15 +4649,19 @@ const DayNight = (function(){
 })();
 
 /* 시간 버튼: 자동 → 낮 고정 → 밤 고정 → 자동 */
+/* 값을 직접 정한다 — 도도AI가 "밤으로 바꿔 줘" 를 처리하려면 순환이 아니라 지정이 필요하다 */
+function setTimeMode(mode){
+  state.timeMode = mode;
+  setIcon('#btnTime', {auto:'auto', day:'day', night:'night'}[mode]);
+  saveSoon();
+}
 function cycleTimeMode(){
   const order = ['auto','day','night'];
   const i = order.indexOf(state.timeMode || 'auto');
-  state.timeMode = order[(i+1) % order.length];
+  setTimeMode(order[(i+1) % order.length]);
   const txt = {auto:'🌗 시간이 저절로 흘러요', day:'☀️ 계속 낮으로 고정!', night:'🌙 계속 밤으로 고정!'};
-  setIcon('#btnTime', {auto:'auto', day:'day', night:'night'}[state.timeMode]);
   showHint(txt[state.timeMode], 2200);
   Sound.click();
-  saveSoon();
 }
 
 /* ── 램프 불빛: 라이트를 하나만 두고 가장 가까운 램프로 옮긴다 ── */
@@ -4810,7 +4885,9 @@ const Blueprint = (function(){
     state.bpDone[def.id] = 1;
     stop(true);
     Sound.fanfare();
-    showBanner('🎉 ' + def.name + ' 완성!', '건축가가 다 됐네요!');
+    /* 쓴 블록 개수를 알려 준다 — 초등 수학 '쌓기나무' 가 그대로 여기 있다 */
+    showBanner('🎉 ' + def.name + ' 완성!',
+      '블록 ' + bpCells(def).length + '개를 썼어요 · 위에서 보면 어떤 모양일까? 🤔');
     gainCoins(def.coins, true);
     addExp(def.exp);
     for(let i=0;i<5;i++)
@@ -5300,8 +5377,11 @@ function saveNick(){
    아래 "명예의 전당"에 그 아이 이름이 남는다.
    ═══════════════════════════════════════════════════ */
 /* 새 버전을 낼 때마다 여기에 한 줄씩 추가한다 (누구의 아이디어였는지 남긴다) */
+/* 새 버전을 낼 때마다 한 줄씩 추가한다.
+   said = 아이가 실제로 쓴 말, what = 게임에 들어간 것.
+   둘을 나란히 보여 줘야 "내 말이 게임이 됐다" 가 눈에 보인다. */
 const APPLIED_IDEAS = [
-  // {who:'용감한토끼', what:'무지개 슬라이드', ver:'1.1'},
+  // {who:'용감한토끼', said:'무지개 슬라이드 넣어 주세요', what:'🌈 무지개 미끄럼틀', ver:'1.1'},
 ];
 
 let ideaOpen = false;
@@ -5327,6 +5407,7 @@ function renderIdeas(){
       b.textContent = '코드 복사';
       b.addEventListener('click', ()=>{
         $('#ideacode').value = ideaCode(it.t);
+        $('#ideacode').style.display = 'block';
         $('#ideamsg').textContent = copyField('ideacode', '✅ 복사했어요! 카톡으로 보내 주세요.');
         $('#ideamsg').style.color = '#38b862';
         Sound.click();
@@ -5338,12 +5419,16 @@ function renderIdeas(){
   const hall = $('#hall');
   hall.innerHTML = '';
   if(!APPLIED_IDEAS.length){
-    hall.innerHTML = '<div style="font-size:14px;opacity:.6">아직 비어 있어요. 첫 번째 주인공이 되어 보세요! 🏆</div>';
+    hall.innerHTML = '<div style="font-size:14px;opacity:.6">아직 비어 있어요. ' +
+      '여기 처음 올라갈 사람이 <b>너</b>일 수도 있어! 💡</div>';
   } else {
     APPLIED_IDEAS.forEach(a=>{
       const el = document.createElement('div');
-      el.className = 'bagchip';
-      el.innerHTML = '🏆 <b>' + escapeHtml(a.what) + '</b> — ' + escapeHtml(a.who) + '님';
+      el.className = 'hallrow';
+      el.innerHTML = '🏆 <b>' + escapeHtml(a.who) + '</b> 님<br>' +
+        '<span class="said">\u201c' + escapeHtml(a.said || a.what) + '\u201d</span> → <b>' +
+        escapeHtml(a.what) + '</b>' +
+        (a.ver ? ' <span class="said">(' + escapeHtml(a.ver) + '에 들어감)</span>' : '');
       hall.appendChild(el);
     });
   }
@@ -5352,25 +5437,37 @@ function escapeHtml(s){
   return String(s).replace(/[&<>"']/g, c=>
     ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
+/* 세 칸(무엇을·어디에·왜)을 한 줄로 합친다.
+   코드 형식(BWI1)은 그대로 둔다 — 이미 나간 코드가 깨지면 안 된다.
+   첫 칸만 필수다. 나머지를 막으면 아이가 아예 안 보낸다. */
 function sendIdea(){
-  const v = ($('#ideainput').value || '').trim().slice(0, 120);
-  if(v.length < 2){
+  const what  = ($('#ideainput').value || '').trim().slice(0, 60);
+  const where = ($('#ideawhere').value || '').trim().slice(0, 40);
+  const why   = ($('#ideawhy').value   || '').trim().slice(0, 60);
+  if(what.length < 2){
     $('#ideamsg').style.color = '#c0392b';
     $('#ideamsg').textContent = '무엇을 넣고 싶은지 조금만 더 써 주세요!';
     Sound.deny(); return;
   }
   if(!state.nick) { askNick(()=>sendIdea()); return; }
+  let v = what;
+  if(where) v += ' — ' + where;
+  if(why)   v += ' (왜냐면 ' + why + ')';
+  v = v.slice(0, 170);
+  const full = !!(where && why);          // 세 칸을 다 채우면 보너스
   const now = new Date();
   state.ideas.push({t:v, at:(now.getMonth()+1) + '월 ' + now.getDate() + '일', done:0});
-  $('#ideainput').value = '';
+  $('#ideainput').value = ''; $('#ideawhere').value = ''; $('#ideawhy').value = '';
   $('#ideacode').value = ideaCode(v);
+  $('#ideacode').style.display = 'block';
   $('#ideamsg').style.color = '#38b862';
   $('#ideamsg').textContent = copyField('ideacode',
-    '✅ 아이디어 코드를 복사했어요! 카톡이나 유튜브 댓글로 보내 주세요.');
-  gainCoins(30, true);
-  addExp(25);
+    full ? '✅ 코드를 복사했어요! 🌟 세 칸을 다 썼네요 — 보너스 코인 받아 가세요!'
+         : '✅ 아이디어 코드를 복사했어요! 카톡이나 유튜브 댓글로 보내 주세요.');
+  gainCoins(full ? 50 : 30, true);
+  addExp(full ? 40 : 25);
   Sound.quest();
-  popText('💡 아이디어 보냄!', '#7ae582');
+  popText(full ? '🌟 자세히 썼어요!' : '💡 아이디어 보냄!', '#7ae582');
   renderIdeas();
   checkBadges();
   saveSoon();
@@ -5380,6 +5477,7 @@ function openIdeas(){
   $('#ideas').style.display = 'flex';
   if(document.pointerLockElement) document.exitPointerLock();
   $('#ideamsg').textContent = '';
+  $('#ideacode').value = ''; $('#ideacode').style.display = 'none';
   renderIdeas();
   Sound.shop();
 }
@@ -5567,6 +5665,7 @@ function closeShorts(){ shortsOpen = false; $('#shorts').style.display = 'none';
    ═══════════════════════════════════════════════════ */
 let bagOpen = false;
 const BAG_ITEMS = [
+  {icon:'feather', name:'도도 장로',     desc:'말하면 만들어 줘요 (T)',  go:()=>openDodo()},
   {icon:'island', name:'내 섬',          desc:'꾸미고 이름 짓고 자랑하기', go:()=>openIsland()},
   {icon:'rec', name:'녹화',
    get desc(){ return Rec.isOn() ? '지금 녹화 중 — 눌러서 멈추기' : '쇼츠 모양(세로)으로 찍기'; },
@@ -6314,7 +6413,8 @@ setIcon('#btnTime', {auto:'auto', day:'day', night:'night'}[state.timeMode || 'a
 /* 나머지 단추 아이콘도 한 번에 끼워 넣는다 */
 (function(){ const el = $('#titledodo');
   if(el) el.style.backgroundImage = 'url(' + dodoFace(SKINS[0]) + ')'; })();
-[['#btnUndo','undo'],['#btnCraft','craft'],['#btnPlan','plan'],['#btnShorts','shorts'],
+[['#btnDodo','feather'],
+ ['#btnUndo','undo'],['#btnCraft','craft'],['#btnPlan','plan'],['#btnShorts','shorts'],
  ['#btnFriend','friend'],['#btnIdea','idea'],['#btnBadge','badge'],['#btnShare','share'],
  ['#btnRec','rec'],['#btnBag','bag'],['#btnIsland','island'],
  ['#btnHelp','help']].forEach(([id,n])=>setIcon(id,n));
@@ -6326,7 +6426,7 @@ function guard(fn){
     if($('#daily').style.display === 'flex' || $('#nick').style.display === 'flex') return;
     if(Shorts.running()) Shorts.stop();
     closeCraft(); closePlans(); closeFriends(); closeIdeas(); closeShorts(); closeBag();
-    closeIsland();
+    closeIsland(); closeDodo();
     $('#badges').style.display='none'; $('#share').style.display='none';
     $('#shortresult').style.display='none'; $('#bragbox').style.display='none';
     $('#recbox').style.display='none';
@@ -6375,6 +6475,13 @@ $('#copythanks').addEventListener('click', ()=>friendMsg(copyField('thankscode',
   '✅ 고마워 코드를 복사했어요! 초대해 준 친구에게 보내 주세요.'), true));
 $('#changenick').addEventListener('click', ()=>askNick(()=>renderFriends()));
 $('#ideago').addEventListener('click', sendIdea);
+$('#btnDodo').addEventListener('click', guard(openDodo));
+$('#dosend').addEventListener('click', doSend);
+$('#doclose').addEventListener('click', closeDodo);
+$('#dodoai').addEventListener('click', e=>{ if(e.target.id === 'dodoai') closeDodo(); });
+$('#doinput').addEventListener('keydown', e=>{ if(e.code==='Enter') doSend(); });
+$('#ideawhere').addEventListener('keydown', e=>{ if(e.code==='Enter') $('#ideawhy').focus(); });
+$('#ideawhy').addEventListener('keydown', e=>{ if(e.code==='Enter') sendIdea(); });
 $('#ideainput').addEventListener('keydown', e=>{ if(e.code==='Enter') sendIdea(); });
 $('#nickok').addEventListener('click', saveNick);
 $('#nickdice').addEventListener('click', ()=>{ $('#nickinput').value = randomNick(); Sound.click(); });
@@ -6385,12 +6492,12 @@ addEventListener('keydown', e=>{
   const typing = document.activeElement && document.activeElement.tagName === 'TEXTAREA';
   if(typing) return;
   const anyModal = craftOpen || plansOpen || bagOpen || friendsOpen || ideaOpen || shortsOpen ||
-                   islandOpen ||
+                   islandOpen || dodoOpen ||
                    $('#bragbox').style.display==='flex' || $('#recbox').style.display==='flex' ||
                    $('#badges').style.display==='flex' || $('#share').style.display==='flex';
   if(e.code==='Escape' && anyModal){
     closeCraft(); closePlans(); closeBag(); closeFriends(); closeIdeas(); closeShorts();
-    closeIsland();
+    closeIsland(); closeDodo();
     $('#badges').style.display='none'; $('#share').style.display='none';
     $('#bragbox').style.display='none'; $('#recbox').style.display='none';
     return;
@@ -6403,6 +6510,7 @@ addEventListener('keydown', e=>{
   if(e.code==='KeyV') openBadges();
   if(e.code==='KeyG') openFriends();
   if(e.code==='KeyI') openIsland();
+  if(e.code==='KeyT') openDodo();
   if(e.code==='KeyR' && e.shiftKey) Rec.toggle();
 });
 checkBadges();
@@ -6438,6 +6546,394 @@ $('#startbtn').addEventListener('click', ()=>{
   else afterNick();
 });
 
+/* ═══════════════════════════════════════════════════
+   10.33 도도AI 🪶 — 말하는 깃털 (도도 장로에게 말 걸기)
+   ───────────────────────────────────────────────────
+   설계 원칙 하나뿐이다: 절대 "몰라요" 로 끝나지 않는다.
+   무슨 말이 들어와도 문 세 개 중 하나로 나간다.
+
+     문 1  알아들었다      → 해 준다
+     문 2  반쯤 알아들었다 → 되묻는다 (단추로 — 아이가 다시 타자 치지 않게)
+     문 3  못 알아들었다   → 아이디어로 보낸다   ← 이게 이 게임의 무기
+
+   못 알아들은 말이 버려지지 않고 명예의 전당으로 가기 때문에,
+   "아이가 뭘 물어볼지 모른다" 가 문제가 아니라 재료가 된다.
+   아이 입력은 절대 정확히 맞지 않는다. 전부 '포함' 으로만 본다.
+   ═══════════════════════════════════════════════════ */
+let dodoOpen = false;
+const doLog = [];                       // 창을 닫았다 열어도 대화가 남아 있게
+
+/* 오타와 온갖 어미를 견뎌야 한다 ("만들어줘", "만드러 줄래", "바꿔조") */
+function doNorm(s){
+  return String(s||'').trim().toLowerCase()
+    .replace(/\s+/g, ' ')
+    .replace(/[!?.~,ㅠㅜ]+$/g, '')
+    .replace(/(해|하|해서)?\s*(줘요|주세요|줄래|주라|줭|줘|죠|줄레|다오)\s*$/, '')
+    .trim();
+}
+const doHas  = (s, ...w) => w.some(k => s.includes(k));
+/* 받침을 보고 조사를 고른다 — "공주 도도는", "상점으로" 처럼 자연스럽게 */
+function doJong(word){
+  const t = String(word||'').trim();
+  const c = t.charCodeAt(t.length - 1);
+  if(!(c >= 0xac00 && c <= 0xd7a3)) return -1;      // 한글이 아니면 모름
+  return (c - 0xac00) % 28;                         // 0 이면 받침 없음
+}
+const doEun = w => { const j = doJong(w); return j < 0 ? '은(는)' : (j ? '은' : '는'); };
+const doI   = w => { const j = doJong(w); return j < 0 ? '이(가)' : (j ? '이' : '가'); };
+const doRo  = w => { const j = doJong(w); return j < 0 ? '(으)로' : (j === 0 || j === 8 ? '로' : '으로'); };
+const doPick = a => a[(Math.random()*a.length)|0];
+
+/* ── 말풍선 ── */
+function doDraw1(cls, text){
+  const box = $('#dochat'); if(!box) return;
+  const el = document.createElement('div');
+  el.className = 'dobub ' + cls;
+  el.textContent = text;                 // 아이가 쓴 글이라 textContent 로만 넣는다
+  box.appendChild(el);
+  box.scrollTop = box.scrollHeight;
+}
+function doPush(cls, text){
+  doLog.push({cls, text});
+  if(doLog.length > 40) doLog.shift();
+  if(dodoOpen) doDraw1(cls, text);
+}
+function doDrawAll(){
+  const box = $('#dochat'); if(!box) return;
+  box.innerHTML = '';
+  doLog.forEach(l => doDraw1(l.cls, l.text));
+  box.scrollTop = box.scrollHeight;
+}
+/* 되묻기 단추 — 누르면 아이가 그 말을 한 것처럼 처리한다 */
+function doBtns(list){
+  if(!dodoOpen || !list || !list.length) return;
+  const box = $('#dochat');
+  const row = document.createElement('div');
+  row.className = 'dobtns';
+  list.forEach(b=>{
+    const el = document.createElement('button');
+    el.className = 'dochip' + (b.cls ? ' ' + b.cls : '');
+    el.textContent = b.t;
+    el.addEventListener('click', ()=>{
+      row.remove();                      // 한 번 고르면 사라진다
+      Sound.click();
+      if(b.go) b.go(); else doAsk(b.say || b.t);
+    });
+    row.appendChild(el);
+  });
+  box.appendChild(row);
+  box.scrollTop = box.scrollHeight;
+}
+function doSay(text, btns){ doPush('ai', text); doBtns(btns); }
+
+/* ── 알아듣는 말 표 — 먼저 나오는 것이 이긴다 (자세한 이름이 위로) ── */
+const DO_BUILD = [
+  {k:['미끄럼','슬라이드'],               decor:'slide'},
+  {k:['계단'],                            bp:'stair'},
+  {k:['무지개 기둥','무지개기둥','기둥'],  decor:'pillar'},
+  {k:['전망대','타워','탑'],              decor:'tower'},
+  {k:['꽃밭','꽃'],                       decor:'flower'},
+  {k:['분수'],                            decor:'fount'},
+  {k:['모닥불','캠프파이어','캠프'],       decor:'camp'},
+  {k:['야자수','야자'],                   decor:'palm'},
+  {k:['하트'],                            decor:'heart'},
+  {k:['울타리'],                          decor:'fence'},
+  {k:['가로등','등불'],                   decor:'lamps'},
+  {k:['벤치','의자'],                     bp:'bench'},
+  {k:['무지개 다리','무지개다리','아치'],  bp:'arch'},
+  {k:['다리'],                            bp:'arch'},
+  {k:['하우스','집'],                     bp:'house'},
+];
+/* 장소는 '동/은/금' 한 글자로 받으면 다른 말에 걸린다. 꼭 '코스' 를 같이 본다 */
+const DO_PLACE = [
+  {k:['상점','가게','시장'],      n:'상점',    at:()=>SHOP.door},
+  {k:['동 코스','동코스'],        n:'동 코스', at:()=>OBBIES[0].start},
+  {k:['은 코스','은코스'],        n:'은 코스', at:()=>OBBIES[1].start},
+  {k:['금 코스','금코스'],        n:'금 코스', at:()=>OBBIES[2].start},
+  {k:['처음','시작','스폰','집으로'], n:'처음 자리', at:()=>SPAWN},
+];
+/* '무지개' 한 단어는 미끄럼틀·기둥·다리와 겹쳐서 옷 이름으로는 안 쓴다 */
+const DO_SKIN = [
+  {k:['밤하늘','닌자'],            id:'ninja'},
+  {k:['공주'],                     id:'princess'},
+  {k:['공룡'],                     id:'dino'},
+  {k:['로봇'],                     id:'robot'},
+  {k:['무지개 도도','무지개도도'],  id:'star'},
+  {k:['탐험가','탐험'],            id:'explor'},
+  {k:['민트','기본'],              id:'basic'},
+];
+const DO_BAD = [
+  '앗 깃털 다 떨어질 뻔했잖아! 😳 다른 거 시켜 줘~',
+  '으악! 도도새는 마음이 약하다고… 🥺 다시 말해 줄래?',
+  '그런 말은 블록섬에 안 어울려 🙈 그것보다 뭐 만들까?',
+];
+const DO_GREET = [
+  {k:['안녕','하이','헬로','반가'], a:['안녕! 오늘도 왔네 🦤 뭐 하고 놀까?',
+                                      '안녕안녕! 깃털 정리하고 있었어 🪶',
+                                      '왔구나! 오늘은 뭘 만들어 볼까?']},
+  {k:['네 이름','너 이름','이름이 뭐','누구야'], a:['난 도도야! 이 섬에서 제일 오래 산 새지. 뚱뚱한 건 말하지 마 🤫']},
+  {k:['몇 살','나이'],              a:['음… 블록 나이로 치면 아주 많아. 도도새는 원래 오래됐거든 🪶']},
+  {k:['사랑','좋아해','최고'],      a:['나도! 깃털이 다 부풀었잖아 🥰', '에헴, 그럴 줄 알았어 😎']},
+  {k:['고마워','고맙','감사'],      a:['천만에! 또 시켜 줘 😎', '이 정도쯤이야 🪶']},
+  {k:['잘자','잘 자','안녕히','바이'], a:['잘 자! 내일은 금 코스 도전해 보자 🌙']},
+  {k:['뭐 할 줄','뭐할줄','할 수 있','능력','도와'],
+   a:['짓고, 데려다주고, 밤낮 바꾸고, 옷도 갈아입혀 줘!\n내가 못 하는 건 만드는 사람한테 보내 주고 💪']},
+  {k:['멋있','귀여','예뻐','잘한'],  a:['헤헤, 알아 🦤 너도 멋져!']},
+  {k:['배고','밥 ','간식'],          a:['도도새는 열매를 좋아해 🍓 너도 뭐 좀 먹고 와!']},
+  {k:['멸종','없어졌','사라졌','왜 도도'],
+   a:['옛날에 우리 도도새는 다 사라졌대… 😢\n그래서 이 블록섬에 다 같이 모여 사는 거야. 여기선 안 사라져!']},
+];
+
+/* ── 문 1 이 실제로 하는 일들 ── */
+function doGoTo(p, name){
+  doSay('슝! ' + name + doRo(name) + ' 보내 줄게 ✨');
+  setTimeout(()=>{
+    closeDodo();
+    player.x = p.x; player.z = p.z;
+    player.y = surfaceHeight(p.x, p.z, H-4) + 0.2;   // 늘 땅 위에 내려놓는다
+    player.vx = player.vy = player.vz = 0;
+    Sound.bounce();
+    showHint('🪶 ' + name + ' 도착!', 1800);
+  }, 420);
+}
+function doBuildDecor(id){
+  const d = DECOR.find(x=>x.id===id);
+  doSay('좋아! ' + d.icon + ' ' + d.name + ' 만들어 줄게 ✨\n마음에 안 들면 Z 를 누르면 통째로 지워져!');
+  setTimeout(()=>{ closeDodo(); buildDecor(id); }, 450);
+}
+function doPlan(id){
+  const def = BLUEPRINTS.find(b=>b.id===id);
+  if(state.level < def.lv){
+    const alt = BLUEPRINTS.filter(b=>state.level >= b.lv && !state.bpDone[b.id]);
+    doSay(def.icon + ' ' + def.name + doEun(def.name) + ' 레벨 ' + def.lv + '부터야! 지금 레벨 ' +
+          state.level + '이니까 조금만 더 💪',
+      alt.length ? alt.map(b=>({t:b.icon + ' ' + b.name, say:b.name + ' 만들어 줘'}))
+                 : [{t:'🌈 무지개 미끄럼틀', say:'무지개 미끄럼틀 만들어 줘'}]);
+    return;
+  }
+  doSay('좋아! ' + def.icon + ' ' + def.name + ' 청사진을 띄웠어 📐\n' +
+        '하얀 자리에 블록을 놓으면 돼. 다 지으면 코인도 줄게!');
+  setTimeout(()=>{ closeDodo(); Blueprint.start(id); }, 450);
+}
+function doTime(mode){
+  setTimeMode(mode);
+  doSay({night:'🌙 밤으로 바꿨어! 램프(💡)를 놓으면 진짜 예뻐.',
+         day:  '☀️ 낮으로 바꿨어! 멀리까지 잘 보이지?',
+         auto: '🌗 다시 시간이 저절로 흐르게 했어.'}[mode]);
+}
+function doSkinSet(id){
+  const sk = SKINS.find(x=>x.id===id);
+  if(!(sk.price === 0 || state.skinsOwned[sk.id])){
+    doSay(sk.icon + ' ' + sk.name + doEun(sk.name) + ' ' + sk.price + '코인이야! 지금 ' +
+          state.coins + '코인 있어 🪙',
+      [{t:'🛒 상점으로 데려다 줘', go:()=>doGoTo(SHOP.door, '상점')}]);
+    return;
+  }
+  state.skin = sk.id; applySkin(sk.id); saveSoon();
+  doSay('짠! ' + sk.icon + ' ' + sk.name + doI(sk.name) + ' 됐어 ✨');
+}
+/* "나 뭐 해야 돼?" 와 "심심해" 는 같은 곳으로 간다 — 둘 다 다음에 할 것을 묻는 말이다.
+   게임이 아이 기록을 이미 알고 있으니, 끄려던 순간을 여기서 붙잡는다. */
+function doRecommend(){
+  const line = questLine();
+  if(line) return doSay(line, [{t:'🌈 그건 그렇고 뭐 만들어 줘', say:'무지개 미끄럼틀 만들어 줘'}]);
+  const ob = OBBIES.find(o=>!state.obbyDone[o.id]);
+  if(ob) return doSay('그럼 ' + ob.emoji + ' ' + ob.name + ' 어때? 아직 안 깼더라!',
+                      [{t:'🏃 데려다 줘', say:ob.name + ' 가자'}]);
+  const bp = BLUEPRINTS.find(b=>!state.bpDone[b.id] && state.level >= b.lv);
+  if(bp) return doSay('청사진 중에 ' + bp.icon + ' ' + bp.name + doI(bp.name) + ' 아직 남았어!',
+                      [{t:'📐 띄워 줘', say:bp.name + ' 만들어 줘'}]);
+  doSay('오늘 할 건 다 했네! 대단하다 🎉\n그럼 섬을 더 꾸며 볼까?', doSuggest());
+}
+
+/* ── 예시 단추: 여기가 제일 중요하다 ──
+   "아이가 뭘 물어볼지 모른다" 의 절반은 "아이가 뭘 물어봐도 되는지 모른다" 이다.
+   빈칸만 주면 아이는 아무것도 못 친다. 상태에 맞는 예시를 띄워서
+   아이 말이 알아듣는 쪽으로 모이게 한다. 맨 끝 하나는 항상 고정이다. */
+function doSuggest(){
+  const out = [];
+  const d = doPick(DECOR);
+  out.push({t:d.icon + ' ' + d.name + ' 만들어 줘', say:d.name + ' 만들어 줘'});
+  const ob = OBBIES.find(o=>!state.obbyDone[o.id]);
+  if(questLine())                    out.push({t:'🎯 나 뭐 해야 돼?', say:'나 뭐 해야 돼'});
+  else if(ob)                        out.push({t:ob.emoji + ' ' + ob.name + ' 가자', say:ob.name + ' 가자'});
+  else if(!DayNight.isNight())       out.push({t:'🌙 밤으로 바꿔 줘', say:'밤으로 바꿔 줘'});
+  out.push({t:'💡 내가 하고 싶은 말 하기', cls:'idea', go:()=>{
+    doSay('뭐든지 말해 봐! 🦤\n내가 못 하는 거면 만드는 사람한테 보내 줄게 📮');
+    const el = $('#doinput'); if(el) el.focus();
+  }});
+  return out;
+}
+
+/* ── 문 3: 못 알아들은 말은 버리지 않고 아이디어로 보낸다 ── */
+function doToIdea(raw){
+  const s = doNorm(raw);
+  if(/\d{7,}/.test(raw) || doHas(s,'학교','전화','주소','몇반','아파트','동호수')){
+    doSay('이름이나 학교, 전화번호는 안 쓰는 게 좋아 🙈\n그건 빼고 다시 말해 줄래?');
+    return;
+  }
+  const short = raw.length > 14 ? raw.slice(0,14) + '…' : raw;
+  doSay('우와 “' + short + '”! 그건 내가 아직 못 해… 😮\n' +
+        '근데 만드는 사람한테 보내 줄게! 📮\n명예의 전당에 네 이름이 올라갈지도 몰라.', [
+    {t:'💡 보낼래', cls:'idea', go:()=>{
+      closeDodo();
+      openIdeas();
+      /* 아이가 같은 말을 두 번 치게 하면 안 된다 — 여기서 대부분 포기한다 */
+      $('#ideainput').value = raw.slice(0, 60);
+      $('#ideamsg').style.color = '#38b862';
+      $('#ideamsg').textContent = '🪶 도도 장로가 옮겨 적었어요! 아래 두 칸도 채우면 코인을 더 줘요.';
+      const w = $('#ideawhere'); if(w) w.focus();
+    }},
+    {t:'괜찮아', go:()=>doSay('알겠어! 그럼 뭐 할까? 🦤', doSuggest())},
+  ]);
+}
+
+/* ── 머리: 들어온 말을 문 세 개 중 하나로 보낸다. 순서가 중요하다 ── */
+function doBrain(raw){
+  const s = doNorm(raw);
+  if(!s) return;
+
+  /* 장난·욕 — 혼내지 않고 넘긴다. 저장도, 아이디어로 보내지도 않는다 */
+  if(doHas(s,'바보','멍청','똥','죽어','미친','시발','씨발','ㅅㅂ','꺼져','짜증','못생'))
+    return doSay(doPick(DO_BAD));
+
+  /* 싸움·무기 — 명예의 전당에 올라가면 안 되니 아이디어로도 안 보낸다 */
+  if(doHas(s,'총','칼로','죽이','때리','폭탄','전쟁','무기','싸우'))
+    return doSay('블록섬에는 싸우는 게 없어 🕊\n대신 뭘 만들까?', doSuggest());
+
+  /* 말 걸기 */
+  const g = DO_GREET.find(e=>doHas(s, ...e.k));
+  if(g) return doSay(doPick(g.a));
+
+  /* 더하기·빼기 정도는 직접 풀어 준다 */
+  const m = s.match(/(\d+)\s*(더하기|플러스|\+|빼기|마이너스|-)\s*(\d+)/);
+  if(m){
+    const a = +m[1], b = +m[3];
+    const plus = doHas(m[2], '더하기', '플러스', '+');
+    return doSay((plus ? a + b : a - b) + '! 나 이래 봬도 블록 세는 건 잘해 🧱');
+  }
+
+  /* ── 문 1 ── */
+
+  /* 짓기 */
+  if(doHas(s,'만들','만드','지어','짓','세워','세우','놔','놓아','건설')){
+    const e = DO_BUILD.find(x=>doHas(s, ...x.k));
+    if(e) return e.decor ? doBuildDecor(e.decor) : doPlan(e.bp);
+    return doSay('좋아, 뭘 만들까? 🤔', [                         // 문 2
+      {t:'🌈 무지개 미끄럼틀', say:'무지개 미끄럼틀 만들어 줘'},
+      {t:'🗼 전망대',          say:'전망대 만들어 줘'},
+      {t:'⛲ 분수',            say:'분수 만들어 줘'},
+      {t:'📐 청사진 보기',     go:()=>{ closeDodo(); openPlans(); }},
+    ]);
+  }
+
+  /* 데려다 주기 */
+  if(doHas(s,'가자','가고','데려','보내','이동','텔레포트','순간이동','갈래','로 가','에 가')){
+    const e = DO_PLACE.find(x=>doHas(s, ...x.k));
+    if(e) return doGoTo(e.at(), e.n);
+    return doSay('어디로 갈까? 🗺', [                             // 문 2
+      {t:'🛒 상점',    say:'상점 가자'},
+      {t:'🥉 동 코스', say:'동 코스 가자'},
+      {t:'🥈 은 코스', say:'은 코스 가자'},
+      {t:'🥇 금 코스', say:'금 코스 가자'},
+    ]);
+  }
+
+  /* 옷은 밤낮보다 먼저 본다 — "밤하늘 도도로 바꿔 줘" 가 밤으로 새면 안 된다 */
+  const sk = DO_SKIN.find(e=>doHas(s, ...e.k));
+  if(sk) return doSkinSet(sk.id);
+
+  /* 밤낮 */
+  if(doHas(s,'밤','어둡','깜깜'))              return doTime('night');
+  if(doHas(s,'낮','밝게','아침','해 뜨','해뜨')) return doTime('day');
+  if(doHas(s,'원래대로','자동','저절로'))       return doTime('auto');
+  if(doHas(s,'옷','스킨','변신','갈아'))
+    return doSay('어떤 옷으로? 👕', SKINS
+      .filter(x=>x.price === 0 || state.skinsOwned[x.id])
+      .slice(0, 4).map(x=>({t:x.icon + ' ' + x.name, say:x.name + doRo(x.name) + ' 바꿔 줘'})));
+
+  /* 할 일 · 기분 */
+  if(doHas(s,'뭐해','뭐 해','할일','할 일','퀘스트','뭐하지','뭐할까','다음',
+             '심심','재미없','지루','어려','못하겠','무서','화나','힘들','하기 싫'))
+    return doRecommend();
+
+  /* 되돌리기 */
+  if(doHas(s,'되돌','취소','없애','지워','아까')){
+    doSay('⏪ 방금 한 걸 되돌릴게!');
+    setTimeout(()=>{ closeDodo(); Undo.undo(); }, 380);
+    return;
+  }
+
+  /* 친구 */
+  if(doHas(s,'초대','친구','코드'))
+    return doSay('친구 창을 열어 줄게! 초대 코드를 카톡으로 보내면 둘 다 선물을 받아 👫',
+      [{t:'👫 친구 창 열기', go:()=>{ closeDodo(); openFriends(); }}]);
+
+  /* 내 기록 */
+  if(doHas(s,'내가 뭐 했','기록','배지','얼마나')){
+    const n = Object.keys(state.badges || {}).length;
+    return doSay('지금까지 배지 ' + n + '개, 레벨 ' + state.level +
+                 ', 코인 ' + state.coins + '개야! 🏅',
+      [{t:'🏅 배지 보기', go:()=>{ closeDodo(); openBadges(); }}]);
+  }
+
+  /* 녹화 · 내 섬 */
+  if(doHas(s,'녹화','찍어','영상','쇼츠'))
+    return doSay('좋아! 쇼츠 모양(세로)으로 찍어 줄게 🎥',
+      [{t:'🎥 녹화 시작', go:()=>{ closeDodo(); Rec.toggle(); }}]);
+  if(doHas(s,'자랑','내 섬','섬 꾸미','꾸미'))
+    return doSay('내 섬 창을 열어 줄게! 🏝️',
+      [{t:'🏝️ 내 섬 열기', go:()=>{ closeDodo(); openIsland(); }}]);
+
+  /* 이름만 짧게 말해도 알아듣는다 ("무지개 미끄럼틀") */
+  const only = DO_BUILD.find(x=>doHas(s, ...x.k));
+  if(only && s.length <= 12)
+    return doSay('그거 만들어 줄까? 🤔', [
+      {t:'👍 응, 만들어 줘', say:s + ' 만들어 줘'},
+      {t:'아니',            go:()=>doSay('알겠어! 그럼 뭐 할까?', doSuggest())},
+    ]);
+
+  /* ── 문 3 ── */
+  return doToIdea(raw);
+}
+
+/* ── 창 ── */
+function doChips(){
+  const box = $('#dochips'); if(!box) return;
+  box.innerHTML = '';
+  doSuggest().forEach(b=>{
+    const el = document.createElement('button');
+    el.className = 'dochip' + (b.cls ? ' ' + b.cls : '');
+    el.textContent = b.t;
+    el.addEventListener('click', ()=>{
+      Sound.click();
+      if(b.go) b.go(); else doAsk(b.say || b.t);
+    });
+    box.appendChild(el);
+  });
+}
+function doAsk(raw){
+  const t = String(raw||'').trim().slice(0, 60);
+  if(!t) return;
+  doPush('me', t);
+  const el = $('#doinput'); if(el) el.value = '';
+  doBrain(t);
+  doChips();                              // 상태가 바뀌었으니 예시도 새로 고른다
+}
+function doSend(){ doAsk($('#doinput').value); }
+function openDodo(){
+  dodoOpen = true;
+  $('#dodoai').style.display = 'flex';
+  if(document.pointerLockElement) document.exitPointerLock();
+  doDrawAll();
+  if(!doLog.length)
+    doSay('안녕! 난 도도 장로야 🦤\n이 깃털로 어디서든 날 부를 수 있어.\n하고 싶은 말을 그냥 써 봐!');
+  doChips();
+  Sound.shop();
+  setTimeout(()=>{ const el = $('#doinput'); if(el) el.focus(); }, 60);
+}
+function closeDodo(){ dodoOpen = false; $('#dodoai').style.display = 'none'; }
+
 window.BW = {player, setBlock, getBlock, scene, camera, renderer, voxels, W,H,D, IDX, keys,
   sim(dt,n){ for(let i=0;i<(n||1);i++){ if(jumpBuffer>0) jumpBuffer-=dt; stepGame(dt); } },
   pressJump(){ jumpBuffer=0.14; },
@@ -6463,6 +6959,8 @@ window.BW = {player, setBlock, getBlock, scene, camera, renderer, voxels, W,H,D,
   friendCount, giftLevel, FRIEND_GIFTS, enterFriendCode, openFriends, closeFriends,
   askNick, saveNick, SHORTS, Shorts, openShorts, closeShorts,
   sendIdea, openIdeas, closeIdeas, APPLIED_IDEAS, ideaCode,
+  openDodo, closeDodo, doAsk, doBrain, doNorm, doSuggest, DO_BUILD, DO_PLACE, DO_SKIN,
+  setTimeMode, questLine,
   QUALITY, applyQuality, cycleQuality, rebuildAll, rebuildChunk, processDirtyChunks,
   cullInfo(){
     const f = new THREE.Frustum(), m = new THREE.Matrix4();
