@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>블록월드 어드벤처</title>
+<style>
+  :root{
+    --ink:#2b2140;
+    --panel:rgba(255,255,255,.86);
+    --shadow:0 6px 0 rgba(0,0,0,.18), 0 10px 24px rgba(0,0,0,.18);
+    --radius:18px;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;height:100%;overflow:hidden;background:#87ceeb;}
+  body{
+    font-family:'Jua','Apple SD Gothic Neo','Malgun Gothic','Nanum Gothic',system-ui,sans-serif;
+    font-weight:800; color:var(--ink); user-select:none; touch-action:none;
+  }
+  canvas{display:block; width:100%; height:100%;}
+
+  /* ---------- 화면 위에 겹쳐지는 UI ---------- */
+  #ui{position:fixed; inset:0; pointer-events:none; z-index:10;}
+  .card{
+    background:var(--panel); border-radius:var(--radius);
+    box-shadow:var(--shadow); padding:10px 14px;
+    backdrop-filter:blur(3px);
+  }
+
+  /* 조준점 */
+  #crosshair{
+    position:fixed; left:50%; top:50%; width:26px; height:26px;
+    margin:-13px 0 0 -13px; pointer-events:none; opacity:.9; z-index:11;
+    transition:transform .08s ease;
+  }
+  #crosshair:before,#crosshair:after{
+    content:''; position:absolute; background:#fff; border-radius:3px;
+    box-shadow:0 0 0 2px rgba(0,0,0,.35);
+  }
+  #crosshair:before{left:11px; top:2px; width:4px; height:22px;}
+  #crosshair:after{top:11px; left:2px; height:4px; width:22px;}
+  body.nolock #crosshair{opacity:0;}
+
+  /* 시작 화면 */
+  #start{
+    position:fixed; inset:0; z-index:40; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; gap:18px; text-align:center;
+    background:radial-gradient(circle at 50% 30%, #9fe0ff 0%, #5bb6f0 55%, #2e86c8 100%);
+    pointer-events:auto;
+  }
+  #start h1{
+    font-size:clamp(34px,8vw,72px); margin:0; color:#fff; letter-spacing:2px;
+    text-shadow:0 5px 0 #2a6ea8, 0 10px 22px rgba(0,0,0,.3);
+    animation:bob 2.2s ease-in-out infinite;
+  }
+  #start .sub{font-size:clamp(15px,3.4vw,22px); color:#fff; text-shadow:0 2px 6px rgba(0,0,0,.35);}
+  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+  .bigbtn{
+    pointer-events:auto; cursor:pointer; border:none; border-radius:999px;
+    font-family:inherit; font-weight:900; font-size:clamp(20px,4.5vw,30px);
+    color:#fff; padding:16px 44px; background:linear-gradient(#ffcf3f,#ff9f1a);
+    box-shadow:0 7px 0 #c9700a, 0 14px 26px rgba(0,0,0,.28);
+    transition:transform .1s ease, box-shadow .1s ease;
+  }
+  .bigbtn:hover{transform:translateY(-3px); box-shadow:0 10px 0 #c9700a, 0 18px 30px rgba(0,0,0,.3);}
+  .bigbtn:active{transform:translateY(4px); box-shadow:0 3px 0 #c9700a;}
+  #start .keys{
+    display:flex; gap:10px; flex-wrap:wrap; justify-content:center; max-width:560px;
+    font-size:clamp(13px,3vw,17px);
+  }
+  #start .keys span{background:rgba(255,255,255,.9); padding:8px 14px; border-radius:12px; box-shadow:0 3px 0 rgba(0,0,0,.15);}
+
+  /* 잠깐 멈춤(포인터 잠금 해제) 안내 */
+  #resume{
+    position:fixed; inset:0; z-index:35; display:none; align-items:center; justify-content:center;
+    background:rgba(20,30,50,.45); pointer-events:auto; cursor:pointer;
+  }
+  #resume .card{font-size:clamp(18px,4vw,26px); padding:22px 34px; text-align:center;}
+
+  /* 상단 좌측: 코인 + 레벨 */
+  #hud-left{position:fixed; left:14px; top:14px; display:flex; flex-direction:column; gap:8px;}
+  #coinbox{display:flex; align-items:center; gap:8px; font-size:22px;}
+  .coinicon{
+    width:26px;height:26px;border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, #fff6b0, #ffc82e 60%, #d99400);
+    box-shadow:0 2px 0 #a86f00, inset 0 0 0 2px rgba(255,255,255,.45);
+  }
+  #lvlbox{min-width:180px;}
+  #lvlrow{display:flex; justify-content:space-between; font-size:15px; margin-bottom:5px;}
+  #expbar{height:12px; background:#e5e0ef; border-radius:999px; overflow:hidden; box-shadow:inset 0 2px 4px rgba(0,0,0,.18);}
+  #expfill{height:100%; width:0%; border-radius:999px; background:linear-gradient(90deg,#7ae582,#38d39f); transition:width .3s ease;}
+
+  /* 힌트 */
+  #hint{
+    position:fixed; left:50%; bottom:118px; transform:translateX(-50%);
+    font-size:17px; white-space:nowrap; opacity:0; transition:opacity .3s ease;
+  }
+  #hint.on{opacity:1;}
+
+  /* 화면에 뜨는 +숫자 */
+  #pops{position:fixed; inset:0; overflow:hidden;}
+  .pop{
+    position:absolute; font-size:26px; color:#fff; font-weight:900;
+    text-shadow:0 3px 0 rgba(0,0,0,.35); animation:popup 1s ease-out forwards;
+  }
+  @keyframes popup{
+    0%{transform:translate(-50%,0) scale(.5); opacity:0;}
+    25%{transform:translate(-50%,-18px) scale(1.25); opacity:1;}
+    100%{transform:translate(-50%,-70px) scale(1); opacity:0;}
+  }
+
+  #fps{position:fixed; right:14px; bottom:12px; font-size:13px; color:#fff; text-shadow:0 2px 4px rgba(0,0,0,.5); opacity:.75;}
+
+  #err{
+    position:fixed; inset:0; z-index:99; display:none; align-items:center; justify-content:center;
+    background:#2b2140; color:#fff; text-align:center; padding:30px; font-size:20px; line-height:1.7;
+  }
+</style>
+</head>
+<body class="nolock">
+
+<canvas id="c"></canvas>
+
+<div id="crosshair"></div>
+
+<div id="ui">
+  <div id="hud-left">
+    <div class="card" id="coinbox"><div class="coinicon"></div><span id="coins">0</span></div>
+    <div class="card" id="lvlbox">
+      <div id="lvlrow"><span>레벨 <b id="lvl">1</b></span><span id="exptext">0 / 100</span></div>
+      <div id="expbar"><div id="expfill"></div></div>
+    </div>
+  </div>
+  <div class="card" id="hint"></div>
+  <div id="pops"></div>
+  <div id="fps"></div>
+</div>
+
+<div id="resume"><div class="card">👆 화면을 클릭하면<br>다시 놀 수 있어요!</div></div>
+
+<div id="start">
+  <h1>🧱 블록월드 어드벤처</h1>
+  <div class="sub">블록을 쌓고, 뛰어놀고, 코인을 모으자!</div>
+  <button class="bigbtn" id="startbtn">▶ 시작하기</button>
+  <div class="keys">
+    <span>WASD · 화살표 = 이동</span>
+    <span>스페이스 = 점프</span>
+    <span>마우스 = 둘러보기</span>
+  </div>
+</div>
+
+<div id="err"></div>
+
+<!-- Three.js (CDN 3중 백업) -->
+<script src="https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.min.js"></script>
+<script>if(!window.THREE)document.write('<scr'+'ipt src="https://unpkg.com/three@0.150.1/build/three.min.js"><\/scr'+'ipt>');</script>
+<script>if(!window.THREE)document.write('<scr'+'ipt src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.150.1/three.min.js"><\/scr'+'ipt>');</script>
+
+<script>
+(function(){
+"use strict";
+
+if(!window.THREE){
+  var e=document.getElementById('err');
+  e.style.display='flex';
+  e.innerHTML='😢 3D 엔진을 불러오지 못했어요.<br>인터넷이 연결되어 있는지 확인하고<br>새로고침(F5) 해 주세요!';
+  return;
+}
+
+/* ═══════════════════════════════════════════════════
+   0. 작은 도구들
+   ═══════════════════════════════════════════════════ */
+const $ = s => document.querySelector(s);
+const clamp = (v,a,b) => v<a?a:(v>b?b:v);
+const lerp = (a,b,t) => a+(b-a)*t;
+
+function makeRng(seed){
+  let s = seed>>>0;
+  return function(){
+    s = (s + 0x6D2B79F5)>>>0;
+    let t = s;
+    t = Math.imul(t ^ t>>>15, t|1);
+    t ^= t + Math.imul(t ^ t>>>7, t|61);
+    return ((t ^ t>>>14)>>>0)/4294967296;
+  };
+}
+/* 부드러운 2D 값 노이즈 — 언덕을 만드는 데 사용 */
+function valueNoise(seed, gw){
+  const rng = makeRng(seed), g = new Float32Array((gw+2)*(gw+2));
+  for(let i=0;i<g.length;i++) g[i]=rng();
+  const at=(a,b)=>g[clamp(b,0,gw+1)*(gw+2)+clamp(a,0,gw+1)];
+  return function(u,v){
+    const x=u*gw, z=v*gw, x0=Math.floor(x), z0=Math.floor(z);
+    const tx=x-x0, tz=z-z0;
+    const sx=tx*tx*(3-2*tx), sz=tz*tz*(3-2*tz);
+    const a=at(x0,z0), b=at(x0+1,z0), c=at(x0,z0+1), d=at(x0+1,z0+1);
+    const top=a+(b-a)*sx, bot=c+(d-c)*sx;
+    return top+(bot-top)*sz;
+  };
+}
+
+/* ═══════════════════════════════════════════════════
+   1. 블록 종류
+   ═══════════════════════════════════════════════════ */
+const AIR=0, GRASS=1, DIRT=2, STONE=3, WOOD=4, LEAF=5, SAND=6, GLASS=7, RAINBOW=8,
+      WATER=9, GOLD=10, PATH_B=11, PATH_S=12, PATH_G=13, PLANK=14;
+
+const BLOCKS = {
+  [GRASS]:  {name:'잔디',   icon:'🌱'},
+  [DIRT]:   {name:'흙',     icon:'🟫'},
+  [STONE]:  {name:'돌',     icon:'🪨'},
+  [WOOD]:   {name:'나무',   icon:'🪵'},
+  [LEAF]:   {name:'나뭇잎', icon:'🍃'},
+  [SAND]:   {name:'모래',   icon:'🏖️'},
+  [GLASS]:  {name:'유리',   icon:'🪟',  transparent:true},
+  [RAINBOW]:{name:'무지개', icon:'🌈',  glow:true},
+  [WATER]:  {name:'물',     icon:'💧',  transparent:true, liquid:true},
+  [GOLD]:   {name:'황금',   icon:'⭐',  glow:true},
+  [PATH_B]: {name:'동',     icon:'🟤'},
+  [PATH_S]: {name:'은',     icon:'⚪'},
+  [PATH_G]: {name:'금',     icon:'🟡'},
+  [PLANK]:  {name:'판자',   icon:'🟧'},
+};
+const RENDER_TYPES = [GRASS,DIRT,STONE,WOOD,LEAF,SAND,GLASS,RAINBOW,GOLD,PATH_B,PATH_S,PATH_G,PLANK];
+const isLiquid = t => t===WATER;
+const isSolidType = t => t!==AIR && !isLiquid(t);
+
+/* ═══════════════════════════════════════════════════
+   2. 블록 그림(텍스처)을 코드로 그리기
+   ═══════════════════════════════════════════════════ */
+const TS = 16;
+function pixelTexture(draw, key){
+  const c = document.createElement('canvas'); c.width=c.height=TS;
+  const g = c.getContext('2d');
+  draw(g, makeRng(key));
+  const t = new THREE.CanvasTexture(c);
+  t.magFilter = THREE.NearestFilter;
+  t.minFilter = THREE.NearestMipmapLinearFilter;
+  t.anisotropy = 1;
+  return t;
+}
+function speckle(g,rng,colors,n){
+  for(let i=0;i<n;i++){
+    g.fillStyle = colors[(rng()*colors.length)|0];
+    g.fillRect((rng()*TS)|0,(rng()*TS)|0,1,1);
+  }
+}
+function flat(base, spots, n){
+  return (g,rng)=>{ g.fillStyle=base; g.fillRect(0,0,TS,TS); speckle(g,rng,spots,n||55); };
+}
+function grassTop(g,rng){
+  g.fillStyle='#63c64d'; g.fillRect(0,0,TS,TS);
+  speckle(g,rng,['#78d95f','#55b043','#8ae56e'],90);
+}
+function grassSide(g,rng){
+  g.fillStyle='#96653f'; g.fillRect(0,0,TS,TS);
+  speckle(g,rng,['#7d5433','#a97a4d'],60);
+  for(let x=0;x<TS;x++){
+    const h = 4 + ((rng()*3)|0);
+    g.fillStyle='#63c64d'; g.fillRect(x,0,1,h);
+    g.fillStyle='#78d95f'; g.fillRect(x,0,1,1+((rng()*2)|0));
+  }
+}
+function woodSide(g,rng){
+  g.fillStyle='#9c6b3f'; g.fillRect(0,0,TS,TS);
+  for(let x=0;x<TS;x+=2){ g.fillStyle = rng()<.5?'#8a5c34':'#ad7a4c'; g.fillRect(x,0,1,TS); }
+  speckle(g,rng,['#734a28'],25);
+}
+function woodTop(g,rng){
+  g.fillStyle='#c79a63'; g.fillRect(0,0,TS,TS);
+  g.strokeStyle='#8a5c34'; g.lineWidth=1;
+  for(let r=2;r<8;r+=2){ g.beginPath(); g.arc(8,8,r,0,7); g.stroke(); }
+}
+function glassTex(g,rng){
+  g.clearRect(0,0,TS,TS);
+  g.fillStyle='rgba(190,235,255,.30)'; g.fillRect(0,0,TS,TS);
+  g.fillStyle='rgba(255,255,255,.85)';
+  g.fillRect(0,0,TS,1); g.fillRect(0,TS-1,TS,1); g.fillRect(0,0,1,TS); g.fillRect(TS-1,0,1,TS);
+  g.fillStyle='rgba(255,255,255,.6)'; g.fillRect(3,3,4,1); g.fillRect(3,3,1,4);
+}
+function rainbowTex(g){
+  const cols=['#ff5d5d','#ffa53d','#ffe93d','#6ee86e','#4fc3ff','#9a7dff','#ff7ddb'];
+  for(let i=0;i<TS;i++){ g.fillStyle=cols[i%cols.length]; g.fillRect(0,i,TS,1); }
+  g.fillStyle='rgba(255,255,255,.35)'; g.fillRect(0,0,TS,2);
+}
+function goldTex(g,rng){
+  g.fillStyle='#ffc82e'; g.fillRect(0,0,TS,TS);
+  speckle(g,rng,['#ffe97a','#e0a200','#fff3b0'],80);
+  g.fillStyle='#fff8d0'; g.fillRect(4,4,3,3);
+}
+
+const TEX = {};
+function buildTextures(){
+  TEX[GRASS]   = [grassSide, grassSide, grassTop, flat('#96653f',['#7d5433','#a97a4d']), grassSide, grassSide];
+  TEX[DIRT]    = flat('#96653f',['#7d5433','#a97a4d','#855a38']);
+  TEX[STONE]   = flat('#9aa0a8',['#868d96','#b2b8bf','#7b828a']);
+  TEX[WOOD]    = [woodSide,woodSide,woodTop,woodTop,woodSide,woodSide];
+  TEX[LEAF]    = flat('#4fbf52',['#3fa445','#6ad46d','#2f8a38'],110);
+  TEX[SAND]    = flat('#f0dfa8',['#e2cd8e','#fbefc4'],70);
+  TEX[GLASS]   = glassTex;
+  TEX[RAINBOW] = rainbowTex;
+  TEX[GOLD]    = goldTex;
+  TEX[PATH_B]  = flat('#c87137',['#a85a29','#e08a4c']);
+  TEX[PATH_S]  = flat('#d5dae0',['#bcc3cb','#eef2f6']);
+  TEX[PATH_G]  = flat('#ffd93d',['#e6b800','#fff0a0']);
+  TEX[PLANK]   = flat('#d7a96b',['#c1904f','#e8c390'],40);
+}
+
+const MATS = {};
+function buildMaterials(){
+  for(const t of RENDER_TYPES){
+    const def = BLOCKS[t], spec = TEX[t];
+    const mk = (drawFn, i) => {
+      const map = pixelTexture(drawFn, t*17+i*7+3);
+      const o = {map:map};
+      if(def.transparent){ o.transparent=true; o.opacity=0.72; o.depthWrite=true; }
+      if(def.glow){ o.emissive = new THREE.Color(0x553311); o.emissiveIntensity=0.55; o.emissiveMap=map; }
+      return new THREE.MeshLambertMaterial(o);
+    };
+    MATS[t] = Array.isArray(spec) ? spec.map(mk) : mk(spec,0);
+  }
+  // 물은 살짝 파랗고 반투명
+  MATS[WATER] = new THREE.MeshLambertMaterial({
+    color:0x49aee0, transparent:true, opacity:0.62, depthWrite:false
+  });
+}
+
+/* ═══════════════════════════════════════════════════
+   3. 월드 데이터 (64 x 40 x 64 복셀)
+   ═══════════════════════════════════════════════════ */
+const W=64, H=40, D=64;
+const IDX = (x,y,z) => (y*D + z)*W + x;
+const voxels = new Uint8Array(W*H*D);
+const filled = new Set();           // 공기가 아닌 칸의 인덱스 모음
+const SEED = 20260920;
+const SPAWN = {x:32.5, y:0, z:36.5};
+
+function inside(x,y,z){ return x>=0&&x<W&&y>=0&&y<H&&z>=0&&z<D; }
+function getBlock(x,y,z){ return inside(x,y,z) ? voxels[IDX(x,y,z)] : AIR; }
+function solidAt(x,y,z){ return isSolidType(getBlock(x,y,z)); }
+
+function setBlock(x,y,z,t,silent){
+  if(!inside(x,y,z)) return false;
+  const i = IDX(x,y,z);
+  if(voxels[i]===t) return false;
+  voxels[i]=t;
+  if(t===AIR) filled.delete(i); else filled.add(i);
+  if(!silent) worldDirty = true;
+  return true;
+}
+
+let worldDirty = true;
+
+/* ---- 지형 만들기 ---- */
+const heightMap = new Uint8Array(W*D);
+function generateWorld(){
+  const n1 = valueNoise(SEED, 6);
+  const n2 = valueNoise(SEED+991, 15);
+  const n3 = valueNoise(SEED+7331, 9);
+  const rng = makeRng(SEED+55);
+
+  const VILL = {x:32, z:36, r:12};
+  const POND = {x:18, z:20, r:7};
+
+  for(let x=0;x<W;x++) for(let z=0;z<D;z++){
+    const u=x/W, v=z/D;
+    // 섬 모양: 가장자리로 갈수록 낮아짐
+    const dx=(x-32)/32, dz=(z-32)/32;
+    const dist = Math.sqrt(dx*dx+dz*dz);
+    const island = clamp(1.25 - dist*1.25, 0, 1);
+
+    let h = 5 + n1(u,v)*9 + n2(u,v)*3.5;
+    h = 2 + (h-2) * (island*island*(3-2*island));
+
+    // 마을은 평평하게
+    const dv = Math.hypot(x-VILL.x, z-VILL.z);
+    if(dv < VILL.r){
+      const k = clamp((VILL.r - dv)/4, 0, 1);
+      h = lerp(h, 10, k*k*(3-2*k));
+    }
+    // 연못은 파이게
+    const dp = Math.hypot(x-POND.x, z-POND.z);
+    if(dp < POND.r){
+      const k = clamp((POND.r - dp)/POND.r, 0, 1);
+      h = lerp(h, 5.2, k*k*(3-2*k));
+    }
+    h = Math.round(clamp(h, 0, 26));
+    heightMap[z*W+x] = h;
+    if(h<=0) continue;
+
+    for(let y=0;y<h;y++){
+      let t = STONE;
+      if(y === h-1) t = (h<=7) ? SAND : GRASS;
+      else if(y >= h-4) t = (h<=7) ? SAND : DIRT;
+      setBlock(x,y,z,t,true);
+    }
+    // 연못 물 채우기
+    if(h < 8){
+      for(let y=h;y<8;y++) setBlock(x,y,z,WATER,true);
+    }
+  }
+
+  // 나무 심기
+  for(let i=0;i<70;i++){
+    const x = 4 + ((rng()*(W-8))|0), z = 4 + ((rng()*(D-8))|0);
+    const h = heightMap[z*W+x];
+    if(h < 9 || h > 22) continue;
+    if(Math.hypot(x-VILL.x, z-VILL.z) < VILL.r-1) continue;
+    if(getBlock(x,h-1,z) !== GRASS) continue;
+    const th = 4 + ((rng()*3)|0);
+    for(let y=h;y<h+th;y++) setBlock(x,y,z,WOOD,true);
+    const top = h+th;
+    for(let ox=-2;ox<=2;ox++) for(let oz=-2;oz<=2;oz++) for(let oy=-2;oy<=1;oy++){
+      const d2 = ox*ox+oz*oz+oy*oy;
+      if(d2 > 5.2) continue;
+      const bx=x+ox, by=top+oy, bz=z+oz;
+      if(getBlock(bx,by,bz)===AIR) setBlock(bx,by,bz,LEAF,true);
+    }
+  }
+
+  // 마을 바닥(판자 광장)
+  for(let ox=-5;ox<=5;ox++) for(let oz=-5;oz<=5;oz++){
+    const x=VILL.x+ox, z=VILL.z+oz;
+    if(Math.hypot(ox,oz)>5.3) continue;
+    setBlock(x, heightMap[z*W+x]-1, z, PLANK, true);
+  }
+
+  // 스폰 위치 정하기
+  SPAWN.y = heightMap[(36|0)*W + 32] + 0.2;
+  worldDirty = true;
+}
+
+/* ═══════════════════════════════════════════════════
+   4. Three.js 기본 세팅
+   ═══════════════════════════════════════════════════ */
+const canvas = $('#c');
+const renderer = new THREE.WebGLRenderer({canvas, antialias:false, powerPreference:'high-performance'});
+renderer.setPixelRatio(Math.min(devicePixelRatio||1, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.outputEncoding = THREE.sRGBEncoding;
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x87ceeb);
+scene.fog = new THREE.Fog(0xbfe8ff, 55, 110);
+
+const camera = new THREE.PerspectiveCamera(70, 1, 0.1, 400);
+
+const hemi = new THREE.HemisphereLight(0xffffff, 0x99cc88, 0.85);
+scene.add(hemi);
+const sun = new THREE.DirectionalLight(0xfff3d0, 0.85);
+sun.castShadow = true;
+sun.shadow.mapSize.set(1024,1024);
+sun.shadow.camera.near = 1;
+sun.shadow.camera.far = 120;
+const SH = 26;
+sun.shadow.camera.left=-SH; sun.shadow.camera.right=SH;
+sun.shadow.camera.top=SH;  sun.shadow.camera.bottom=-SH;
+sun.shadow.bias = -0.0015;
+sun.shadow.normalBias = 0.04;
+scene.add(sun); scene.add(sun.target);
+
+/* ---- 하늘 + 구름 ---- */
+function buildSky(){
+  const c=document.createElement('canvas'); c.width=8; c.height=128;
+  const g=c.getContext('2d');
+  const grad=g.createLinearGradient(0,0,0,128);
+  grad.addColorStop(0,'#3ba2e8'); grad.addColorStop(.45,'#87ceeb');
+  grad.addColorStop(.78,'#cfefff'); grad.addColorStop(1,'#eaf8ff');
+  g.fillStyle=grad; g.fillRect(0,0,8,128);
+  const tex=new THREE.CanvasTexture(c);
+  const sky=new THREE.Mesh(
+    new THREE.SphereGeometry(190,20,14),
+    new THREE.MeshBasicMaterial({map:tex, side:THREE.BackSide, fog:false, depthWrite:false})
+  );
+  sky.frustumCulled=false;
+  scene.add(sky);
+
+  // 구름: 납작한 박스 몇 개를 뭉쳐서
+  const cloudMat = new THREE.MeshLambertMaterial({color:0xffffff, emissive:0x777777, fog:false});
+  const cloudGeo = new THREE.BoxGeometry(1,1,1);
+  const clouds = new THREE.Group(); clouds.frustumCulled=false;
+  const rng = makeRng(SEED+321);
+  for(let i=0;i<22;i++){
+    const grp = new THREE.Group();
+    const parts = 3 + ((rng()*4)|0);
+    for(let p=0;p<parts;p++){
+      const m = new THREE.Mesh(cloudGeo, cloudMat);
+      m.scale.set(6+rng()*10, 2.5+rng()*2, 5+rng()*8);
+      m.position.set((rng()-.5)*14, (rng()-.5)*2, (rng()-.5)*12);
+      grp.add(m);
+    }
+    grp.position.set((rng()-.5)*260, 44+rng()*26, (rng()-.5)*260);
+    clouds.add(grp);
+  }
+  scene.add(clouds);
+  return clouds;
+}
+const clouds = buildSky();
+
+/* ═══════════════════════════════════════════════════
+   5. 블록 렌더링 (InstancedMesh, 보이는 면만)
+   ═══════════════════════════════════════════════════ */
+const boxGeo = new THREE.BoxGeometry(1,1,1);
+const instMeshes = {};   // type -> InstancedMesh
+const instCap = {};      // type -> 현재 용량
+const _m4 = new THREE.Matrix4();
+
+function opaqueAt(x,y,z){
+  const t = getBlock(x,y,z);
+  if(t===AIR) return false;
+  const d = BLOCKS[t];
+  return !(d && d.transparent);
+}
+/* 6면 중 하나라도 바깥에 드러나면 그린다 */
+function isExposed(x,y,z){
+  return !opaqueAt(x+1,y,z) || !opaqueAt(x-1,y,z) ||
+         !opaqueAt(x,y+1,z) || !opaqueAt(x,y-1,z) ||
+         !opaqueAt(x,y,z+1) || !opaqueAt(x,y,z-1);
+}
+
+let visibleCount = 0;
+function rebuildWorldMesh(){
+  const lists = {};
+  for(const t of RENDER_TYPES) lists[t]=[];
+  const water = [];
+
+  for(const i of filled){
+    const x = i % W;
+    const z = ((i / W)|0) % D;
+    const y = (i / (W*D))|0;
+    const t = voxels[i];
+    if(t===AIR) continue;
+    if(t===WATER){ if(getBlock(x,y+1,z)!==WATER) water.push(i); continue; }
+    if(!isExposed(x,y,z)) continue;
+    (lists[t] || (lists[t]=[])).push(i);
+  }
+
+  visibleCount = 0;
+  for(const t of RENDER_TYPES){
+    const list = lists[t] || [];
+    visibleCount += list.length;
+    let mesh = instMeshes[t];
+    if(!mesh || instCap[t] < list.length){
+      if(mesh){ scene.remove(mesh); mesh.dispose(); }
+      const cap = Math.max(64, Math.ceil(list.length*1.4)+128);
+      mesh = new THREE.InstancedMesh(boxGeo, MATS[t], cap);
+      mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+      mesh.castShadow = !BLOCKS[t].transparent;
+      mesh.receiveShadow = true;
+      mesh.frustumCulled = false;
+      mesh.userData.blockType = t;
+      instMeshes[t]=mesh; instCap[t]=cap;
+      scene.add(mesh);
+    }
+    for(let k=0;k<list.length;k++){
+      const i=list[k];
+      const x=i%W, z=((i/W)|0)%D, y=(i/(W*D))|0;
+      _m4.makeTranslation(x+0.5, y+0.5, z+0.5);
+      mesh.setMatrixAt(k,_m4);
+    }
+    mesh.count = list.length;
+    mesh.instanceMatrix.needsUpdate = true;
+  }
+
+  // 물 표면
+  let wm = instMeshes[WATER];
+  if(!wm || instCap[WATER] < water.length){
+    if(wm){ scene.remove(wm); wm.dispose(); }
+    const cap = Math.max(64, water.length+128);
+    wm = new THREE.InstancedMesh(boxGeo, MATS[WATER], cap);
+    wm.frustumCulled=false; wm.receiveShadow=true;
+    instMeshes[WATER]=wm; instCap[WATER]=cap;
+    scene.add(wm);
+  }
+  for(let k=0;k<water.length;k++){
+    const i=water[k];
+    const x=i%W, z=((i/W)|0)%D, y=(i/(W*D))|0;
+    _m4.makeTranslation(x+0.5, y+0.43, z+0.5);
+    wm.setMatrixAt(k,_m4);
+  }
+  wm.count = water.length;
+  wm.instanceMatrix.needsUpdate = true;
+
+  worldDirty = false;
+}
+
+/* ═══════════════════════════════════════════════════
+   6. 캐릭터 (박스로 만든 귀여운 아이)
+   ═══════════════════════════════════════════════════ */
+function boxMesh(w,h,d,color){
+  const m = new THREE.Mesh(new THREE.BoxGeometry(w,h,d),
+    new THREE.MeshLambertMaterial({color:color}));
+  m.castShadow = true;
+  return m;
+}
+function faceTexture(){
+  return pixelTexture((g)=>{
+    g.fillStyle='#ffd9a8'; g.fillRect(0,0,TS,TS);
+    g.fillStyle='#3a2a20';
+    g.fillRect(4,6,2,3); g.fillRect(10,6,2,3);      // 눈
+    g.fillStyle='#ffffff'; g.fillRect(4,6,1,1); g.fillRect(10,6,1,1);
+    g.fillStyle='#c4604f'; g.fillRect(6,11,4,1); g.fillRect(5,10,1,1); g.fillRect(10,10,1,1); // 웃는 입
+    g.fillStyle='rgba(255,140,140,.5)'; g.fillRect(2,9,2,2); g.fillRect(12,9,2,2); // 볼터치
+  }, 777);
+}
+
+const SKIN = {body:0xff5b5b, legs:0x4a90d9, arms:0xffd9a8, head:0xffd9a8};
+
+function buildAvatar(colors){
+  const g = new THREE.Group();
+  const face = faceTexture();
+  const headMats = [];
+  for(let i=0;i<6;i++){
+    headMats.push(new THREE.MeshLambertMaterial(
+      i===4 ? {map:face} : {color:colors.head}));
+  }
+  const head = new THREE.Mesh(new THREE.BoxGeometry(.62,.62,.62), headMats);
+  head.castShadow=true; head.position.y = 1.42;
+
+  const hair = boxMesh(.66,.16,.66, 0x4b3621); hair.position.y = 1.72;
+
+  const body = boxMesh(.62,.62,.36, colors.body); body.position.y = .95;
+  const armL = boxMesh(.22,.60,.24, colors.arms); armL.position.set(-.42,.95,0);
+  const armR = boxMesh(.22,.60,.24, colors.arms); armR.position.set( .42,.95,0);
+  const legL = boxMesh(.26,.62,.28, colors.legs); legL.position.set(-.16,.33,0);
+  const legR = boxMesh(.26,.62,.28, colors.legs); legR.position.set( .16,.33,0);
+  // 팔/다리는 위쪽을 중심으로 흔들리게 pivot 그룹 사용
+  const pv = (mesh, y) => { const p=new THREE.Group(); p.position.set(mesh.position.x,y,0);
+    mesh.position.set(0, mesh.position.y-y, 0); p.add(mesh); g.add(p); return p; };
+  g.add(head, hair, body);
+  const pArmL = pv(armL, 1.22), pArmR = pv(armR, 1.22);
+  const pLegL = pv(legL, .64),  pLegR = pv(legR, .64);
+
+  g.userData = {head, hair, body, pArmL, pArmR, pLegL, pLegR};
+  return g;
+}
+
+const avatar = buildAvatar(SKIN);
+scene.add(avatar);
+
+/* ═══════════════════════════════════════════════════
+   7. 플레이어 물리 (중력 + 점프 + 벽 막힘)
+   ═══════════════════════════════════════════════════ */
+const PW = 0.3;     // 반 너비
+const PH = 1.72;    // 키
+const player = {
+  x:SPAWN.x, y:SPAWN.y, z:SPAWN.z,
+  vx:0, vy:0, vz:0,
+  onGround:false, yaw:0, pitch:-0.18,
+  squash:0, walkPhase:0, inWater:false, boost:1
+};
+
+function anySolidIn(minX,minY,minZ,maxX,maxY,maxZ){
+  for(let x=Math.floor(minX); x<=Math.floor(maxX); x++)
+   for(let y=Math.floor(minY); y<=Math.floor(maxY); y++)
+    for(let z=Math.floor(minZ); z<=Math.floor(maxZ); z++)
+      if(solidAt(x,y,z)) return true;
+  return false;
+}
+
+function moveAxis(axis, d){
+  if(d===0) return;
+  player[axis] += d;
+  const x0=Math.floor(player.x-PW),      x1=Math.floor(player.x+PW);
+  const y0=Math.floor(player.y),          y1=Math.floor(player.y+PH-0.001);
+  const z0=Math.floor(player.z-PW),      z1=Math.floor(player.z+PW);
+
+  let hit = null;
+  for(let x=x0;x<=x1;x++) for(let y=y0;y<=y1;y++) for(let z=z0;z<=z1;z++){
+    if(!solidAt(x,y,z)) continue;
+    const v = axis==='x' ? x : (axis==='y' ? y : z);
+    if(hit===null) hit = v;
+    else hit = d>0 ? Math.min(hit,v) : Math.max(hit,v);
+  }
+  if(hit===null) return;
+
+  if(axis==='x'){ player.x = d>0 ? hit-PW-0.001 : hit+1+PW+0.001; player.vx=0; }
+  else if(axis==='z'){ player.z = d>0 ? hit-PW-0.001 : hit+1+PW+0.001; player.vz=0; }
+  else {
+    if(d>0){ player.y = hit-PH-0.001; player.vy=0; }
+    else {
+      player.y = hit+1;
+      if(player.vy < -12){ player.squash = Math.min(1, -player.vy/26); Sound.land(); }
+      player.vy = 0; player.onGround = true;
+    }
+  }
+}
+
+const GRAV = -30, JUMP_V = 10.2, SPEED = 6.4, AIR_CTRL = 0.55;
+
+function updatePlayer(dt){
+  const f = input.forward(), s = input.strafe();
+  let ax=0, az=0;
+  if(f||s){
+    const len = Math.hypot(f,s);
+    const fx = -Math.sin(player.yaw), fz = -Math.cos(player.yaw);
+    const rx =  Math.cos(player.yaw), rz = -Math.sin(player.yaw);
+    ax = (fx*f + rx*s)/len;
+    az = (fz*f + rz*s)/len;
+  }
+  const mult = player.inWater ? 0.62 : 1;
+  const targetVX = ax*SPEED*mult, targetVZ = az*SPEED*mult;
+  const k = player.onGround ? 1 : AIR_CTRL;
+  player.vx = lerp(player.vx, targetVX, clamp(k*dt*16,0,1));
+  player.vz = lerp(player.vz, targetVZ, clamp(k*dt*16,0,1));
+
+  // 물 속인지
+  const hx=Math.floor(player.x), hz=Math.floor(player.z);
+  player.inWater = getBlock(hx, Math.floor(player.y+0.4), hz)===WATER;
+
+  if(input.jumpWanted() && (player.onGround || player.inWater)){
+    player.vy = player.inWater ? JUMP_V*0.62 : JUMP_V * (player.boost || 1);
+    player.onGround = false;
+    input.consumeJump();
+    Sound.jump();
+  }
+  player.vy += (player.inWater ? GRAV*0.35 : GRAV) * dt;
+  if(player.inWater) player.vy = Math.max(player.vy, -5);
+  player.vy = Math.max(player.vy, -45);
+
+  player.onGround = false;
+  moveAxis('x', player.vx*dt);
+  moveAxis('z', player.vz*dt);
+  moveAxis('y', player.vy*dt);
+
+  // 섬 밖으로 떨어져도 죽지 않고 통통 튀어서 돌아오기
+  if(player.y < -14){
+    bounceBack();
+  }
+
+  // 걷기 애니메이션
+  const speed = Math.hypot(player.vx, player.vz);
+  player.walkPhase += speed*dt*2.6;
+  const sw = player.onGround ? Math.sin(player.walkPhase)*clamp(speed/SPEED,0,1)*0.85 : 0.25;
+  const ud = avatar.userData;
+  ud.pLegL.rotation.x =  sw;
+  ud.pLegR.rotation.x = -sw;
+  ud.pArmL.rotation.x = -sw*0.8;
+  ud.pArmR.rotation.x =  sw*0.8;
+  if(!player.onGround){ ud.pArmL.rotation.x = -0.9; ud.pArmR.rotation.x = -0.9; }
+
+  player.squash = Math.max(0, player.squash - dt*3);
+  const sq = 1 - player.squash*0.35;
+  avatar.scale.set(1/Math.max(sq,.5)*0.95+0.05, sq, 1/Math.max(sq,.5)*0.95+0.05);
+
+  avatar.position.set(player.x, player.y, player.z);
+  if(speed>0.4) avatar.rotation.y = lerp2angle(avatar.rotation.y, Math.atan2(player.vx, player.vz), dt*12);
+}
+function lerp2angle(a,b,t){
+  let d = (b-a)%(Math.PI*2);
+  if(d> Math.PI) d-=Math.PI*2;
+  if(d<-Math.PI) d+=Math.PI*2;
+  return a + d*clamp(t,0,1);
+}
+function bounceBack(){
+  player.x = SPAWN.x; player.z = SPAWN.z;
+  player.y = SPAWN.y + 14;
+  player.vx = player.vz = 0; player.vy = 3;
+  showHint('🎈 앗! 통통 튀어서 마을로 돌아왔어요', 1800);
+  Sound.bounce();
+}
+
+/* ═══════════════════════════════════════════════════
+   8. 카메라 (3인칭, 마우스로 둘러보기)
+   ═══════════════════════════════════════════════════ */
+const camState = {dist:6.2, curDist:6.2};
+function updateCamera(dt){
+  const hx = player.x, hy = player.y + 1.5, hz = player.z;
+  const cp = Math.cos(player.pitch), sp = Math.sin(player.pitch);
+  const dirX =  Math.sin(player.yaw)*cp;
+  const dirY = -sp;
+  const dirZ =  Math.cos(player.yaw)*cp;
+
+  // 벽에 카메라가 박히지 않게 거리 줄이기
+  let want = camState.dist;
+  const step = 0.25;
+  for(let d=step; d<=camState.dist; d+=step){
+    const px = hx + dirX*d, py = hy + dirY*d, pz = hz + dirZ*d;
+    if(solidAt(Math.floor(px),Math.floor(py),Math.floor(pz))){ want = Math.max(1.1, d-step*1.6); break; }
+  }
+  camState.curDist = lerp(camState.curDist, want, clamp(dt*14,0,1));
+  camera.position.set(hx + dirX*camState.curDist, hy + dirY*camState.curDist, hz + dirZ*camState.curDist);
+  camera.lookAt(hx, hy, hz);
+
+  sun.position.set(hx+28, 48, hz+18);
+  sun.target.position.set(hx, player.y, hz);
+  sun.target.updateMatrixWorld();
+}
+
+/* ═══════════════════════════════════════════════════
+   9. 입력 (키보드 + 마우스)
+   ═══════════════════════════════════════════════════ */
+const keys = Object.create(null);
+let jumpBuffer = 0;
+const input = {
+  forward(){
+    let v=0;
+    if(keys['KeyW']||keys['ArrowUp']) v+=1;
+    if(keys['KeyS']||keys['ArrowDown']) v-=1;
+    return v + (touch.moveY||0);
+  },
+  strafe(){
+    let v=0;
+    if(keys['KeyD']||keys['ArrowRight']) v+=1;
+    if(keys['KeyA']||keys['ArrowLeft']) v-=1;
+    return v + (touch.moveX||0);
+  },
+  jumpWanted(){ return jumpBuffer>0; },
+  consumeJump(){ jumpBuffer=0; }
+};
+const touch = {moveX:0, moveY:0};
+
+addEventListener('keydown', e=>{
+  if(e.code==='Space'){ jumpBuffer = 0.14; e.preventDefault(); }
+  keys[e.code]=true;
+});
+addEventListener('keyup', e=>{ keys[e.code]=false; });
+addEventListener('blur', ()=>{ for(const k in keys) keys[k]=false; });
+
+let locked = false;
+function requestLock(){
+  if(canvas.requestPointerLock) canvas.requestPointerLock();
+}
+document.addEventListener('pointerlockchange', ()=>{
+  locked = (document.pointerLockElement === canvas);
+  document.body.classList.toggle('nolock', !locked);
+  $('#resume').style.display = (started && !locked) ? 'flex' : 'none';
+});
+addEventListener('mousemove', e=>{
+  if(!locked) return;
+  player.yaw   -= e.movementX * 0.0024;
+  player.pitch  = clamp(player.pitch - e.movementY * 0.0024, -1.35, 1.15);
+});
+$('#resume').addEventListener('click', requestLock);
+canvas.addEventListener('click', ()=>{ if(started && !locked) requestLock(); });
+canvas.addEventListener('contextmenu', e=>e.preventDefault());
+
+/* ═══════════════════════════════════════════════════
+   10. 소리 (Web Audio로 직접 합성 — 파일 없음)
+   ═══════════════════════════════════════════════════ */
+const Sound = (function(){
+  let ctx = null, master = null, enabled = true;
+  function ensure(){
+    if(ctx) return ctx;
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if(!AC) { enabled=false; return null; }
+    ctx = new AC();
+    master = ctx.createGain(); master.gain.value = 0.22; master.connect(ctx.destination);
+    return ctx;
+  }
+  function blip(freq, dur, type, vol, slideTo){
+    if(!enabled) return;
+    const c = ensure(); if(!c) return;
+    if(c.state==='suspended') c.resume();
+    const o = c.createOscillator(), g = c.createGain();
+    o.type = type||'square';
+    o.frequency.setValueAtTime(freq, c.currentTime);
+    if(slideTo) o.frequency.exponentialRampToValueAtTime(Math.max(40,slideTo), c.currentTime+dur);
+    g.gain.setValueAtTime(0.0001, c.currentTime);
+    g.gain.exponentialRampToValueAtTime(vol||0.5, c.currentTime+0.012);
+    g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime+dur);
+    o.connect(g); g.connect(master);
+    o.start(); o.stop(c.currentTime+dur+0.02);
+  }
+  function noise(dur, vol, filterHz){
+    if(!enabled) return;
+    const c = ensure(); if(!c) return;
+    const len = Math.floor(c.sampleRate*dur);
+    const buf = c.createBuffer(1,len,c.sampleRate);
+    const data = buf.getChannelData(0);
+    for(let i=0;i<len;i++) data[i] = (Math.random()*2-1)*(1-i/len);
+    const src = c.createBufferSource(); src.buffer = buf;
+    const f = c.createBiquadFilter(); f.type='lowpass'; f.frequency.value = filterHz||1200;
+    const g = c.createGain(); g.gain.value = vol||0.4;
+    src.connect(f); f.connect(g); g.connect(master);
+    src.start();
+  }
+  return {
+    resume(){ const c=ensure(); if(c && c.state==='suspended') c.resume(); },
+    setEnabled(v){ enabled=v; },
+    isEnabled(){ return enabled; },
+    jump(){ blip(420, .13, 'square', .35, 720); },
+    land(){ noise(.09,.25,700); },
+    bounce(){ blip(200,.28,'sine',.5,900); },
+    step(){ noise(.05,.10,500); }
+  };
+})();
+
+/* ═══════════════════════════════════════════════════
+   11. 화면 알림
+   ═══════════════════════════════════════════════════ */
+let hintTimer = null;
+function showHint(text, ms){
+  const el = $('#hint');
+  el.textContent = text; el.classList.add('on');
+  clearTimeout(hintTimer);
+  hintTimer = setTimeout(()=>el.classList.remove('on'), ms||2000);
+}
+function popText(text, color){
+  const el = document.createElement('div');
+  el.className='pop'; el.textContent=text;
+  el.style.color = color||'#fff';
+  el.style.left = (50 + (Math.random()*16-8)) + '%';
+  el.style.top  = '52%';
+  $('#pops').appendChild(el);
+  setTimeout(()=>el.remove(), 1000);
+}
+
+/* ═══════════════════════════════════════════════════
+   12. 메인 루프
+   ═══════════════════════════════════════════════════ */
+let started = false;
+let lastT = 0, fpsAcc = 0, fpsCount = 0;
+
+function resize(){
+  const w = innerWidth, h = innerHeight;
+  renderer.setSize(w,h,false);
+  camera.aspect = w/h;
+  camera.updateProjectionMatrix();
+}
+addEventListener('resize', resize);
+
+function frame(t){
+  requestAnimationFrame(frame);
+  const now = t*0.001;
+  let dt = lastT ? now-lastT : 0.016;
+  lastT = now;
+  dt = Math.min(dt, 0.05);
+
+  if(jumpBuffer>0) jumpBuffer -= dt;
+
+  if(started){
+    updatePlayer(dt);
+    updateCamera(dt);
+  }
+  if(worldDirty) rebuildWorldMesh();
+
+  clouds.position.x += dt*0.6;
+  if(clouds.position.x > 140) clouds.position.x = -140;
+
+  fpsAcc += dt; fpsCount++;
+  if(fpsAcc > 0.5){
+    $('#fps').textContent = Math.round(fpsCount/fpsAcc) + ' fps · 블록 ' + visibleCount;
+    fpsAcc = 0; fpsCount = 0;
+  }
+  renderer.render(scene, camera);
+}
+
+/* ═══════════════════════════════════════════════════
+   13. 시작!
+   ═══════════════════════════════════════════════════ */
+buildTextures();
+buildMaterials();
+generateWorld();
+resize();
+rebuildWorldMesh();
+player.x=SPAWN.x; player.y=SPAWN.y+1; player.z=SPAWN.z;
+requestAnimationFrame(frame);
+
+$('#startbtn').addEventListener('click', ()=>{
+  $('#start').style.display='none';
+  started = true;
+  Sound.resume();
+  requestLock();
+  showHint('WASD로 움직이고 스페이스로 점프해 보세요!', 4000);
+});
+
+window.BW = {player, setBlock, getBlock, scene, camera, renderer, voxels, W,H,D, IDX, keys,
+  sim(dt,n){ for(let i=0;i<(n||1);i++){ if(jumpBuffer>0) jumpBuffer-=dt; updatePlayer(dt); updateCamera(dt);} },
+  pressJump(){ jumpBuffer=0.14; }};
+})();
+</script>
+</body>
+</html>
