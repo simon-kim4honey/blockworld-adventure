@@ -72,10 +72,10 @@
 
   /* 잠깐 멈춤(포인터 잠금 해제) 안내 */
   #resume{
-    position:fixed; inset:0; z-index:35; display:none; align-items:center; justify-content:center;
-    background:rgba(20,30,50,.45); pointer-events:auto; cursor:pointer;
+    position:fixed; left:50%; top:16px; transform:translateX(-50%);
+    z-index:35; display:none; pointer-events:none;
   }
-  #resume .card{font-size:clamp(18px,4vw,26px); padding:22px 34px; text-align:center;}
+  #resume .card{font-size:15px; padding:8px 16px; text-align:center; opacity:.92;}
 
   /* 상단 좌측: 코인 + 레벨 */
   #hud-left{position:fixed; left:14px; top:14px; display:flex; flex-direction:column; gap:8px;}
@@ -139,6 +139,23 @@
   }
   .slot.lock .nm{font-size:10px;}
 
+  /* 큰 축하 배너 */
+  #banner{
+    position:fixed; left:50%; top:26%; transform:translate(-50%,-50%) scale(.4);
+    opacity:0; pointer-events:none; text-align:center; z-index:20;
+    font-size:clamp(28px,6vw,52px); color:#fff;
+    text-shadow:0 5px 0 rgba(0,0,0,.28), 0 10px 26px rgba(0,0,0,.35);
+  }
+  #banner.show{animation:bannerPop 2.4s ease-out forwards;}
+  @keyframes bannerPop{
+    0%{opacity:0; transform:translate(-50%,-50%) scale(.4) rotate(-6deg);}
+    18%{opacity:1; transform:translate(-50%,-50%) scale(1.12) rotate(2deg);}
+    30%{transform:translate(-50%,-50%) scale(1) rotate(0);}
+    80%{opacity:1; transform:translate(-50%,-50%) scale(1);}
+    100%{opacity:0; transform:translate(-50%,-80%) scale(.95);}
+  }
+  #banner .small{display:block; font-size:.5em; margin-top:8px; opacity:.95;}
+
   #err{
     position:fixed; inset:0; z-index:99; display:none; align-items:center; justify-content:center;
     background:#2b2140; color:#fff; text-align:center; padding:30px; font-size:20px; line-height:1.7;
@@ -162,22 +179,24 @@
   <div class="card" id="hint"></div>
   <div id="pops"></div>
   <div id="hotbar"></div>
+  <div id="banner"></div>
   <div id="fps"></div>
 </div>
 
-<div id="resume"><div class="card">👆 화면을 클릭하면<br>다시 놀 수 있어요!</div></div>
+<div id="resume"><div class="card">🖱️ 마우스로 둘러보려면 화면을 클릭 · 키보드만 쓸 거면 그냥 하세요</div></div>
 
 <div id="start">
   <h1>🧱 블록월드 어드벤처</h1>
   <div class="sub">블록을 쌓고, 뛰어놀고, 코인을 모으자!</div>
   <button class="bigbtn" id="startbtn">▶ 시작하기</button>
   <div class="keys">
-    <span>WASD · 화살표 = 이동</span>
+    <span>W A S D = 이동</span>
     <span>스페이스 = 점프</span>
-    <span>마우스 = 둘러보기</span>
-    <span>왼쪽 클릭 = 블록 부수기</span>
-    <span>오른쪽 클릭 = 블록 놓기</span>
+    <span>← ↑ ↓ → = 둘러보기</span>
+    <span>Q = 블록 부수기</span>
+    <span>E = 블록 놓기</span>
     <span>1~8 = 블록 고르기</span>
+    <span style="opacity:.75">마우스를 써도 돼요 (클릭 = 부수기 / 놓기)</span>
   </div>
 </div>
 
@@ -405,7 +424,7 @@ function generateWorld(){
     // 섬 모양: 가장자리로 갈수록 낮아짐
     const dx=(x-32)/32, dz=(z-32)/32;
     const dist = Math.sqrt(dx*dx+dz*dz);
-    const island = clamp(1.25 - dist*1.25, 0, 1);
+    const island = clamp((1 - dist)*3.2, 0, 1);
 
     let h = 5 + n1(u,v)*9 + n2(u,v)*3.5;
     h = 2 + (h-2) * (island*island*(3-2*island));
@@ -833,23 +852,25 @@ let jumpBuffer = 0;
 const input = {
   forward(){
     let v=0;
-    if(keys['KeyW']||keys['ArrowUp']) v+=1;
-    if(keys['KeyS']||keys['ArrowDown']) v-=1;
+    if(keys['KeyW']) v+=1;
+    if(keys['KeyS']) v-=1;
     return v + (touch.moveY||0);
   },
   strafe(){
     let v=0;
-    if(keys['KeyD']||keys['ArrowRight']) v+=1;
-    if(keys['KeyA']||keys['ArrowLeft']) v-=1;
+    if(keys['KeyD']) v+=1;
+    if(keys['KeyA']) v-=1;
     return v + (touch.moveX||0);
   },
   jumpWanted(){ return jumpBuffer>0; },
   consumeJump(){ jumpBuffer=0; }
 };
-const touch = {moveX:0, moveY:0};
+const touch = {moveX:0, moveY:0, lookX:0, lookY:0, breaking:false, placing:false};
 
+const NO_SCROLL = {Space:1, ArrowUp:1, ArrowDown:1, ArrowLeft:1, ArrowRight:1};
 addEventListener('keydown', e=>{
-  if(e.code==='Space'){ jumpBuffer = 0.14; e.preventDefault(); }
+  if(e.code==='Space') jumpBuffer = 0.14;
+  if(NO_SCROLL[e.code]) e.preventDefault();
   keys[e.code]=true;
 });
 addEventListener('keyup', e=>{ keys[e.code]=false; });
@@ -862,16 +883,36 @@ function requestLock(){
 document.addEventListener('pointerlockchange', ()=>{
   locked = (document.pointerLockElement === canvas);
   document.body.classList.toggle('nolock', !locked);
-  $('#resume').style.display = (started && !locked) ? 'flex' : 'none';
+  $('#resume').style.display = (started && !locked) ? 'block' : 'none';
+  if(started && !locked) showMouseHintBriefly();
 });
 addEventListener('mousemove', e=>{
   if(!locked) return;
   player.yaw   -= e.movementX * 0.0024;
   player.pitch  = clamp(player.pitch - e.movementY * 0.0024, -1.18, 0.95);
 });
-$('#resume').addEventListener('click', requestLock);
+let mouseHintTimer = null;
+function showMouseHintBriefly(){
+  $('#resume').style.display = 'block';
+  clearTimeout(mouseHintTimer);
+  mouseHintTimer = setTimeout(()=>{ $('#resume').style.display='none'; }, 6000);
+}
 canvas.addEventListener('click', ()=>{ if(started && !locked) requestLock(); });
 canvas.addEventListener('contextmenu', e=>e.preventDefault());
+
+/* 화살표 키로 둘러보기 — 마우스가 없어도 다 할 수 있게 */
+const LOOK_YAW = 2.1, LOOK_PITCH = 1.5;
+function updateLook(dt){
+  let ly = 0, lp = 0;
+  if(keys['ArrowLeft'])  ly += 1;
+  if(keys['ArrowRight']) ly -= 1;
+  if(keys['ArrowUp'])    lp -= 1;
+  if(keys['ArrowDown'])  lp += 1;
+  ly += touch.lookX || 0;
+  lp += touch.lookY || 0;
+  if(ly) player.yaw   += ly * LOOK_YAW * dt;
+  if(lp) player.pitch  = clamp(player.pitch + lp * LOOK_PITCH * dt, -1.18, 0.95);
+}
 
 /* ═══════════════════════════════════════════════════
    10. 소리 (Web Audio로 직접 합성 — 파일 없음)
@@ -925,6 +966,9 @@ const Sound = (function(){
     deny(){ blip(180,.16,'sawtooth',.28,120); },
     placeBlock(){ blip(520,.09,'square',.32,760); noise(.06,.12,900); },
     breakBlock(){ noise(.13,.34,900); blip(330,.11,'square',.22,150); },
+    coin(){ blip(880,.09,'square',.3); blip(1320,.12,'square',.22); },
+    star(){ [784,988,1319,1568].forEach((f,i)=> setTimeout(()=>blip(f,.16,'triangle',.4), i*60)); },
+    fanfare(){ [523,523,523,659,784,1047,1319].forEach((f,i)=> setTimeout(()=>blip(f,.3,'triangle',.5), i*140)); },
     levelUp(){ [523,659,784,1047].forEach((f,i)=> setTimeout(()=>blip(f,.22,'triangle',.45), i*90)); }
   };
 })();
@@ -932,11 +976,13 @@ const Sound = (function(){
 /* ═══════════════════════════════════════════════════
    10.5 저장 데이터 + 경험치
    ═══════════════════════════════════════════════════ */
-const SAVE_KEY = 'blockworld_save_v2';
+const SAVE_KEY = 'blockworld_save_v3';
 const state = {
   coins:0, exp:0, level:1,
-  placed:0, broken:0,
-  edits:{}                 // "x,y,z" -> 블록 번호 (0 = 부순 자리)
+  placed:0, broken:0, starsGot:0,
+  edits:{},                // "x,y,z" -> 블록 번호 (0 = 부순 자리)
+  collected:{},            // 이미 먹은 코인/별
+  obbyDone:{}              // 완주한 코스
 };
 const EXP_NEED = lv => 60 + (lv-1)*45;
 
@@ -945,8 +991,9 @@ function saveSoon(){ clearTimeout(saveTimer); saveTimer = setTimeout(saveNow, 70
 function saveNow(){
   try{
     localStorage.setItem(SAVE_KEY, JSON.stringify({
-      v:2, coins:state.coins, exp:state.exp, level:state.level,
-      placed:state.placed, broken:state.broken, edits:state.edits,
+      v:3, coins:state.coins, exp:state.exp, level:state.level,
+      placed:state.placed, broken:state.broken, starsGot:state.starsGot,
+      edits:state.edits, collected:state.collected, obbyDone:state.obbyDone,
       pos:{x:player.x, y:player.y, z:player.z}, slot:selectedSlot
     }));
   }catch(e){ /* 저장 공간이 없어도 게임은 계속 */ }
@@ -956,10 +1003,12 @@ function loadSave(){
   try{ raw = localStorage.getItem(SAVE_KEY); }catch(e){ return; }
   if(!raw) return;
   let d; try{ d = JSON.parse(raw); }catch(e){ return; }
-  if(!d || d.v !== 2) return;
+  if(!d || d.v !== 3) return;
   state.coins = d.coins|0; state.exp = d.exp|0; state.level = Math.max(1, d.level|0);
-  state.placed = d.placed|0; state.broken = d.broken|0;
+  state.placed = d.placed|0; state.broken = d.broken|0; state.starsGot = d.starsGot|0;
   state.edits = d.edits || {};
+  state.collected = d.collected || {};
+  state.obbyDone = d.obbyDone || {};
   if(typeof d.slot === 'number') selectedSlot = clamp(d.slot,0,7);
   if(d.pos && isFinite(d.pos.x)){ SPAWN_LOAD = d.pos; }
 }
@@ -1200,9 +1249,375 @@ addEventListener('keydown', e=>{
 });
 function updateActions(dt){
   actCooldown -= dt;
-  if(actCooldown > 0 || !locked) return;
-  if(mouseDown[0] && breakBlock()) actCooldown = 0.22;
-  else if(mouseDown[2] && placeBlock()) actCooldown = 0.22;
+  if(actCooldown > 0) return;
+  const wantBreak = keys['KeyQ'] || keys['KeyF'] || touch.breaking || (locked && mouseDown[0]);
+  const wantPlace = keys['KeyE'] || keys['KeyR'] || touch.placing  || (locked && mouseDown[2]);
+  if(wantBreak && breakBlock()) actCooldown = 0.22;
+  else if(wantPlace && placeBlock()) actCooldown = 0.22;
+}
+
+/* ═══════════════════════════════════════════════════
+   10.9 점프 코스(오비) 3개 만들기
+   ═══════════════════════════════════════════════════ */
+const OBBIES = [
+  {id:'bronze', name:'동 코스', emoji:'🥉', block:PATH_B, color:0xc87137,
+   seed:101, ang0:-1.45, rad:27.5, count:16, size:1, gap:4.0, gapUp:3.4, y0:14, y1:20,
+   coins:120, exp:90},
+  {id:'silver', name:'은 코스', emoji:'🥈', block:PATH_S, color:0xd5dae0,
+   seed:202, ang0:0.62,  rad:28.0, count:20, size:1, gap:5.0, gapUp:4.2, y0:14, y1:25,
+   coins:250, exp:200},
+  {id:'gold',   name:'금 코스', emoji:'🥇', block:PATH_G, color:0xffd93d,
+   seed:303, ang0:2.55,  rad:28.5, count:24, size:0, gap:3.8, gapUp:3.1, y0:14, y1:31,
+   coins:600, exp:420},
+];
+const obbyBlockOwner = new Map();   // 복셀 index -> [코스번호, 발판번호]
+const flags = [];
+
+function buildObbies(){
+  OBBIES.forEach((o, ci)=>{
+    const rng = makeRng(o.seed);
+    o.plats = [];
+
+    /* 1) 섬 위 출발대 + 멀리서도 보이는 기둥 */
+    const sx = Math.round(32 + Math.cos(o.ang0)*22);
+    const sz = Math.round(32 + Math.sin(o.ang0)*22);
+    const sy = heightMap[sz*W+sx];
+    o.start = {x:sx+0.5, y:sy, z:sz+0.5};
+    for(let dx=-1;dx<=1;dx++) for(let dz=-1;dz<=1;dz++)
+      setBlock(sx+dx, sy, sz+dz, o.block, true);
+    for(let k=1;k<=7;k++) setBlock(sx, sy+k, sz, k>4 ? o.block : WOOD, true);
+
+    /* 1-b) 출발대에서 첫 발판까지 이어지는 계단 */
+    o.stairFrom = {x:sx, y:sy, z:sz};
+
+    /* 2) 하늘로 이어지는 발판들 (호를 그리며 점점 높아짐)
+       측정한 점프 거리: 같은 높이 4.27칸, 한 칸 위 3.41칸.
+       그래서 발판 중심 간격은 평지 o.gap, 한 칸 오를 때 o.gapUp 으로 제한한다. */
+    let ang = o.ang0, rad = o.rad, y = o.y0;
+    let px = Math.round(32 + Math.cos(ang)*rad), pz = Math.round(32 + Math.sin(ang)*rad);
+    for(let i=0;i<o.count;i++){
+      o.plats.push({x:px, y:y, z:pz});
+      for(let dx=-o.size; dx<=o.size; dx++) for(let dz=-o.size; dz<=o.size; dz++){
+        if(!inside(px+dx, y, pz+dz)) continue;
+        setBlock(px+dx, y, pz+dz, o.block, true);
+        obbyBlockOwner.set(IDX(px+dx, y, pz+dz), [ci, i]);
+      }
+      // 다음 발판 자리 정하기 — 반올림 뒤 실제 거리가 한계를 넘으면 좁혀서 다시 시도
+      const wantY = o.y0 + Math.round((o.y1 - o.y0) * (i+1) / o.count);
+      const rise = clamp(wantY - y, 0, 1);
+      const maxD = rise > 0 ? o.gapUp : o.gap;
+      const minD = 2*o.size + 1.5;
+      let nx = px, nz = pz, arc = maxD, ok = false;
+      const dRad = (rng()-0.5)*1.1;
+      for(let tryN=0; tryN<8; tryN++){
+        const a2 = ang + arc/rad;
+        const r2 = clamp(rad + dRad, 26.8, 29.2);
+        nx = Math.round(32 + Math.cos(a2)*r2);
+        nz = Math.round(32 + Math.sin(a2)*r2);
+        const d = Math.hypot(nx-px, nz-pz);
+        if(d <= maxD + 0.01 && d >= minD){ ang = a2; rad = r2; ok = true; break; }
+        arc -= 0.25;
+        if(arc < minD) break;
+      }
+      if(!ok){ ang += maxD/rad; nx = Math.round(32 + Math.cos(ang)*rad); nz = Math.round(32 + Math.sin(ang)*rad); }
+      px = nx; pz = nz; y = y + rise;
+    }
+    o.endAng = ang; o.endRad = rad; o.endY = y;
+
+    /* 2-b) 계단 놓기 */
+    buildStairs(o.stairFrom, o.plats[0], o.block, ci);
+
+    /* 3) 도착 발판 + 깃발 */
+    const lastP = o.plats[o.plats.length-1];
+    const prevP = o.plats[o.plats.length-2] || lastP;
+    // 마지막 발판에서 가던 방향 그대로, 뛸 수 있는 거리 안에 도착 발판을 놓는다
+    let ux = lastP.x - prevP.x, uz = lastP.z - prevP.z;
+    const ul = Math.hypot(ux,uz) || 1;
+    ux /= ul; uz /= ul;
+    let gx = lastP.x, gz = lastP.z;
+    for(let d = o.gapUp; d >= 2*o.size+1.5; d -= 0.2){
+      const cx = Math.round(lastP.x + ux*d), cz = Math.round(lastP.z + uz*d);
+      const real = Math.hypot(cx-lastP.x, cz-lastP.z);
+      if(real >= 2*o.size+1.5 && real <= o.gapUp + 0.01 && inside(cx,0,cz)){ gx=cx; gz=cz; break; }
+    }
+    const gy = o.endY;
+    o.goal = {x:gx, y:gy, z:gz};
+    for(let dx=-2;dx<=2;dx++) for(let dz=-2;dz<=2;dz++){
+      if(Math.hypot(dx,dz)>2.4 || !inside(gx+dx,gy,gz+dz)) continue;
+      setBlock(gx+dx, gy, gz+dz, o.block, true);
+      obbyBlockOwner.set(IDX(gx+dx,gy,gz+dz), [ci, o.count]);
+    }
+    flags.push(makeFlag(gx+0.5, gy+1, gz+0.5, o.color, ci));
+  });
+}
+
+/* 두 지점을 한 칸씩 올라가는 계단으로 이어 붙인다 */
+function buildStairs(from, to, block, ci){
+  const dx = to.x - from.x, dz = to.z - from.z;
+  const steps = Math.max(Math.abs(dx), Math.abs(dz), Math.abs(to.y - from.y));
+  for(let i=1;i<=steps;i++){
+    const t = i/steps;
+    const x = Math.round(from.x + dx*t);
+    const z = Math.round(from.z + dz*t);
+    const y = Math.round(from.y + (to.y - from.y)*t);
+    for(let ox=-1; ox<=1; ox++) for(let oz=-1; oz<=1; oz++){
+      if(Math.abs(ox)+Math.abs(oz) > 1) continue;
+      if(!inside(x+ox,y,z+oz)) continue;
+      if(isSolidType(getBlock(x+ox,y,z+oz))) continue;
+      setBlock(x+ox, y, z+oz, block, true);
+      obbyBlockOwner.set(IDX(x+ox,y,z+oz), [ci, 0]);
+    }
+    // 계단 위로 2칸은 비워서 머리가 안 걸리게
+    for(let cy=1; cy<=2; cy++) if(getBlock(x,y+cy,z)!==AIR && !BLOCKS[getBlock(x,y+cy,z)].liquid) setBlock(x,y+cy,z,AIR,true);
+  }
+}
+
+function makeFlag(x,y,z,color,ci){
+  const g = new THREE.Group();
+  const pole = new THREE.Mesh(new THREE.BoxGeometry(.12,3.2,.12),
+    new THREE.MeshLambertMaterial({color:0x8a6a4a}));
+  pole.position.y = 1.6; pole.castShadow = true;
+  const cloth = new THREE.Mesh(new THREE.BoxGeometry(1.1,.7,.06),
+    new THREE.MeshLambertMaterial({color:color, emissive:color, emissiveIntensity:.25}));
+  cloth.position.set(.6, 2.8, 0); cloth.castShadow = true;
+  g.add(pole, cloth);
+  g.position.set(x,y,z);
+  g.userData = {cloth, ci, t:Math.random()*6};
+  scene.add(g);
+  return g;
+}
+
+/* ═══════════════════════════════════════════════════
+   10.10 코인 · 별 모으기
+   ═══════════════════════════════════════════════════ */
+const Collect = (function(){
+  const coinGeo = new THREE.CylinderGeometry(.30,.30,.09,14);
+  coinGeo.rotateX(Math.PI/2);
+  const coinMat = new THREE.MeshLambertMaterial({color:0xffc82e, emissive:0xffa000, emissiveIntensity:.45});
+  const starGeo = new THREE.OctahedronGeometry(.38,0);
+  starGeo.scale(1,1.35,1);
+  const starMat = new THREE.MeshLambertMaterial({color:0xfff2a0, emissive:0xffd93d, emissiveIntensity:.6});
+
+  let coins = [], stars = [], coinMesh = null, starMesh = null;
+  const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(),
+        v3 = new THREE.Vector3(), sc = new THREE.Vector3(), up = new THREE.Vector3(0,1,0);
+
+  function topAt(x,z){
+    for(let y=H-1;y>=0;y--) if(isSolidType(getBlock(x,y,z))) return y+1;
+    return 0;
+  }
+  function build(){
+    const rng = makeRng(SEED+4242);
+    coins = []; stars = [];
+
+    /* 땅 위 코인 (쉬움) */
+    let tries = 0;
+    while(coins.length < 70 && tries < 4000){
+      tries++;
+      const x = 3 + ((rng()*(W-6))|0), z = 3 + ((rng()*(D-6))|0);
+      const y = topAt(x,z);
+      if(y < 8 || y > 26) continue;                       // 물속·너무 높은 곳 제외
+      if(getBlock(x,y,z) !== AIR) continue;
+      coins.push({x:x+0.5, y:y+0.55, z:z+0.5, id:'c'+coins.length});
+    }
+    /* 점프 코스 위 코인 (어려움) */
+    OBBIES.forEach(o=>{
+      o.plats.forEach((p,i)=>{
+        if(i%2 === 1) return;
+        coins.push({x:p.x+0.5, y:p.y+1.55, z:p.z+0.5, id:'c'+coins.length});
+      });
+    });
+    /* 별: 나무 꼭대기와 높은 언덕, 코스 중간 */
+    tries = 0;
+    while(stars.length < 8 && tries < 3000){
+      tries++;
+      const x = 4 + ((rng()*(W-8))|0), z = 4 + ((rng()*(D-8))|0);
+      const y = topAt(x,z);
+      if(y < 16) continue;
+      stars.push({x:x+0.5, y:y+0.9, z:z+0.5, id:'s'+stars.length});
+    }
+    OBBIES.forEach(o=>{
+      const p = o.plats[Math.floor(o.plats.length/2)];
+      stars.push({x:p.x+0.5, y:p.y+2.4, z:p.z+0.5, id:'s'+stars.length});
+    });
+
+    coinMesh = new THREE.InstancedMesh(coinGeo, coinMat, Math.max(1,coins.length));
+    starMesh = new THREE.InstancedMesh(starGeo, starMat, Math.max(1,stars.length));
+    coinMesh.frustumCulled = false; starMesh.frustumCulled = false;
+    coinMesh.castShadow = true; starMesh.castShadow = true;
+    scene.add(coinMesh); scene.add(starMesh);
+    refresh();
+  }
+  function taken(id){ return !!state.collected[id]; }
+  function refresh(){
+    if(coinMesh) coinMesh.count = coins.length;
+    if(starMesh) starMesh.count = stars.length;
+  }
+
+  let t = 0;
+  function update(dt){
+    t += dt;
+    let got = 0;
+    for(let i=0;i<coins.length;i++){
+      const c = coins[i];
+      if(taken(c.id)){ m4.makeScale(0,0,0); coinMesh.setMatrixAt(i,m4); continue; }
+      const bob = Math.sin(t*2.4 + i*0.7)*0.12;
+      q.setFromAxisAngle(up, t*2.2 + i);
+      v3.set(c.x, c.y+bob, c.z); sc.set(1,1,1);
+      m4.compose(v3,q,sc); coinMesh.setMatrixAt(i,m4);
+      if(dist2(c) < 1.35*1.35) { pickCoin(c); got++; }
+    }
+    coinMesh.instanceMatrix.needsUpdate = true;
+
+    for(let i=0;i<stars.length;i++){
+      const c = stars[i];
+      if(taken(c.id)){ m4.makeScale(0,0,0); starMesh.setMatrixAt(i,m4); continue; }
+      const bob = Math.sin(t*1.8 + i)*0.18;
+      q.setFromAxisAngle(up, t*1.4 + i);
+      v3.set(c.x, c.y+bob, c.z);
+      const pulse = 1 + Math.sin(t*4+i)*0.08;
+      sc.set(pulse,pulse,pulse);
+      m4.compose(v3,q,sc); starMesh.setMatrixAt(i,m4);
+      if(dist2(c) < 1.5*1.5) pickStar(c);
+    }
+    starMesh.instanceMatrix.needsUpdate = true;
+  }
+  function dist2(c){
+    const dx = c.x-player.x, dy = c.y-(player.y+0.9), dz = c.z-player.z;
+    return dx*dx + dy*dy + dz*dz;
+  }
+  function remaining(){
+    let n=0;
+    for(const c of coins) if(!taken(c.id)) n++;
+    for(const c of stars) if(!taken(c.id)) n++;
+    return n;
+  }
+  function nearestUncollected(){
+    let best=null, bd=1e9;
+    for(const c of coins){
+      if(taken(c.id)) continue;
+      const dx=c.x-player.x, dz=c.z-player.z, d=dx*dx+dz*dz;
+      if(d<bd){ bd=d; best=c; }
+    }
+    return best ? {c:best, d:Math.sqrt(bd)} : null;
+  }
+  return {build, update, remaining, nearestUncollected,
+          count(){ return {coins:coins.length, stars:stars.length}; }};
+})();
+
+function pickCoin(c){
+  state.collected[c.id] = 1;
+  const amount = 1;
+  state.coins += amount;
+  Particles.burst(c.x, c.y, c.z, 0xffd93d, 12, 3.4);
+  Sound.coin();
+  popText('+' + amount, '#ffe66d');
+  sparkleBoost();
+  addExp(4);
+  saveSoon();
+}
+function pickStar(c){
+  state.collected[c.id] = 1;
+  state.coins += 10;
+  state.starsGot = (state.starsGot||0) + 1;
+  Particles.burst(c.x, c.y, c.z, 0xfff2a0, 26, 5.5);
+  Sound.star();
+  popText('⭐ +10', '#fff6b0');
+  sparkleBoost();
+  addExp(30);
+  saveSoon();
+}
+
+/* 코인을 먹으면 캐릭터 주변이 반짝 */
+const sparkles = (function(){
+  const N = 8;
+  const geo = new THREE.BoxGeometry(.11,.11,.11);
+  const mat = new THREE.MeshBasicMaterial({color:0xfff3a0});
+  const mesh = new THREE.InstancedMesh(geo, mat, N);
+  mesh.frustumCulled = false; mesh.count = N;
+  scene.add(mesh);
+  const m4 = new THREE.Matrix4(), v3 = new THREE.Vector3(),
+        q = new THREE.Quaternion(), sc = new THREE.Vector3();
+  let power = 0, t = 0;
+  return {
+    boost(){ power = Math.min(1.6, power + 0.9); },
+    update(dt){
+      t += dt; power = Math.max(0, power - dt*0.55);
+      const base = state.coins > 0 ? 0.28 : 0;
+      const amp = Math.min(1, base + power);
+      for(let i=0;i<N;i++){
+        const a = t*2.6 + i*(Math.PI*2/N);
+        const r = 0.75 + Math.sin(t*3+i)*0.12;
+        v3.set(player.x + Math.cos(a)*r,
+               player.y + 0.7 + Math.sin(t*4+i*1.3)*0.45,
+               player.z + Math.sin(a)*r);
+        const sz = amp * (0.7 + Math.sin(t*7+i)*0.3);
+        sc.set(sz,sz,sz);
+        m4.compose(v3,q,sc);
+        mesh.setMatrixAt(i,m4);
+      }
+      mesh.instanceMatrix.needsUpdate = true;
+    }
+  };
+})();
+function sparkleBoost(){ sparkles.boost(); }
+
+/* ═══════════════════════════════════════════════════
+   10.11 코스 진행 · 완주 판정 · 떨어지면 되돌리기
+   ═══════════════════════════════════════════════════ */
+let curObby = -1, obbyCheckpoint = null;
+
+function updateObby(dt){
+  // 지금 밟고 있는 블록이 어느 코스인지
+  const bx = Math.floor(player.x), bz = Math.floor(player.z), by = Math.floor(player.y - 0.1);
+  const owner = obbyBlockOwner.get(IDX(bx,by,bz));
+  if(owner && player.onGround){
+    curObby = owner[0];
+    const o = OBBIES[curObby];
+    obbyCheckpoint = {x:player.x, y:player.y, z:player.z};
+    if(owner[1] >= o.count && !state.obbyDone[o.id]) finishObby(curObby);
+  } else if(player.onGround && player.y < 30 && !owner){
+    const h = heightMap[clamp(bz,0,D-1)*W + clamp(bx,0,W-1)];
+    if(player.y <= h + 0.5) { curObby = -1; obbyCheckpoint = null; }
+  }
+
+  // 코스에서 떨어지면 마지막 발판으로 통통
+  if(curObby >= 0 && obbyCheckpoint && player.y < obbyCheckpoint.y - 7){
+    player.x = obbyCheckpoint.x; player.y = obbyCheckpoint.y + 0.4; player.z = obbyCheckpoint.z;
+    player.vx = player.vy = player.vz = 0;
+    Sound.bounce();
+    showHint('🎈 괜찮아요! 방금 발판으로 돌려놨어요', 1800);
+  }
+
+  // 깃발 펄럭임
+  for(const f of flags){
+    f.userData.t += dt;
+    const done = state.obbyDone[OBBIES[f.userData.ci].id];
+    f.userData.cloth.rotation.y = Math.sin(f.userData.t*2.2)*0.35;
+    f.userData.cloth.scale.y = done ? 1.25 : 1;
+    f.userData.cloth.material.emissiveIntensity = done ? 0.75 : 0.25;
+  }
+}
+
+function finishObby(ci){
+  const o = OBBIES[ci];
+  state.obbyDone[o.id] = 1;
+  state.coins += o.coins;
+  showBanner(o.emoji + ' ' + o.name + ' 완주!', '코인 +' + o.coins + '  ·  EXP +' + o.exp);
+  Sound.fanfare();
+  for(let i=0;i<5;i++)
+    setTimeout(()=> Particles.burst(player.x, player.y+1, player.z,
+      [0xff5d5d,0xffd93d,0x6ee86e,0x4fc3ff,0xff7ddb][i], 24, 7), i*110);
+  addExp(o.exp);
+  saveSoon();
+}
+
+function showBanner(big, small){
+  const el = $('#banner');
+  el.innerHTML = big + (small ? '<span class="small">'+small+'</span>' : '');
+  el.classList.remove('show');
+  void el.offsetWidth;
+  el.classList.add('show');
 }
 
 /* ═══════════════════════════════════════════════════
@@ -1239,6 +1654,16 @@ function resize(){
 }
 addEventListener('resize', resize);
 
+function stepGame(dt){
+  updateLook(dt);
+  updatePlayer(dt);
+  updateCamera(dt);
+  updateAim();
+  updateActions(dt);
+  updateObby(dt);
+  Collect.update(dt);
+}
+
 function frame(t){
   requestAnimationFrame(frame);
   const now = t*0.001;
@@ -1248,13 +1673,9 @@ function frame(t){
 
   if(jumpBuffer>0) jumpBuffer -= dt;
 
-  if(started){
-    updatePlayer(dt);
-    updateCamera(dt);
-    updateAim();
-    updateActions(dt);
-  }
+  if(started) stepGame(dt);
   Particles.update(dt);
+  sparkles.update(dt);
   if(worldDirty) rebuildWorldMesh();
 
   clouds.position.x += dt*0.6;
@@ -1275,11 +1696,13 @@ buildTextures();
 buildMaterials();
 loadSave();
 generateWorld();
+buildObbies();
 applyEdits();
 resize();
 rebuildWorldMesh();
 buildHotbar();
 updateHud();
+Collect.build();
 player.x=SPAWN.x; player.y=SPAWN.y+1; player.z=SPAWN.z;
 if(SPAWN_LOAD){ player.x=SPAWN_LOAD.x; player.y=SPAWN_LOAD.y+0.5; player.z=SPAWN_LOAD.z; }
 addEventListener('beforeunload', saveNow);
@@ -1289,15 +1712,17 @@ $('#startbtn').addEventListener('click', ()=>{
   $('#start').style.display='none';
   started = true;
   Sound.resume();
-  requestLock();
-  showHint('왼쪽 클릭으로 부수고, 오른쪽 클릭으로 블록을 놓아 보세요!', 5000);
+  canvas.focus && canvas.focus();
+  showHint('화살표로 둘러보고, Q로 부수고, E로 블록을 놓아 보세요!', 5000);
+  showMouseHintBriefly();
 });
 
 window.BW = {player, setBlock, getBlock, scene, camera, renderer, voxels, W,H,D, IDX, keys,
-  sim(dt,n){ for(let i=0;i<(n||1);i++){ if(jumpBuffer>0) jumpBuffer-=dt; updatePlayer(dt); updateCamera(dt);} },
+  sim(dt,n){ for(let i=0;i<(n||1);i++){ if(jumpBuffer>0) jumpBuffer-=dt; stepGame(dt); } },
   pressJump(){ jumpBuffer=0.14; },
   state, updateAim, breakBlock, placeBlock, selectSlot, addExp,
-  aim(){ return aimed; }, hotbarSlot(){ return selectedSlot; }};
+  aim(){ return aimed; }, hotbarSlot(){ return selectedSlot; },
+  OBBIES, Collect, finishObby, remaining(){ return Collect.remaining(); }};
 })();
 </script>
 </body>
