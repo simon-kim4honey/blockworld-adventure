@@ -120,7 +120,8 @@
   /* 힌트 */
   #hint{
     position:fixed; left:50%; bottom:118px; transform:translateX(-50%);
-    font-size:17px; white-space:nowrap; opacity:0; transition:opacity .3s ease;
+    font-size:17px; max-width:92vw; opacity:0; transition:opacity .3s ease;
+    text-align:center;
   }
   #hint.on{opacity:1;}
 
@@ -136,14 +137,19 @@
     100%{transform:translate(-50%,-70px) scale(1); opacity:0;}
   }
 
-  #fps{position:fixed; right:14px; bottom:12px; font-size:13px; color:#fff; text-shadow:0 2px 4px rgba(0,0,0,.5); opacity:.75;}
+  #fps{
+    position:fixed; left:50%; transform:translateX(-50%); top:6px; bottom:auto;
+    font-size:12px; color:#fff; text-shadow:0 2px 4px rgba(0,0,0,.5); opacity:.6;
+    white-space:nowrap; pointer-events:none;
+  }
 
   /* 하단 블록 선택 바 */
   #hotbar{
     position:fixed; left:50%; bottom:16px; transform:translateX(-50%);
     display:flex; gap:8px; pointer-events:auto; padding:8px 10px;
     /* left:50% 때문에 쓸 수 있는 너비가 절반으로 잡혀 일찍 줄바꿈되던 것을 막는다 */
-    flex-wrap:wrap; justify-content:center; width:max-content; max-width:96vw;
+    flex-wrap:wrap; justify-content:center; width:max-content;
+    max-width:min(96vw, calc(100vw - 260px));
   }
   .slot{
     width:62px; height:70px; border-radius:16px; cursor:pointer;
@@ -359,7 +365,7 @@
     box-shadow:0 5px 0 var(--leaf-d), inset 0 0 0 3px rgba(255,255,255,.5);
   }
   body.touchmode #hotbar{bottom:118px; transform:translateX(-50%) scale(.92);}
-  body.touchmode #fps{bottom:4px; right:6px;}
+  body.touchmode #fps{top:4px;}
 
   /* ── 튜토리얼 ── */
   #tut{
@@ -377,12 +383,15 @@
   body.touchmode #tut{bottom:210px;}
 
   /* ── 작은 동그란 버튼들 ── */
+  /* 오른쪽 가장자리 세로 2열 — 아래쪽 블록 바와 절대 겹치지 않는 자리 */
   #tools{
-    position:fixed; right:14px; bottom:14px; display:flex; gap:8px; z-index:14;
-    pointer-events:auto; flex-wrap:wrap; max-width:212px; justify-content:flex-end;
+    position:fixed; right:12px; top:52%; transform:translateY(-50%);
+    display:flex; gap:8px; z-index:14;
+    pointer-events:auto; flex-wrap:wrap; width:100px; justify-content:flex-end;
   }
   .tool{
-    width:46px; height:46px; border-radius:50%; border:none; cursor:pointer; padding:10px;
+    width:46px; height:46px; border-radius:50%; border:none; cursor:pointer;
+    padding:10px; font-size:21px;
     background:linear-gradient(#ffffff,#eae5f4);
     box-shadow:0 4px 0 rgba(0,0,0,.16), inset 0 0 0 2px rgba(255,255,255,.95);
     font-family:inherit; display:flex; align-items:center; justify-content:center;
@@ -391,10 +400,38 @@
   .tool svg{display:block; width:100%; height:100%; overflow:visible;}
   .tool:hover{transform:translateY(-2px); box-shadow:0 6px 0 rgba(0,0,0,.16), inset 0 0 0 2px rgba(255,255,255,.95);}
   .tool:active{transform:translateY(3px); box-shadow:0 1px 0 rgba(0,0,0,.16), inset 0 0 0 2px rgba(255,255,255,.95);}
-  body.touchmode #tools{
-    bottom:auto; top:66px; right:10px; flex-direction:row; flex-wrap:wrap;
-    width:100px; justify-content:flex-end;
+  .tool.big{
+    background:linear-gradient(#ffdc6b,var(--sun));
+    box-shadow:0 4px 0 var(--sun-d), inset 0 0 0 2px rgba(255,255,255,.5);
   }
+  .tool.big:active{box-shadow:0 1px 0 #c9700a;}
+  body.touchmode #tools{right:10px;}
+  /* 화면이 낮으면 늘어놓을 자리가 없다 — 가방 하나로 접는다 */
+  body.compact #tools .tool{display:none;}
+  body.compact #tools #btnBag,
+  body.compact #tools #btnRec,
+  body.compact #tools #btnUndo{display:block;}
+  body.compact #quests{max-height:30vh; overflow:hidden;}
+  /* 그래도 세로 자리가 안 나오면(눕힌 휴대폰) 단추를 위쪽에 가로로 눕힌다 */
+  body.rowtools #tools{
+    top:6px !important; bottom:auto; left:50%; right:auto;
+    transform:translateX(-50%) !important; width:auto; flex-wrap:nowrap;
+  }
+  body.rowtools #fps{display:none;}
+
+  /* 가방 안의 큰 카드들 */
+  #baggrid{display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:11px;}
+  .bagcard{
+    border-radius:18px; padding:14px 10px; text-align:center; cursor:pointer;
+    background:#f3eefc; box-shadow:0 4px 0 rgba(0,0,0,.12);
+    transition:transform .12s ease, box-shadow .12s ease;
+  }
+  .bagcard:hover{transform:translateY(-4px); box-shadow:0 8px 0 rgba(0,0,0,.14);}
+  .bagcard .cic{font-size:36px; line-height:1; height:38px;
+    display:flex; align-items:center; justify-content:center;}
+  .bagcard .cic svg{display:block; width:36px; height:36px; overflow:visible;}
+  .bagcard .cnm{font-size:16px; margin-top:6px;}
+  .bagcard .cds{font-size:12px; opacity:.62; margin-top:3px; line-height:1.35;}
 
   /* ── 도움말 ── */
   #help{
@@ -553,7 +590,8 @@
   #giftlist{display:grid; grid-template-columns:repeat(auto-fill,minmax(108px,1fr)); gap:9px;}
   #nick .mbox{width:min(420px,92vw); text-align:center;}
   #nick .dbig{font-size:52px; line-height:1;}
-  #nickrow{display:flex; gap:8px; margin-top:12px;}
+  #nickrow, .fieldrow{display:flex; gap:8px; margin-top:12px;}
+  .fieldrow > button{white-space:nowrap; flex:0 0 auto;}
   #nickdice{
     border:none; border-radius:14px; cursor:pointer; font-size:22px; padding:0 16px;
     background:#f3eefc; box-shadow:0 4px 0 rgba(0,0,0,.12); font-family:inherit;
@@ -579,6 +617,39 @@
     padding:9px 11px; font-family:inherit; font-weight:800; font-size:15px;
     color:#3b3350; background:#faf8ff; text-align:center;
   }
+
+  /* 섬 꾸미기 단추 */
+  #decorgrid{display:grid; grid-template-columns:repeat(auto-fill,minmax(104px,1fr)); gap:9px;}
+  .decor{
+    border-radius:16px; padding:11px 6px; text-align:center; cursor:pointer;
+    background:#f3eefc; box-shadow:0 4px 0 rgba(0,0,0,.12);
+    transition:transform .12s ease;
+  }
+  .decor:hover{transform:translateY(-3px);}
+  .decor .dic{font-size:29px; line-height:1;}
+  .decor .dnm{font-size:13px; margin-top:4px;}
+  #islandmsg{font-size:14px; margin-top:9px; min-height:19px; line-height:1.45;}
+
+  /* 친구 섬 구경 중 띠 */
+  #visitbar{
+    position:fixed; left:50%; top:10px; transform:translateX(-50%); z-index:30;
+    display:none; align-items:center; gap:10px; pointer-events:auto;
+    background:linear-gradient(#fff3cf,#ffe28a); border-radius:999px; padding:8px 10px 8px 18px;
+    box-shadow:0 5px 0 #d3a52b, 0 12px 24px rgba(0,0,0,.28); font-size:15px; max-width:94vw;
+  }
+  body.visiting #visitbar{display:flex;}
+  #visitbar button{
+    border:none; border-radius:999px; cursor:pointer; font-family:inherit; font-weight:900;
+    font-size:14px; padding:8px 14px; color:#fff;
+    background:linear-gradient(#7c6df0,#5b4bd6); box-shadow:0 3px 0 #4335ad; white-space:nowrap;
+  }
+  body.visiting #fps{display:none;}
+  body.visiting #recdot{top:64px;}
+
+  /* 자랑 카드 미리보기 */
+  #bragbox{z-index:41;}
+  #bragbox .mbox{width:min(420px,94vw); text-align:center;}
+  #bragimg{width:100%; border-radius:18px; box-shadow:0 6px 18px rgba(0,0,0,.25);}
 
   /* 배지 획득 토스트 */
   #btoast{
@@ -625,7 +696,7 @@
 
     body.touchmode #hotbar{bottom:182px; transform:translateX(-50%) scale(1);}
     body.touchmode #tut{bottom:262px;}
-    body.touchmode #tools{top:26%; bottom:auto; right:6px; width:86px;}
+    body.touchmode #tools{top:50%; bottom:auto; right:6px; width:86px;}
     .modal{padding:6px;}
     .mbox{padding:15px 15px 13px; border-radius:20px;}
     .mhead h2{font-size:20px;}
@@ -644,10 +715,47 @@
     #fps{display:none;}
     .worldlabel{font-size:13px; padding:7px 11px; max-width:180px;}
   }
+  /* 눕힌 휴대폰처럼 화면이 낮을 때 — 블록 바가 두 줄이 되면서
+     위쪽 퀘스트 칸과 부딪힌다. 칸을 줄여 한 줄로 만든다. */
+  @media (max-height:520px){
+    #hud-left{left:8px; top:8px; gap:5px;}
+    #coinbox{font-size:16px;}
+    .coinicon{width:19px; height:19px;}
+    #lvlbox{min-width:120px; padding:5px 9px;}
+    #quests{right:8px; top:8px; width:min(196px,34vw); max-height:32vh; overflow:hidden; padding:8px 10px;}
+    #qtitle{font-size:12px; margin-bottom:4px;}
+    .quest{padding:3px 0; gap:6px;}
+    .quest .qic{font-size:15px;}
+    .quest .qtx{font-size:11px;}
+    .quest .qnum{font-size:9px;}
+    #hotbar{gap:5px; padding:5px 7px; max-width:min(96vw, calc(100vw - 216px));}
+    .slot{width:46px; height:52px; border-radius:11px;}
+    .slot .ic{font-size:19px;}
+    .slot .nm{font-size:8px;}
+    .slot .num{font-size:8px; top:2px; left:4px;}
+    #bpbar{max-width:170px;}
+  }
   @media (max-width:620px) and (orientation:landscape){
     body.touchmode #hotbar{bottom:96px; transform:translateX(-50%) scale(.85);}
     body.touchmode #tut{bottom:150px;}
     #quests{max-height:38vh; overflow:hidden;}
+  }
+
+  /* 🎥 녹화 */
+  #recdot{
+    position:fixed; left:50%; top:40px; transform:translateX(-50%);
+    z-index:30; display:none; pointer-events:none;
+    background:rgba(214,48,49,.92); color:#fff; font-size:14px;
+    padding:5px 13px; border-radius:999px; box-shadow:0 3px 0 rgba(0,0,0,.2);
+    animation:recblink 1.1s ease-in-out infinite;
+  }
+  @keyframes recblink{ 0%,100%{opacity:1} 50%{opacity:.35} }
+  body.recording #recdot{display:block;}
+  body.recording #btnRec{background:linear-gradient(#ff7a7a,#e2453f); color:#fff; box-shadow:0 4px 0 #a82b26;}
+  #recbox{z-index:41;}
+  #recvid{
+    width:100%; max-height:34vh; border-radius:16px; margin-top:10px;
+    background:#000; display:block;
   }
 
   #err{
@@ -716,16 +824,10 @@
 
 <div id="tools">
   <button class="tool" id="btnUndo"  title="되감기 (Z)">⏪</button>
-  <button class="tool" id="btnCraft" title="제작대 (C)">🔨</button>
-  <button class="tool" id="btnPlan"  title="청사진 건축학교 (B)">📐</button>
-  <button class="tool" id="btnShorts" title="15초 쇼츠 도전">🎬</button>
-  <button class="tool" id="btnFriend" title="친구 초대">👫</button>
-  <button class="tool" id="btnIdea"   title="아이디어 보내기">💬</button>
-  <button class="tool" id="btnBadge" title="배지 (V)">🏅</button>
-  <button class="tool" id="btnShare" title="내 월드 나누기">📤</button>
+  <button class="tool" id="btnRec"   title="녹화 시작/멈추기 (Shift+R)">🎥</button>
+  <button class="tool big" id="btnBag" title="도도 가방 (탭)">🎒</button>
   <button class="tool" id="btnTime"  title="밤낮 바꾸기">🌗</button>
   <button class="tool" id="btnSound" title="소리 켜기/끄기">🔊</button>
-  <button class="tool" id="btnQuality" title="화질">⚙️</button>
   <button class="tool" id="btnHelp"  title="조작법">❓</button>
 </div>
 
@@ -806,6 +908,68 @@
   <div class="bpnum" id="shortnum"></div>
 </div>
 
+<!-- 🏝️ 내 섬 -->
+<div class="modal" id="island"><div class="mbox">
+  <div class="mhead"><h2>🏝️ 내 섬</h2></div>
+  <div class="msub">여기가 <b>내 섬</b>이에요. 마음대로 꾸미고, 친구에게 자랑해 보세요!</div>
+
+  <div class="mlabel">섬 이름</div>
+  <div class="fieldrow">
+    <input class="mfield" id="islandname" maxlength="14" placeholder="예) 무지개섬" spellcheck="false">
+    <button id="islandsave" class="mbtn green" style="margin:0; width:auto; padding:11px 18px">정하기</button>
+  </div>
+  <div class="msub" style="margin:8px 0 0">마을 입구 간판에 이 이름이 걸려요.</div>
+
+  <div class="mlabel">✨ 한 번에 꾸미기 — 내가 보는 쪽에 만들어 줘요</div>
+  <div id="decorgrid"></div>
+
+  <div class="mlabel">📣 자랑하기</div>
+  <div class="mrow">
+    <button class="mbtn green" id="bragbtn" style="margin-top:0">🪪 자랑 카드 만들기</button>
+    <button class="mbtn" id="photobtn" style="margin-top:0">📸 지금 화면 사진</button>
+  </div>
+
+  <div class="mlabel">🏝️ 내 섬 코드 — 친구가 넣으면 내 섬을 구경할 수 있어요</div>
+  <textarea class="mcode" id="islandcode" spellcheck="false" readonly></textarea>
+  <div class="mrow" style="margin-top:9px">
+    <button class="mbtn green" id="islandcopy" style="margin-top:0">📋 내 섬 코드 복사</button>
+    <button class="mbtn" id="islandvisit" style="margin-top:0">🚢 친구 섬 구경 가기</button>
+  </div>
+  <div id="islandmsg"></div>
+  <button class="mbtn gray" id="islandclose">닫기</button>
+</div></div>
+
+<!-- 🎥 녹화 결과 -->
+<div class="modal" id="recbox"><div class="mbox">
+  <div class="mhead" style="justify-content:center"><h2>🎥 영상이 완성됐어요!</h2></div>
+  <div class="msub" id="recsub"></div>
+  <video id="recvid" controls playsinline loop></video>
+  <div class="mlabel">유튜브 쇼츠에 올릴 때 쓸 글</div>
+  <textarea class="mcode" id="reccap" spellcheck="false"></textarea>
+  <div class="mrow" style="margin-top:9px">
+    <button class="mbtn green" id="recsave" style="margin-top:0">📥 영상 저장하기</button>
+    <button class="mbtn" id="reccopy" style="margin-top:0">📋 글 복사</button>
+  </div>
+  <button class="mbtn gray" id="recclose">닫기</button>
+</div></div>
+
+<!-- 녹화 중 표시 -->
+<div id="recdot">🔴 녹화 중</div>
+
+<!-- 구경 중 알림 띠 -->
+<div id="visitbar">
+  <span id="visittext"></span>
+  <button id="visithome">🏠 내 섬으로 돌아가기</button>
+</div>
+
+<!-- 🎒 도도 가방 -->
+<div class="modal" id="bag"><div class="mbox">
+  <div class="mhead"><h2>🎒 도도 가방</h2></div>
+  <div class="msub">하고 싶은 걸 골라 보세요!</div>
+  <div id="baggrid"></div>
+  <button class="mbtn gray" id="bagclose">닫기</button>
+</div></div>
+
 <!-- 🎬 쇼츠 도전 -->
 <div class="modal" id="shorts"><div class="mbox">
   <div class="mhead"><h2>🎬 15초 도전</h2></div>
@@ -885,6 +1049,14 @@
     <button id="nickdice" title="아무거나 골라 주기">🎲</button>
   </div>
   <button class="mbtn green" id="nickok">이걸로 할래요!</button>
+</div></div>
+
+<!-- 🪪 자랑 카드 미리보기 -->
+<div class="modal" id="bragbox"><div class="mbox">
+  <div class="mhead" style="justify-content:center"><h2>🪪 내 자랑 카드</h2></div>
+  <img id="bragimg" alt="자랑 카드">
+  <button class="mbtn green" id="bragsave">📥 그림으로 저장하기</button>
+  <button class="mbtn gray" id="bragclose">닫기</button>
 </div></div>
 
 <div id="btoast"><div class="tbic" id="tbic"></div><div class="tbnm" id="tbnm"></div>
@@ -1398,6 +1570,17 @@ const UI_ICON = {
   help:  svgWrap('<circle cx="12" cy="12" r="8.4" fill="#4fb0e8" stroke="'+INK+'" stroke-width="1.8"/>'+
                  '<path d="M9.4 9.4a2.7 2.7 0 1 1 3.4 2.6v1.6" stroke="#fff" stroke-width="2.4"/>'+
                  '<circle cx="12.1" cy="17" r="1.4" fill="#fff"/>'),
+
+  island:svgWrap('<path d="M3 18.5c2-1.6 3.6-1.6 5.6 0 2 1.6 3.6 1.6 5.6 0 2-1.6 3.6-1.6 5.6 0" stroke="'+PAL.water[1]+'" stroke-width="2.4"/>'+
+                 '<path d="M4.5 15.5c1.8-3.4 11.2-3.4 14.2 0z" fill="'+PAL.sand[1]+'" stroke="'+INK+'" stroke-width="1.6"/>'+
+                 '<path d="M12 14.5V6" stroke="'+PAL.wood[1]+'" stroke-width="2.2"/>'+
+                 '<path d="M12 6c-2.6-2.2-5-1.6-6 .6 2-.9 3.8-.5 6 1.2zM12 6c2.6-2.2 5-1.6 6 .6-2-.9-3.8-.5-6 1.2z" fill="'+PAL.leaf[1]+'" stroke="'+INK+'" stroke-width="1.3"/>'),
+  rec:   svgWrap('<rect x="2.6" y="6.5" width="13" height="11" rx="2.6" fill="#ef4c53" stroke="'+INK+'" stroke-width="1.7"/>'+
+                 '<path d="M16.4 11.2 21.2 8v8l-4.8-3.2z" fill="'+PAL.stone[1]+'" stroke="'+INK+'" stroke-width="1.6"/>'+
+                 '<circle cx="9.1" cy="12" r="2.6" fill="#fff"/>'),
+  bag:   svgWrap('<path d="M4.5 9h15l-1.1 10.3a1.8 1.8 0 0 1-1.8 1.6H7.4a1.8 1.8 0 0 1-1.8-1.6z" fill="'+'#ffc62e'+'" stroke="'+INK+'" stroke-width="1.8"/>'+
+                 '<path d="M8.6 9V7.2a3.4 3.4 0 0 1 6.8 0V9" stroke="'+INK+'" stroke-width="2"/>'+
+                 '<path d="M5.6 12.6h12.8" stroke="rgba(0,0,0,.22)" stroke-width="2"/>'),
 
   /* 퀘스트 줄에 붙는 작은 그림들 */
   coin:  svgWrap('<circle cx="12" cy="12" r="8.6" fill="'+PAL.gold[1]+'" stroke="'+INK+'" stroke-width="1.8"/>'+
@@ -2214,7 +2397,9 @@ const NO_SCROLL = {Space:1, ArrowUp:1, ArrowDown:1, ArrowLeft:1, ArrowRight:1};
 function panelOpen(){
   const el = document.activeElement;
   if(el && (el.tagName==='TEXTAREA' || el.tagName==='INPUT')) return true;
-  return shopOpen || craftOpen || plansOpen || friendsOpen || ideaOpen || shortsOpen ||
+  return shopOpen || craftOpen || plansOpen || friendsOpen || ideaOpen || shortsOpen || bagOpen ||
+         islandOpen ||
+         $('#bragbox').style.display==='flex' || $('#recbox').style.display==='flex' ||
          $('#badges').style.display==='flex' ||
          $('#share').style.display==='flex' ||
          $('#daily').style.display==='flex' ||
@@ -2312,7 +2497,17 @@ const Sound = (function(){
     src.connect(f); f.connect(g); g.connect(master);
     src.start();
   }
+  /* 녹화할 때 게임 소리도 같이 담으려고 소리의 사본을 하나 더 뽑아 준다 */
+  function tap(){
+    const c = ensure(); if(!c || !c.createMediaStreamDestination) return null;
+    try{
+      const dest = c.createMediaStreamDestination();
+      master.connect(dest);
+      return {stream:dest.stream, stop(){ try{ master.disconnect(dest); }catch(e){} }};
+    }catch(e){ return null; }
+  }
   return {
+    tap,
     resume(){ const c=ensure(); if(c && c.state==='suspended') c.resume(); },
     setEnabled(v){ enabled=v; },
     isEnabled(){ return enabled; },
@@ -2346,7 +2541,7 @@ const Sound = (function(){
 /* ═══════════════════════════════════════════════════
    10.5 저장 데이터 + 경험치
    ═══════════════════════════════════════════════════ */
-const GAME_VER = '1.1';
+const GAME_VER = '1.2';
 const SAVE_KEY = 'blockworld_save_v7';
 const OLD_SAVE_KEY = 'blockworld_save_v6';   // 예전에 놀던 아이의 진행도
 const state = {
@@ -2363,6 +2558,7 @@ const state = {
   nick:'', uid:'',                     // 별명 + 무작위 6글자 (개인정보 아님)
   friends:{}, invitedBy:'', thanksCode:'', giftsFromInvite:0,
   ideas:[], shortsDone:{},
+  island:'', decor:0, clips:0, aiDone:0,   // 섬 이름 · 꾸민 횟수 · 찍은 영상 · AI 에게 말한 횟수
   edits:{},                // "x,y,z" -> 블록 번호 (0 = 부순 자리)
   collected:{},            // 이미 먹은 코인/별
   obbyDone:{}              // 완주한 코스
@@ -2389,6 +2585,7 @@ function saveNow(){
       nick:state.nick, uid:state.uid, friends:state.friends,
       invitedBy:state.invitedBy, thanksCode:state.thanksCode,
       giftsFromInvite:state.giftsFromInvite, ideas:state.ideas, shortsDone:state.shortsDone,
+      island:state.island, decor:state.decor, clips:state.clips, aiDone:state.aiDone,
       pos:{x:player.x, y:player.y, z:player.z}, slot:selectedSlot
     }));
   }catch(e){ /* 저장 공간이 없어도 게임은 계속 */ }
@@ -2427,20 +2624,34 @@ function loadSave(){
   state.thanksCode = d.thanksCode || ''; state.giftsFromInvite = d.giftsFromInvite|0;
   state.ideas = Array.isArray(d.ideas) ? d.ideas : [];
   state.shortsDone = d.shortsDone || {};
+  state.island = d.island || ''; state.decor = d.decor|0;
+  state.clips = d.clips|0; state.aiDone = d.aiDone|0;
   state.quality = d.quality || 'auto';
   if(typeof d.slot === 'number') selectedSlot = clamp(d.slot,0,7);
   if(d.pos && isFinite(d.pos.x)){ SPAWN_LOAD = d.pos; }
 }
 let SPAWN_LOAD = null;
 
+let VISIT = null;          // 친구 섬 구경 중이면 {edits, name, nick}
+function loadVisit(){
+  try{
+    const raw = sessionStorage.getItem('dodo_visit');
+    if(raw) VISIT = JSON.parse(raw);
+  }catch(e){ VISIT = null; }
+}
 function applyEdits(){
-  for(const k in state.edits){
+  const src = (VISIT && VISIT.edits) ? VISIT.edits : state.edits;
+  for(const k in src){
     const a = k.split(',');
-    setBlock(+a[0], +a[1], +a[2], state.edits[k]|0, true);
+    setBlock(+a[0], +a[1], +a[2], src[k]|0, true);
   }
   worldDirty = true;
 }
-function recordEdit(x,y,z,t){ state.edits[x+','+y+','+z] = t; saveSoon(); }
+function recordEdit(x,y,z,t){
+  if(VISIT) return;                 // 친구 섬 구경 중엔 내 섬 기록을 건드리지 않는다
+  state.edits[x+','+y+','+z] = t;
+  saveSoon();
+}
 
 function addExp(n){
   state.exp += n;
@@ -2503,6 +2714,7 @@ function buildHotbar(){
     el.addEventListener('click', (e)=>{ e.stopPropagation(); selectSlot(i); });
     bar.appendChild(el);
   });
+  if(typeof layoutUI === 'function') layoutUI();
 }
 function selectSlot(i){
   const HB = hotbarList();
@@ -3247,6 +3459,7 @@ function renderQuests(){
       '</div>';
     list.appendChild(el);
   });
+  if(typeof layoutUI === 'function') layoutUI();
 }
 function checkQuests(){
   let changed = false;
@@ -3981,14 +4194,10 @@ function buildHelp(){
     ['아래 블록 칸','블록 고르기'],
     ['가게 안으로','상점 열기'],
     ['⏪ 단추','실수한 블록 되돌리기'],
-    ['🔨 단추','제작대 — 부순 재료로 특별 블록 만들기'],
-    ['📐 단추','청사진 건축학교 — 따라 지으면 돼요'],
-    ['🏅 단추','내가 모은 배지 보기'],
-    ['📤 단추','내 월드를 코드로 친구에게 보내기'],
+    ['🎥 단추','녹화 시작 / 멈추기 — 유튜브 쇼츠 모양(세로)으로 저장돼요'],
+    ['🎒 단추','도도 가방 — 내 섬 · 청사진 · 15초도전 · 친구 · 아이디어 · 제작대'],
+    ['🎒 → 🏝️','내 섬 — 꾸미기 · 섬 이름 · 자랑 카드 · 섬 코드'],
     ['🌗 단추','낮 / 밤 고정하기'],
-    ['🎬 단추','15초 도전 — 영상으로 찍어 자랑하기'],
-    ['👫 단추','친구 초대 코드 주고받기'],
-    ['💬 단추','넣고 싶은 걸 말하면 다음 버전에 들어가요'],
   ] : [
     ['W A S D','움직이기'],
     ['← ↑ ↓ →','둘러보기'],
@@ -3999,14 +4208,14 @@ function buildHelp(){
     ['마우스','클릭하면 마우스로 둘러보기 (Esc 로 해제)'],
     ['가게 안으로','상점 열기'],
     ['Z  또는 ⏪','실수한 블록 되돌리기 (80번까지)'],
-    ['C  또는 🔨','제작대 — 부순 재료로 특별 블록 만들기'],
-    ['B  또는 📐','청사진 건축학교 — 따라 지으면 돼요'],
-    ['V  또는 🏅','내가 모은 배지 보기'],
-    ['📤 단추','내 월드를 코드로 친구에게 보내기'],
+    ['C','제작대 — 부순 재료로 특별 블록 만들기'],
+    ['Tab 또는 🎒','도도 가방 — 내 섬 · 청사진 · 15초도전 · 친구 · 아이디어'],
+    ['I','🏝️ 내 섬 — 꾸미기 · 섬 이름 · 자랑 카드 · 섬 코드'],
+    ['Shift + R  또는 🎥','녹화 시작 / 멈추기 (쇼츠 모양 세로 영상)'],
+    ['B','청사진 건축학교'],
+    ['V','내 배지'],
+    ['G','친구 초대'],
     ['🌗 단추','낮 / 밤 고정하기'],
-    ['🎬 단추','15초 도전 — 영상으로 찍어 자랑하기'],
-    ['G  또는 👫','친구 초대 코드 주고받기'],
-    ['💬 단추','넣고 싶은 걸 말하면 다음 버전에 들어가요'],
   ];
   $('#helptable').innerHTML = rows.map(r=>'<tr><td>'+r[0]+'</td><td>'+r[1]+'</td></tr>').join('');
 }
@@ -4032,7 +4241,9 @@ function applyQuality(level){
   camera.updateProjectionMatrix();
   updateChunkShadows();
   resize();
+  // 가방 안으로 옮겨서 단추가 없을 수도 있다 — setIcon 이 알아서 넘긴다
   setIcon('#btnQuality', QUALITY.mode === 'auto' ? QLABEL.auto : QLABEL[level]);
+  if(bagOpen) renderBag();
 }
 function cycleQuality(){
   QUALITY.mode = QUALITY.mode === 'auto' ? 'high' : (QUALITY.mode === 'high' ? 'low' : 'auto');
@@ -4196,17 +4407,22 @@ function hotbarList(){
 const Undo = (function(){
   const CAP = 80;
   const stack = [];
+  let group = null;                 // 꾸미기처럼 한 번에 여러 칸을 놓을 때 묶어 둔다
   function push(x,y,z,before,after,bagDelta){
-    stack.push({x,y,z,before,after,bag:bagDelta||null});
+    const e = {x,y,z,before,after,bag:bagDelta||null};
+    if(group){ group.push(e); return; }
+    stack.push(e);
     if(stack.length > CAP) stack.shift();
   }
-  function undo(){
-    if(!stack.length){
-      showHint('⏪ 되돌릴 게 없어요', 1500);
-      Sound.deny();
-      return false;
+  function begin(){ group = []; }
+  function end(label){
+    const g = group; group = null;
+    if(g && g.length){
+      stack.push({group:g, label:label||'꾸미기'});
+      if(stack.length > CAP) stack.shift();
     }
-    const e = stack.pop();
+  }
+  function revert(e){
     setBlock(e.x, e.y, e.z, e.before);
     recordEdit(e.x, e.y, e.z, e.before);
     if(e.bag) for(const k in e.bag) Bag.add(+k, -e.bag[k]);
@@ -4215,16 +4431,32 @@ const Undo = (function(){
     if(e.before !== AIR) Lamps.scanCell(e.x, e.y, e.z);
     else Lamps.remove(e.x, e.y, e.z);
     Lamps.scanCell(e.x, e.y, e.z);
-    Particles.burst(e.x+.5, e.y+.5, e.z+.5, 0x9fd8ff, 12, 3);
+  }
+  function undo(){
+    if(!stack.length){
+      showHint('⏪ 되돌릴 게 없어요', 1500);
+      Sound.deny();
+      return false;
+    }
+    const e = stack.pop();
+    if(e.group){
+      for(let i=e.group.length-1;i>=0;i--) revert(e.group[i]);
+      const m = e.group[(e.group.length/2)|0];
+      Particles.burst(m.x+.5, m.y+.5, m.z+.5, 0x9fd8ff, 20, 4);
+      showHint('⏪ ' + e.label + '을(를) 통째로 지웠어요', 1900);
+    } else {
+      revert(e);
+      Particles.burst(e.x+.5, e.y+.5, e.z+.5, 0x9fd8ff, 12, 3);
+      showHint('⏪ 한 칸 되돌렸어요 (' + stack.length + '번 더 가능)', 1600);
+    }
     Sound.bounce();
     state.undos = (state.undos|0) + 1;
-    showHint('⏪ 한 칸 되돌렸어요 (' + stack.length + '번 더 가능)', 1600);
     Blueprint.check();
     checkBadges();
     saveSoon();
     return true;
   }
-  return {push, undo, left(){ return stack.length; }};
+  return {push, undo, begin, end, left(){ return stack.length; }};
 })();
 
 /* ═══════════════════════════════════════════════════
@@ -4681,6 +4913,9 @@ const BADGES = [
   {id:'idea1',       icon:'💡', name:'아이디어 뱅크', desc:'아이디어 보내 보기',     ok:()=>(state.ideas||[]).length>=1},
   {id:'short1',      icon:'🎬', name:'쇼츠 스타',   desc:'15초 도전 하나 성공',     ok:()=>Object.keys(state.shortsDone||{}).length>=1},
   {id:'short_all',   icon:'📺', name:'도전 왕',     desc:'15초 도전 4개 모두 성공',  ok:()=>SHORTS.every(x=>state.shortsDone[x.id])},
+  {id:'island_name', icon:'🏝️', name:'섬 주인',     desc:'내 섬에 이름 붙이기',     ok:()=>!!state.island},
+  {id:'decor3',      icon:'🌷', name:'꾸미기 대장',  desc:'섬을 3번 꾸미기',         ok:()=>(state.decor|0)>=3},
+  {id:'clip1',       icon:'🎥', name:'꼬마 감독',    desc:'영상 한 편 찍기',         ok:()=>(state.clips|0)>=1},
 ];
 
 let toastQueue = [], toastBusy = false;
@@ -5324,6 +5559,627 @@ function openShorts(){
 function closeShorts(){ shortsOpen = false; $('#shorts').style.display = 'none'; }
 
 /* ═══════════════════════════════════════════════════
+   10.32 🎒 도도 가방 — 자주 안 쓰는 단추를 한 곳에 모았다
+   ───────────────────────────────────────────────────
+   화면 오른쪽에 단추가 열두 개나 늘어서면서 아래 블록 바와 겹쳤다.
+   늘 쓰는 것(되감기·제작대·밤낮·소리·도움말)만 밖에 두고
+   나머지는 전부 이 가방 안으로 넣었다.
+   ═══════════════════════════════════════════════════ */
+let bagOpen = false;
+const BAG_ITEMS = [
+  {icon:'island', name:'내 섬',          desc:'꾸미고 이름 짓고 자랑하기', go:()=>openIsland()},
+  {icon:'rec', name:'녹화',
+   get desc(){ return Rec.isOn() ? '지금 녹화 중 — 눌러서 멈추기' : '쇼츠 모양(세로)으로 찍기'; },
+   go:()=>Rec.toggle()},
+  {icon:'plan', name:'청사진 건축학교', desc:'따라 지으면 돼요',      go:()=>openPlans()},
+  {icon:'shorts', name:'15초 도전',      desc:'영상으로 찍어 자랑하기', go:()=>openShorts()},
+  {icon:'friend', name:'친구',           desc:'초대 코드 주고받기',     go:()=>openFriends()},
+  {icon:'idea', name:'아이디어',       desc:'넣고 싶은 걸 말해요',    go:()=>openIdeas()},
+  {icon:'badge', name:'내 배지',        desc:'모은 배지 구경하기',     go:()=>openBadges()},
+  {icon:'share', name:'월드 나누기',    desc:'내 건축물을 친구에게',   go:()=>openShare()},
+  {icon:'craft', name:'제작대',         desc:'부순 재료로 특별 블록',  go:()=>openCraft()},
+  {icon:'auto', name:'밤낮 바꾸기',
+   get desc(){ return {auto:'지금: 저절로 흘러요', day:'지금: 낮 고정', night:'지금: 밤 고정'}[state.timeMode||'auto']; },
+   go:()=>{ cycleTimeMode(); openBag(); }},
+  {icon:'help', name:'조작법',         desc:'어떻게 하는지 보기',     go:()=>{ buildHelp(); $('#help').style.display='flex'; }},
+  {icon:'qauto', name:'화질',
+   get desc(){ return {auto:'지금: 자동', high:'지금: 예쁘게 ✨', low:'지금: 빠르게 🐢'}[QUALITY.mode==='auto'?'auto':QUALITY.level]; },
+   go:()=>{ cycleQuality(); openBag(); }},
+];
+function renderBag(){
+  const grid = $('#baggrid');
+  grid.innerHTML = '';
+  BAG_ITEMS.forEach(it=>{
+    const el = document.createElement('div');
+    el.className = 'bagcard';
+    el.innerHTML = '<div class="cic">' + iconHTML(it.icon) + '</div>' +
+                   '<div class="cnm">' + it.name + '</div>' +
+                   '<div class="cds">' + it.desc + '</div>';
+    el.addEventListener('click', ()=>{
+      /* 별명·출석 창이 떠 있으면 그 위에 또 열지 않는다 */
+      if($('#nick').style.display==='flex' || $('#daily').style.display==='flex') return;
+      closeBag(); it.go();
+    });
+    grid.appendChild(el);
+  });
+}
+function openBag(){
+  bagOpen = true;
+  $('#bag').style.display = 'flex';
+  if(document.pointerLockElement) document.exitPointerLock();
+  renderBag();
+  Sound.shop();
+}
+function closeBag(){ bagOpen = false; $('#bag').style.display = 'none'; }
+
+/* ── 🏝️ 내 섬 창 ── */
+let islandOpen = false;
+function islandMsg(t){ const el = $('#islandmsg'); if(el) el.textContent = t || ''; }
+function renderIslandDecor(){
+  const grid = $('#decorgrid');
+  grid.innerHTML = '';
+  DECOR.forEach(d=>{
+    const el = document.createElement('div');
+    el.className = 'decor';
+    el.innerHTML = '<div class="cic">' + d.icon + '</div><div class="cnm">' + d.name + '</div>';
+    el.addEventListener('click', ()=>{
+      closeIsland();
+      buildDecor(d.id);
+    });
+    grid.appendChild(el);
+  });
+}
+function openIsland(){
+  if($('#nick').style.display==='flex' || $('#daily').style.display==='flex') return;
+  if(VISIT){
+    showHint('🚢 지금은 친구 섬을 구경하는 중이에요. 🏠 로 돌아간 뒤에 꾸며 주세요', 2800);
+    Sound.deny();
+    return;
+  }
+  islandOpen = true;
+  $('#island').style.display = 'flex';
+  if(document.pointerLockElement) document.exitPointerLock();
+  $('#islandname').value = state.island || '';
+  $('#islandname').placeholder = islandName();
+  renderIslandDecor();
+  $('#islandcode').value = islandCode();
+  islandMsg('');
+  Sound.shop();
+}
+function closeIsland(){ islandOpen = false; $('#island').style.display = 'none'; }
+function saveIslandName(){
+  const v = ($('#islandname').value || '').trim().slice(0, 14);
+  state.island = v;
+  paintSign();
+  saveSoon();
+  $('#islandname').placeholder = islandName();
+  $('#islandcode').value = islandCode();
+  islandMsg('✅ 이제 이 섬은 「' + islandName() + '」이에요! 마을 간판도 바뀌었어요.');
+  Sound.coin();
+}
+function showBrag(){
+  islandMsg('🪪 자랑 카드를 만드는 중…');
+  closeIsland();
+  makeBragCard(c=>{
+    bragCanvas = c;
+    $('#bragimg').src = c.toDataURL('image/png');
+    $('#bragbox').style.display = 'flex';
+    Sound.quest();
+  });
+}
+let bragCanvas = null;
+function saveBrag(){
+  if(bragCanvas) downloadCanvas(bragCanvas, '도도블록-자랑카드-' + islandName() + '.png');
+}
+function goVisit(){
+  const code = prompt('친구의 섬 코드를 붙여넣어 주세요 (BWS1: 로 시작해요)');
+  if(!code) return;
+  if(!decodeIsland(code)){
+    islandMsg('😢 코드를 못 읽었어요. 코드 전체를 빠뜨리지 말고 붙여넣어 주세요.');
+    Sound.deny();
+    return;
+  }
+  islandMsg('🚢 친구 섬으로 가는 중…');
+  visitIsland(code);
+}
+
+/* ═══════════════════════════════════════════════════
+   10.33 🏝️ 내 섬 — 꾸미고, 이름 붙이고, 자랑하기
+   ───────────────────────────────────────────────────
+   이 월드가 곧 내 섬이다. 따로 "내 방"을 만들지 않고
+   지금 놀고 있는 섬에 이름을 붙이고 꾸며서 그대로 자랑한다.
+   ═══════════════════════════════════════════════════ */
+const VISIT_KEY = 'dodo_visit';          // 친구 섬 구경 중일 때만 들어 있다 (탭을 닫으면 사라짐)
+
+function islandName(){
+  return state.island || ((state.nick || '도도') + '의 섬');
+}
+
+/* ---- 화면을 그림으로 담기 ----
+   WebGL 캔버스는 그린 직후 같은 프레임 안에서만 읽어 올 수 있다.
+   그래서 "다음에 그리고 나면 담아 줘" 하고 예약해 둔다. */
+let snapWanted = null;
+function grabScreen(cb){ snapWanted = cb; }
+function runSnap(){
+  if(!snapWanted) return;
+  const cb = snapWanted; snapWanted = null;
+  try{ cb(canvas); }catch(e){ /* 사진을 못 담아도 게임은 계속 */ }
+}
+
+/* 📸 지금 화면을 사진으로 저장 */
+function savePhoto(){
+  grabScreen(cv=>{
+    const c = document.createElement('canvas');
+    c.width = cv.width; c.height = cv.height;
+    c.getContext('2d').drawImage(cv, 0, 0);
+    downloadCanvas(c, '도도블록-' + islandName() + '.png');
+    popText('📸 찰칵!', '#ffd93d');
+    Sound.coin();
+  });
+}
+function downloadCanvas(c, name){
+  c.toBlob(bl=>{
+    if(!bl) return;
+    const url = URL.createObjectURL(bl);
+    const a = document.createElement('a');
+    a.href = url; a.download = name;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url), 4000);
+  }, 'image/png');
+}
+
+/* 🪪 자랑 카드 — 섬 사진 + 내 기록 + 초대 코드를 한 장에 */
+function makeBragCard(then){
+  grabScreen(cv=>{
+    const W = 900, H = 1200;
+    const c = document.createElement('canvas'); c.width = W; c.height = H;
+    const g = c.getContext('2d');
+
+    const bg = g.createLinearGradient(0,0,0,H);
+    bg.addColorStop(0,'#5bb6f0'); bg.addColorStop(.55,'#9fe0ff'); bg.addColorStop(1,'#eaf8ff');
+    g.fillStyle = bg; g.fillRect(0,0,W,H);
+
+    // 섬 사진 (가운데를 잘라서 4:3 으로)
+    const ph = 560, pw = W - 60;
+    const srcH = Math.min(cv.height, cv.width * ph / pw);
+    const srcW = srcH * pw / ph;
+    g.save();
+    roundRect(g, 30, 150, pw, ph, 28); g.clip();
+    g.drawImage(cv, (cv.width-srcW)/2, (cv.height-srcH)/2, srcW, srcH, 30, 150, pw, ph);
+    g.restore();
+    g.strokeStyle = 'rgba(255,255,255,.9)'; g.lineWidth = 8;
+    roundRect(g, 30, 150, pw, ph, 28); g.stroke();
+
+    const F = "800 %dpx 'Jua','Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif";
+    g.textAlign = 'center';
+
+    g.fillStyle = '#ffffff'; g.font = F.replace('%d', 40);
+    g.fillText('🦤 도도블록', W/2, 72);
+
+    g.fillStyle = '#20304a'; g.font = F.replace('%d', 62);
+    g.fillText(islandName(), W/2, 128);
+
+    // 기록 4칸
+    const stats = [
+      ['🏅', Object.keys(state.badges).length + ' / ' + BADGES.length, '배지'],
+      ['⭐', '레벨 ' + state.level, ''],
+      ['🪙', String(state.coinsEarned), '모은 코인'],
+      ['👫', friendCount() + '명', '친구'],
+    ];
+    stats.forEach(([ic, big, small], i)=>{
+      const x = W/2 + (i - 1.5) * 210, y = 790;
+      g.fillStyle = 'rgba(255,255,255,.85)';
+      roundRect(g, x-95, y-58, 190, 165, 22); g.fill();
+      g.fillStyle = '#20304a';
+      g.font = F.replace('%d', 46); g.fillText(ic, x, y-6);
+      g.font = F.replace('%d', 30); g.fillText(big, x, y+42);
+      if(small){ g.font = F.replace('%d', 20); g.fillStyle='#5a6c85'; g.fillText(small, x, y+78); }
+    });
+
+    // 꾸민 블록 수
+    g.fillStyle = '#20304a'; g.font = F.replace('%d', 30);
+    g.fillText('내가 놓은 블록 ' + state.placed + '개로 꾸민 섬이에요', W/2, 1000);
+
+    // 초대 코드
+    g.fillStyle = 'rgba(255,255,255,.9)';
+    roundRect(g, 60, 1040, W-120, 116, 24); g.fill();
+    g.fillStyle = '#5a6c85'; g.font = F.replace('%d', 24);
+    g.fillText('같이 놀고 싶으면 이 코드를 넣어 줘!', W/2, 1078);
+    g.fillStyle = '#20304a'; g.font = "700 19px ui-monospace,Menlo,Consolas,monospace";
+    wrapText(g, myInviteCode(), W/2, 1108, W-160, 24, 2);
+
+    if(then) then(c);
+  });
+}
+function roundRect(g,x,y,w,h,r){
+  g.beginPath();
+  g.moveTo(x+r,y); g.arcTo(x+w,y,x+w,y+h,r); g.arcTo(x+w,y+h,x,y+h,r);
+  g.arcTo(x,y+h,x,y,r); g.arcTo(x,y,x+w,y,r); g.closePath();
+}
+function wrapText(g, text, cx, y, maxW, lh, maxLines){
+  let line = '', n = 0;
+  for(const ch of text){
+    if(g.measureText(line + ch).width > maxW){
+      g.fillText(line, cx, y + n*lh); n++; line = '';
+      if(n >= maxLines){ g.fillText('…', cx, y + n*lh); return; }
+    }
+    line += ch;
+  }
+  g.fillText(line, cx, y + n*lh);
+}
+
+/* ---- 섬 꾸미기: 발 앞에 한 번에 지어 주는 장식들 ---- */
+const DECOR = [
+  {id:'flower', icon:'🌷', name:'꽃밭',      size:5},
+  {id:'fount',  icon:'⛲', name:'분수',      size:5},
+  {id:'camp',   icon:'🔥', name:'모닥불',    size:3},
+  {id:'pillar', icon:'🌈', name:'무지개 기둥', size:3},
+  {id:'palm',   icon:'🌴', name:'야자수',    size:3},
+  {id:'heart',  icon:'💖', name:'하트 조형물', size:7},
+  {id:'fence',  icon:'🚧', name:'울타리',    size:7},
+  {id:'lamps',  icon:'💡', name:'가로등 길',  size:7},
+  {id:'slide',  icon:'🌈', name:'무지개 미끄럼틀', size:9},
+  {id:'tower',  icon:'🗼', name:'전망대',    size:5},
+];
+
+/* 플레이어가 보는 쪽 몇 칸 앞, 땅 위에 자리를 잡는다 */
+function decorSpot(size){
+  const fx = -Math.sin(player.yaw), fz = -Math.cos(player.yaw);
+  for(const step of [3, 5, 7, 2]){
+    const cx = Math.round(player.x + fx*(step + size/2));
+    const cz = Math.round(player.z + fz*(step + size/2));
+    const x0 = cx - (size>>1), z0 = cz - (size>>1);
+    if(x0 < 1 || z0 < 1 || x0+size > W-1 || z0+size > D-1) continue;
+    let gy = 0;
+    for(let x=0;x<size;x++) for(let z=0;z<size;z++)
+      gy = Math.max(gy, surfaceHeight(x0+x+0.5, z0+z+0.5, player.y+4));
+    if(gy + 8 >= H) continue;
+    return {x0, gy, z0, cx, cz};
+  }
+  return null;
+}
+
+/* 장식은 보통 블록으로 짓는다 — 마음에 안 들면 ⏪ 로 지울 수 있게 */
+function put(x,y,z,t){
+  if(!inside(x,y,z)) return;
+  const before = getBlock(x,y,z);
+  if(before === t) return;
+  setBlock(x,y,z,t);
+  recordEdit(x,y,z,t);
+  Undo.push(x,y,z,before,t,null);
+  state.placed++;
+}
+
+function buildDecor(id){
+  const def = DECOR.find(d=>d.id===id);
+  if(!def) return false;
+  const sp = decorSpot(def.size);
+  if(!sp){
+    showHint('🏝️ 여기는 좁아요. 넓은 곳을 보고 다시 눌러 주세요', 2600);
+    Sound.deny();
+    return false;
+  }
+  const {x0, gy, z0} = sp;
+  const s = def.size, mid = s >> 1;
+  const C = [RAINBOW, GOLD, LEAF, GLASS];
+
+  Undo.begin();                     // 여기서 놓는 블록은 ⏪ 한 번에 전부 지워진다
+
+  if(id === 'flower'){
+    for(let x=0;x<s;x++) for(let z=0;z<s;z++){
+      put(x0+x, gy-1, z0+z, GRASS);
+      if((x+z) % 2 === 0) put(x0+x, gy, z0+z, RAINBOW);
+    }
+  } else if(id === 'fount'){
+    for(let x=0;x<s;x++) for(let z=0;z<s;z++){
+      const edge = (x===0||z===0||x===s-1||z===s-1);
+      put(x0+x, gy, z0+z, edge ? STONE : WATER);
+    }
+    put(x0+mid, gy+1, z0+mid, STONE);
+    put(x0+mid, gy+2, z0+mid, GLASS);
+    put(x0+mid, gy+3, z0+mid, WATER);
+  } else if(id === 'camp'){
+    for(let x=0;x<s;x++) for(let z=0;z<s;z++)
+      if(x===0||z===0||x===s-1||z===s-1) put(x0+x, gy, z0+z, STONE);
+    put(x0+mid, gy,   z0+mid, WOOD);
+    put(x0+mid, gy+1, z0+mid, LAMP);
+  } else if(id === 'pillar'){
+    for(let k=0;k<8;k++) put(x0+mid, gy+k, z0+mid, k%2 ? RAINBOW : GLASS);
+    put(x0+mid, gy+8, z0+mid, GOLD);
+  } else if(id === 'palm'){
+    for(let k=0;k<5;k++) put(x0+mid, gy+k, z0+mid, WOOD);
+    for(const [dx,dz] of [[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[1,1],[-1,1],[1,-1]])
+      put(x0+mid+dx, gy+5, z0+mid+dz, LEAF);
+    put(x0+mid, gy+6, z0+mid, LEAF);
+    put(x0+mid+1, gy+4, z0+mid, GOLD);            // 코코넛
+  } else if(id === 'heart'){
+    const ROWS = ['.XX.XX.','XXXXXXX','XXXXXXX','.XXXXX.','..XXX..','...X...'];
+    ROWS.forEach((row, ry)=>{
+      for(let x=0;x<row.length;x++)
+        if(row[x]==='X') put(x0+x, gy + (ROWS.length-1-ry), z0+mid, RAINBOW);
+    });
+  } else if(id === 'fence'){
+    for(let x=0;x<s;x++) for(let z=0;z<s;z++){
+      const edge = (x===0||z===0||x===s-1||z===s-1);
+      if(!edge) continue;
+      const corner = (x===0||x===s-1) && (z===0||z===s-1);
+      put(x0+x, gy, z0+z, WOOD);
+      if(corner) put(x0+x, gy+1, z0+z, LAMP);
+    }
+  } else if(id === 'slide'){
+    /* 🌈 무지개 미끄럼틀 — 계단으로 올라가서 얼음으로 주욱 내려온다 */
+    const top = 9;
+    for(let k=0;k<top;k++){                       // 올라가는 계단
+      put(x0+1, gy+k, z0+1+k, RAINBOW);
+      put(x0+2, gy+k, z0+1+k, RAINBOW);
+    }
+    for(let k=0;k<top;k++){                       // 미끄러져 내려오는 얼음길
+      const z = z0 + s - 1 - k;
+      put(x0+1, gy+top-1-k, z, ICE);
+      put(x0+2, gy+top-1-k, z, ICE);
+      put(x0,   gy+top-k,   z, GLASS);            // 떨어지지 않게 옆벽
+      put(x0+3, gy+top-k,   z, GLASS);
+    }
+    put(x0+1, gy+top, z0+s-1, RAINBOW);
+    put(x0+2, gy+top, z0+s-1, RAINBOW);
+  } else if(id === 'tower'){
+    /* 🗼 전망대 — 바깥을 빙 도는 계단으로 올라가서 섬을 내려다본다 */
+    const ring = [];
+    for(let x=0;x<s;x++)      ring.push([x, 0]);
+    for(let z=1;z<s;z++)      ring.push([s-1, z]);
+    for(let x=s-2;x>=0;x--)   ring.push([x, s-1]);
+    for(let z=s-2;z>=1;z--)   ring.push([0, z]);
+    const TOP = 10;
+    ring.forEach(([dx,dz], i)=>{
+      const y = gy + Math.min(TOP-1, Math.floor(i * TOP / ring.length));
+      for(let k=0;k<=y-gy;k++) put(x0+dx, gy+k, z0+dz, STONE);   // 계단 아래를 기둥으로 채운다
+    });
+    for(let x=0;x<s;x++) for(let z=0;z<s;z++) put(x0+x, gy+TOP, z0+z, PLANK);   // 꼭대기 바닥
+    for(let x=0;x<s;x++) for(let z=0;z<s;z++){
+      if(x===0||z===0||x===s-1||z===s-1) put(x0+x, gy+TOP+1, z0+z, GLASS);      // 떨어지지 않게 난간
+    }
+    put(x0, gy+TOP+2, z0, WOOD);
+    put(x0, gy+TOP+3, z0, GOLD);                                                // 꼭대기 깃발
+  } else if(id === 'lamps'){
+    for(let z=0;z<s;z++){
+      put(x0+mid, gy-1, z0+z, PATH_S);
+      if(z % 3 === 0){
+        for(const dx of [-2, 2]){
+          put(x0+mid+dx, gy,   z0+z, WOOD);
+          put(x0+mid+dx, gy+1, z0+z, WOOD);
+          put(x0+mid+dx, gy+2, z0+z, LAMP);
+        }
+      }
+    }
+  }
+  Undo.end(def.icon + ' ' + def.name);
+  Lamps.scanAll();
+  Particles.burst(x0+mid+.5, gy+1.5, z0+mid+.5, C[(Math.random()*C.length)|0], 26, 6);
+  Sound.quest();
+  showHint(def.icon + ' ' + def.name + ' 완성! 마음에 안 들면 ⏪ 로 지울 수 있어요', 3000);
+  state.decor = (state.decor|0) + 1;
+  addExp(15);
+  checkQuests();
+  checkBadges();
+  saveSoon();
+  return true;
+}
+
+/* ---- 섬 이름 간판 (마을 입구) ---- */
+let signGroup = null, signCanvas = null, signTex = null;
+function buildSign(){
+  const x = VILLAGE.x + 3.5, z = VILLAGE.z + 5.5;
+  const y = surfaceHeight(x, z, VILLAGE.y + 6);
+  const g = new THREE.Group();
+  const postL = boxMesh(.16,1.5,.16, 0x8a5c34); postL.position.set(-.9, .75, 0);
+  const postR = boxMesh(.16,1.5,.16, 0x8a5c34); postR.position.set( .9, .75, 0);
+  signCanvas = document.createElement('canvas');
+  signCanvas.width = 256; signCanvas.height = 96;
+  signTex = new THREE.CanvasTexture(signCanvas);
+  signTex.magFilter = THREE.LinearFilter;
+  const board = new THREE.Mesh(new THREE.BoxGeometry(2.6,1.0,.14),
+    [0,1,2,3].map(()=>new THREE.MeshLambertMaterial({color:0xd7a96b}))
+      .concat([new THREE.MeshLambertMaterial({map:signTex}),
+               new THREE.MeshLambertMaterial({color:0xd7a96b})]));
+  board.castShadow = true; board.position.y = 1.75;
+  g.add(postL, postR, board);
+  g.position.set(x, y, z);
+  scene.add(g);
+  signGroup = g;
+  paintSign();
+}
+function paintSign(){
+  if(!signCanvas) return;
+  const g = signCanvas.getContext('2d');
+  g.fillStyle = '#f6e3c0'; g.fillRect(0,0,256,96);
+  g.strokeStyle = '#a97a4d'; g.lineWidth = 6; g.strokeRect(3,3,250,90);
+  g.textAlign = 'center'; g.fillStyle = '#5b3d20';
+  g.font = "800 20px 'Jua','Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif";
+  g.fillText('🏝️ 어서 와요', 128, 34);
+  g.font = "800 26px 'Jua','Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif";
+  const nm = islandName();
+  g.fillText(nm.length > 11 ? nm.slice(0,11)+'…' : nm, 128, 70);
+  if(signTex) signTex.needsUpdate = true;
+}
+
+/* ---- 친구 섬 구경 ---- */
+function isVisiting(){
+  try{ return !!sessionStorage.getItem(VISIT_KEY); }catch(e){ return false; }
+}
+function visitIsland(code){
+  const got = decodeIsland(code);
+  if(!got || !got.edits) return false;
+  const info = {edits:got.edits, name:got.name || '친구의 섬', nick:got.nick || ''};
+  try{ sessionStorage.setItem(VISIT_KEY, JSON.stringify(info)); }catch(e){ return false; }
+  saveNow();
+  location.reload();
+  return true;
+}
+function goHome(){
+  try{ sessionStorage.removeItem(VISIT_KEY); }catch(e){}
+  location.reload();
+}
+
+/* 섬 코드 = 건축물 + 섬 이름 + 주인 별명 */
+function islandCode(){
+  const body = encodeWorld();
+  return packCode('BWS1', {n:state.nick, i:islandName(), w:body});
+}
+function decodeIsland(code){
+  const m = unpackCode('BWS1', code);
+  if(m && m.w) return {edits:decodeWorld(m.w), name:m.i, nick:m.n};
+  const e = decodeWorld(code);                       // 예전 월드 코드도 받아 준다
+  return e ? {edits:e, name:'친구의 섬', nick:''} : null;
+}
+
+/* ═══════════════════════════════════════════════════
+   10.34 🎥 녹화 — 유튜브 쇼츠 모양(9:16)으로 바로 만들기
+   ───────────────────────────────────────────────────
+   게임 화면을 그대로 담으면 가로로 길어서 쇼츠에 못 올린다.
+   그래서 세로 720x1280 짜리 종이를 따로 한 장 두고,
+   거기에 게임 화면 + 제목 + 기록 + 도도블록 표시를 같이 그려서 찍는다.
+   WebGL 화면은 "그린 직후"에만 읽어 올 수 있어서, 이 그리기는
+   메인 루프의 renderer.render() 바로 뒤에서 부른다.
+   ═══════════════════════════════════════════════════ */
+const Rec = (function(){
+  const W = 720, H = 1280, MAX_SEC = 60;
+  let comp = null, g = null, rec = null, chunks = [], url = null;
+  let on = false, t0 = 0, took = 0, audio = null, stream = null, lastNote = '';
+
+  function can(){
+    return !!(window.MediaRecorder && canvas.captureStream);
+  }
+  function ensure(){
+    if(comp) return;
+    comp = document.createElement('canvas');
+    comp.width = W; comp.height = H;
+    g = comp.getContext('2d');
+  }
+  function fontOf(px){
+    return "800 " + px + "px 'Jua','Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif";
+  }
+
+  /* 한 장 그리기 — 메인 루프가 매 프레임 불러 준다 */
+  function frame(){
+    if(!on || !g) return;
+    const bg = g.createLinearGradient(0,0,0,H);
+    bg.addColorStop(0,'#3aa0e6'); bg.addColorStop(.5,'#8fd8ff'); bg.addColorStop(1,'#2d7fbd');
+    g.fillStyle = bg; g.fillRect(0,0,W,H);
+
+    /* 게임 화면으로 세로 화면을 꽉 채운다 (양옆은 잘린다).
+       빈 하늘이 위아래로 남으면 쇼츠에서 초라해 보이기 때문. */
+    const cw = canvas.width, ch = canvas.height;
+    const k = Math.max(W/cw, H/ch);
+    const dw = cw*k, dh = ch*k;
+    try{ g.drawImage(canvas, (W-dw)/2, (H-dh)/2, dw, dh); }catch(e){}
+
+    // 위: 섬 이름
+    g.textAlign = 'center';
+    g.fillStyle = 'rgba(0,0,0,.28)'; g.fillRect(0, 0, W, 170);
+    g.fillStyle = '#ffffff';
+    g.font = fontOf(34); g.fillText('🦤 도도블록', W/2, 62);
+    g.font = fontOf(48);
+    const nm = islandName();
+    g.fillText(nm.length > 13 ? nm.slice(0,13)+'…' : nm, W/2, 122);
+
+    // 아래: 지금 기록 + 녹화 시간
+    g.fillStyle = 'rgba(0,0,0,.28)'; g.fillRect(0, H-150, W, 150);
+    g.fillStyle = '#ffe98a'; g.font = fontOf(36);
+    g.fillText('🪙 ' + state.coins + '   ⭐ 레벨 ' + state.level + '   🏅 ' +
+               Object.keys(state.badges).length, W/2, H-88);
+    g.fillStyle = '#ffffff'; g.font = fontOf(26);
+    g.fillText(lastNote || '#도도블록 #블록섬 #초등학생게임', W/2, H-40);
+  }
+  function secs(){ return on ? (performance.now() - t0)/1000 : 0; }
+
+  function start(){
+    if(on) return true;
+    if(!can()){
+      showHint('😢 이 브라우저는 녹화를 못 해요. 크롬으로 열어 보세요', 3000);
+      Sound.deny();
+      return false;
+    }
+    ensure();
+    frame();                                  // 첫 장을 미리 그려 둔다
+    try{
+      stream = comp.captureStream(30);
+      Sound.resume();
+      audio = Sound.tap();
+      if(audio) audio.stream.getAudioTracks().forEach(tr=>stream.addTrack(tr));
+      const types = ['video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm'];
+      const mime = types.find(t=>MediaRecorder.isTypeSupported(t));
+      rec = new MediaRecorder(stream, mime ? {mimeType:mime} : undefined);
+      chunks = [];
+      rec.ondataavailable = e=>{ if(e.data && e.data.size) chunks.push(e.data); };
+      rec.onstop = done;
+      rec.start();
+    }catch(e){
+      showHint('😢 녹화를 시작하지 못했어요', 2600);
+      Sound.deny();
+      cleanup();
+      return false;
+    }
+    on = true; t0 = performance.now();
+    document.body.classList.add('recording');
+    showHint('🔴 녹화 시작! 다시 누르면 멈춰요', 2400);
+    Sound.quest();
+    return true;
+  }
+  function cleanup(){
+    if(audio){ audio.stop(); audio = null; }
+    stream = null; rec = null;
+  }
+  function stop(){
+    if(!on) return;
+    took = secs();                        // 멈추는 순간의 길이를 적어 둔다
+    on = false;
+    document.body.classList.remove('recording');
+    try{ if(rec && rec.state !== 'inactive') rec.stop(); }catch(e){ done(); }
+  }
+  function done(){
+    const len = took;
+    cleanup();
+    if(url) URL.revokeObjectURL(url);
+    url = chunks.length ? URL.createObjectURL(new Blob(chunks, {type:'video/webm'})) : null;
+    chunks = [];
+    if(!url){
+      showHint('😢 영상이 비어 있어요. 다시 해 볼까요?', 2600);
+      Sound.deny();
+      return;
+    }
+    $('#recvid').src = url;
+    $('#recsub').textContent = Math.max(1, Math.round(len)) + '초짜리 세로 영상이 만들어졌어요 (유튜브 쇼츠 모양)';
+    $('#reccap').value = '🦤 ' + islandName() + ' 구경 오세요!\n' + SHORT_TAGS;
+    $('#recbox').style.display = 'flex';
+    if(document.pointerLockElement) document.exitPointerLock();
+    Sound.fanfare();
+    state.clips = (state.clips|0) + 1;
+    checkBadges();
+    saveSoon();
+  }
+  function toggle(){ on ? stop() : start(); }
+  function save(){
+    if(!url) return;
+    const a = document.createElement('a');
+    a.href = url; a.download = '도도블록-' + islandName() + '.webm';
+    document.body.appendChild(a); a.click(); a.remove();
+    Sound.click();
+  }
+  /* 너무 길게 찍으면 파일이 커져서 카톡으로 못 보낸다 — 1분에서 자동으로 멈춘다 */
+  function update(){
+    if(on && secs() > MAX_SEC){
+      showHint('⏱️ 1분이 넘어서 저장했어요', 2600);
+      stop();
+    }
+  }
+  function note(t){ lastNote = t || ''; }
+  return {start, stop, toggle, frame, update, save, can, note,
+           isOn(){ return on; },
+           preview(){ return comp ? comp.toDataURL('image/png') : null; }};
+})();
+
+
+/* ═══════════════════════════════════════════════════
    12. 메인 루프
    ═══════════════════════════════════════════════════ */
 let started = false;
@@ -5334,8 +6190,39 @@ function resize(){
   renderer.setSize(w,h,false);
   camera.aspect = w/h;
   camera.updateProjectionMatrix();
+  layoutUI();
 }
 addEventListener('resize', resize);
+
+/* 창 크기가 제각각이라 CSS 만으로는 겹침을 못 막는다.
+   퀘스트 칸 아래 ~ 블록 바 위 사이에 도구 단추를 끼워 넣고,
+   자리가 모자라면 단추를 🎒 하나로 접는다. */
+function layoutUI(){
+  const tools = $('#tools'), quests = $('#quests'), hotbar = $('#hotbar'), hint = $('#hint');
+  if(!tools) return;
+  document.body.classList.toggle('compact', innerHeight < 540);
+
+  document.body.classList.remove('rowtools');
+  tools.style.top = ''; tools.style.transform = '';
+
+  const qb = quests ? quests.getBoundingClientRect().bottom : 0;
+  const hbTop = hotbar ? hotbar.getBoundingClientRect().top : innerHeight;
+  const th = tools.getBoundingClientRect().height;
+
+  /* 퀘스트 칸 아래 ~ 블록 바 위 사이에 단추가 들어갈 자리가 있나? */
+  if(hbTop - qb < th + 20){
+    document.body.classList.add('rowtools');        // 자리가 없으면 위쪽에 가로로
+  } else {
+    let top = (innerHeight - th) / 2;               // 기본은 세로 가운데
+    top = Math.max(top, qb + 10);                   // 퀘스트 칸 아래로
+    top = Math.min(top, hbTop - th - 10);           // 블록 바 위로
+    top = Math.max(top, 10);
+    tools.style.top = Math.round(top) + 'px';
+    tools.style.transform = 'none';
+  }
+
+  if(hint) hint.style.bottom = Math.round(innerHeight - hbTop + 12) + 'px';
+}
 
 function stepGame(dt){
   updateLook(dt);
@@ -5382,6 +6269,9 @@ function frame(t){
     fpsAcc = 0; fpsCount = 0;
   }
   renderer.render(scene, camera);
+  runSnap();                 // 사진·자랑 카드는 그린 직후에만 담을 수 있다
+  Rec.frame();               // 녹화 중이면 세로(쇼츠) 화면도 같이 그린다
+  Rec.update();
 }
 
 /* ═══════════════════════════════════════════════════
@@ -5393,7 +6283,13 @@ loadSave();
 generateWorld();
 buildShopHouse();
 buildObbies();
+loadVisit();                 // 친구 섬 구경 중인지 먼저 확인
 applyEdits();
+buildSign();
+if(VISIT){
+  document.body.classList.add('visiting');
+  $('#visittext').textContent = '🚢 ' + (VISIT.name || '친구의 섬') + ' 구경 중이에요 (여기서 지은 건 저장되지 않아요)';
+}
 resize();
 rebuildAll();
 buildHotbar();
@@ -5420,6 +6316,7 @@ setIcon('#btnTime', {auto:'auto', day:'day', night:'night'}[state.timeMode || 'a
   if(el) el.style.backgroundImage = 'url(' + dodoFace(SKINS[0]) + ')'; })();
 [['#btnUndo','undo'],['#btnCraft','craft'],['#btnPlan','plan'],['#btnShorts','shorts'],
  ['#btnFriend','friend'],['#btnIdea','idea'],['#btnBadge','badge'],['#btnShare','share'],
+ ['#btnRec','rec'],['#btnBag','bag'],['#btnIsland','island'],
  ['#btnHelp','help']].forEach(([id,n])=>setIcon(id,n));
 
 /* ── 새 단추들 ── */
@@ -5428,21 +6325,34 @@ function guard(fn){
   return ()=>{
     if($('#daily').style.display === 'flex' || $('#nick').style.display === 'flex') return;
     if(Shorts.running()) Shorts.stop();
-    closeCraft(); closePlans(); closeFriends(); closeIdeas(); closeShorts();
+    closeCraft(); closePlans(); closeFriends(); closeIdeas(); closeShorts(); closeBag();
+    closeIsland();
     $('#badges').style.display='none'; $('#share').style.display='none';
-    $('#shortresult').style.display='none';
+    $('#shortresult').style.display='none'; $('#bragbox').style.display='none';
+    $('#recbox').style.display='none';
     fn();
   };
 }
 $('#btnUndo').addEventListener('click', ()=>Undo.undo());
-$('#btnCraft').addEventListener('click', guard(openCraft));
-$('#btnPlan').addEventListener('click', guard(openPlans));
-$('#btnBadge').addEventListener('click', guard(openBadges));
-$('#btnShare').addEventListener('click', guard(openShare));
-$('#btnShorts').addEventListener('click', guard(openShorts));
-$('#btnFriend').addEventListener('click', guard(openFriends));
-$('#btnIdea').addEventListener('click', guard(openIdeas));
+$('#btnBag').addEventListener('click', guard(openBag));
 $('#btnTime').addEventListener('click', cycleTimeMode);
+$('#bagclose').addEventListener('click', closeBag);
+$('#islandclose').addEventListener('click', closeIsland);
+$('#island').addEventListener('click', e=>{ if(e.target.id === 'island') closeIsland(); });
+$('#islandsave').addEventListener('click', saveIslandName);
+$('#islandname').addEventListener('keydown', e=>{ if(e.code==='Enter') saveIslandName(); });
+$('#bragbtn').addEventListener('click', showBrag);
+$('#photobtn').addEventListener('click', ()=>{ closeIsland(); savePhoto(); });
+$('#islandcopy').addEventListener('click', ()=>islandMsg(copyField('islandcode',
+  '✅ 내 섬 코드를 복사했어요! 카톡으로 친구에게 보내 주세요.')));
+$('#islandvisit').addEventListener('click', goVisit);
+$('#bragsave').addEventListener('click', saveBrag);
+$('#bragclose').addEventListener('click', ()=>{ $('#bragbox').style.display='none'; });
+$('#visithome').addEventListener('click', goHome);
+$('#recsave').addEventListener('click', ()=>Rec.save());
+$('#reccopy').addEventListener('click', ()=>{ copyField('reccap',''); Sound.click(); });
+$('#recclose').addEventListener('click', ()=>{ $('#recbox').style.display='none'; });
+$('#btnRec').addEventListener('click', ()=>Rec.toggle());
 $('#craftclose').addEventListener('click', closeCraft);
 $('#planclose').addEventListener('click', closePlans);
 $('#badgeclose').addEventListener('click', ()=>{ $('#badges').style.display='none'; });
@@ -5474,19 +6384,26 @@ addEventListener('keydown', e=>{
   if(!started) return;
   const typing = document.activeElement && document.activeElement.tagName === 'TEXTAREA';
   if(typing) return;
-  const anyModal = craftOpen || plansOpen ||
+  const anyModal = craftOpen || plansOpen || bagOpen || friendsOpen || ideaOpen || shortsOpen ||
+                   islandOpen ||
+                   $('#bragbox').style.display==='flex' || $('#recbox').style.display==='flex' ||
                    $('#badges').style.display==='flex' || $('#share').style.display==='flex';
   if(e.code==='Escape' && anyModal){
-    closeCraft(); closePlans();
+    closeCraft(); closePlans(); closeBag(); closeFriends(); closeIdeas(); closeShorts();
+    closeIsland();
     $('#badges').style.display='none'; $('#share').style.display='none';
+    $('#bragbox').style.display='none'; $('#recbox').style.display='none';
     return;
   }
+  if(e.code==='Tab'){ e.preventDefault(); if(!anyModal) guard(openBag)(); return; }
   if(anyModal || shopOpen) return;
   if(e.code==='KeyZ') Undo.undo();
   if(e.code==='KeyC') craftOpen ? closeCraft() : openCraft();
   if(e.code==='KeyB') plansOpen ? closePlans() : openPlans();
   if(e.code==='KeyV') openBadges();
   if(e.code==='KeyG') openFriends();
+  if(e.code==='KeyI') openIsland();
+  if(e.code==='KeyR' && e.shiftKey) Rec.toggle();
 });
 checkBadges();
 setSoundOn(state.soundOn !== 0);
@@ -5494,7 +6411,7 @@ $('#btnSound').addEventListener('click', ()=>{ setSoundOn(!Sound.isEnabled()); S
 $('#btnHelp').addEventListener('click', ()=>{ buildHelp(); $('#help').style.display='flex'; });
 QUALITY.mode = state.quality || 'auto';
 applyQuality(QUALITY.mode === 'low' ? 'low' : 'high');
-$('#btnQuality').addEventListener('click', cycleQuality);
+/* 화질은 🎒 가방 안에서 바꾼다 (화면 단추를 줄이느라 뺐다) */
 if(IS_TOUCH){
   const k = $('#start').querySelector('.keys');
   if(k) k.innerHTML = '<span>왼쪽 동그라미 = 이동</span><span>화면 문지르기 = 둘러보기</span>' +
@@ -5537,6 +6454,11 @@ window.BW = {player, setBlock, getBlock, scene, camera, renderer, voxels, W,H,D,
   BLUEPRINTS, Blueprint, bpCells, bpSize, openPlans, closePlans,
   BADGES, checkBadges, openBadges, checkDaily,
   encodeWorld, decodeWorld, openShare, TRAMP, LAMP, ICE,
+  BAG_ITEMS, openBag, closeBag,
+  DECOR, buildDecor, openIsland, closeIsland, islandName, islandCode, decodeIsland,
+  visitIsland, goHome, makeBragCard, savePhoto, paintSign, saveIslandName,
+  isVisiting(){ return !!VISIT; },
+  Rec,
   GAME_VER, randomNick, newUid, packCode, unpackCode, myInviteCode,
   friendCount, giftLevel, FRIEND_GIFTS, enterFriendCode, openFriends, closeFriends,
   askNick, saveNick, SHORTS, Shorts, openShorts, closeShorts,
