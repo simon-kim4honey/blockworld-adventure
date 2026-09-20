@@ -472,6 +472,49 @@
   }
   #dailydots i.on{background:linear-gradient(#ffcf3f,#ff9f1a); color:#fff; box-shadow:0 3px 0 #c9700a;}
 
+  /* 입력칸 (닉네임 · 아이디어 · 코드) */
+  .mfield{
+    width:100%; border-radius:14px; border:3px solid #e3ddef; padding:11px 13px;
+    font-family:inherit; font-weight:800; font-size:17px; color:#3b3350; background:#faf8ff;
+  }
+  .mcode{
+    width:100%; border-radius:14px; border:3px solid #e3ddef; padding:9px 11px; resize:none;
+    font-family:ui-monospace,Menlo,Consolas,monospace; font-size:12px; font-weight:600;
+    color:#3b3350; background:#faf8ff; word-break:break-all; height:74px;
+  }
+  .mlabel{font-size:14px; margin:14px 0 6px; opacity:.75;}
+  #friendmsg,#ideamsg{font-size:14px; margin-top:9px; min-height:19px; line-height:1.45;}
+  #friendlist,#hall{display:flex; flex-wrap:wrap; gap:7px;}
+  #giftlist{display:grid; grid-template-columns:repeat(auto-fill,minmax(108px,1fr)); gap:9px;}
+  #nick .mbox{width:min(420px,92vw); text-align:center;}
+  #nick .dbig{font-size:52px; line-height:1;}
+  #nickrow{display:flex; gap:8px; margin-top:12px;}
+  #nickdice{
+    border:none; border-radius:14px; cursor:pointer; font-size:22px; padding:0 16px;
+    background:#f3eefc; box-shadow:0 4px 0 rgba(0,0,0,.12); font-family:inherit;
+  }
+
+  /* 15초 도전 진행 표시 */
+  #shortbar{
+    position:fixed; left:50%; top:16px; transform:translateX(-50%);
+    z-index:24; display:none; pointer-events:none; text-align:center; min-width:230px;
+  }
+  #shortbar .bptrack{height:11px; background:#e5e0ef; border-radius:999px; overflow:hidden;
+    box-shadow:inset 0 2px 4px rgba(0,0,0,.18); margin-top:6px;}
+  #shortbar .bpfill{height:100%; width:0%; border-radius:999px;
+    background:linear-gradient(90deg,#ff9f1a,#ff5d5d); transition:width .2s linear;}
+  #shortbar .bpnum{font-size:15px; margin-top:5px;}
+  #shortresult{z-index:41;}
+  #shortresult .mbox{width:min(460px,92vw); text-align:center;}
+  #shortresult .dbig{font-size:54px; line-height:1;}
+  #srtitle{font-size:26px; margin:6px 0 4px;}
+  #srbody{font-size:16px; opacity:.78; margin-bottom:12px;}
+  #srcap{
+    width:100%; height:62px; resize:none; border-radius:14px; border:3px solid #e3ddef;
+    padding:9px 11px; font-family:inherit; font-weight:800; font-size:15px;
+    color:#3b3350; background:#faf8ff; text-align:center;
+  }
+
   /* 배지 획득 토스트 */
   #btoast{
     position:fixed; left:50%; top:76px; transform:translateX(-50%) scale(.6);
@@ -505,7 +548,7 @@
     .slot .ic{font-size:18px;}
     .slot .nm{font-size:8px;}
     .slot .num{font-size:8px; top:2px; left:4px;}
-    #hotbar{gap:4px; padding:4px 6px;}
+    #hotbar{gap:4px; padding:4px 6px; width:min(368px, 98vw); max-width:none;}
     .slot.sel{transform:translateY(-7px) scale(1.08);}
 
     .tbtn{width:66px; height:66px; font-size:27px;}
@@ -515,7 +558,7 @@
     #stick{width:118px; height:118px; left:18px; bottom:20px;}
     #stickknob{width:54px; height:54px; margin:-27px 0 0 -27px;}
 
-    body.touchmode #hotbar{bottom:196px; transform:translateX(-50%) scale(1);}
+    body.touchmode #hotbar{bottom:182px; transform:translateX(-50%) scale(1);}
     body.touchmode #tut{bottom:262px;}
     body.touchmode #tools{top:26%; bottom:auto; right:6px; width:86px;}
     .modal{padding:6px;}
@@ -610,6 +653,9 @@
   <button class="tool" id="btnUndo"  title="되감기 (Z)">⏪</button>
   <button class="tool" id="btnCraft" title="제작대 (C)">🔨</button>
   <button class="tool" id="btnPlan"  title="청사진 건축학교 (B)">📐</button>
+  <button class="tool" id="btnShorts" title="15초 쇼츠 도전">🎬</button>
+  <button class="tool" id="btnFriend" title="친구 초대">👫</button>
+  <button class="tool" id="btnIdea"   title="아이디어 보내기">💬</button>
   <button class="tool" id="btnBadge" title="배지 (V)">🏅</button>
   <button class="tool" id="btnShare" title="내 월드 나누기">📤</button>
   <button class="tool" id="btnTime"  title="밤낮 바꾸기">🌗</button>
@@ -685,6 +731,94 @@
   <div class="dgot" id="dgot"></div>
   <div id="dailydots"></div>
   <button class="mbtn green" id="dailyclose">고마워요!</button>
+</div></div>
+
+<!-- 15초 도전 진행 -->
+<div class="card" id="shortbar">
+  <div class="bptitle" id="shorttitle"></div>
+  <div class="bptrack"><div class="bpfill" id="shortfill"></div></div>
+  <div class="bpnum" id="shortnum"></div>
+</div>
+
+<!-- 🎬 쇼츠 도전 -->
+<div class="modal" id="shorts"><div class="mbox">
+  <div class="mhead"><h2>🎬 15초 도전</h2></div>
+  <div class="msub">15초 안에 해내면 성공! 친구들에게 보여 주기 딱 좋은 짧은 도전이에요.</div>
+  <div id="shortlist"></div>
+  <div class="msub" id="recnote" style="margin:12px 0 0"></div>
+  <button class="mbtn" id="shortsclose">닫기</button>
+</div></div>
+
+<!-- 도전 결과 -->
+<div class="modal" id="shortresult"><div class="mbox">
+  <div class="dbig" id="sricon">🎉</div>
+  <div id="srtitle"></div>
+  <div id="srbody"></div>
+  <div class="mlabel">영상에 쓸 제목이에요</div>
+  <textarea id="srcap" spellcheck="false"></textarea>
+  <div class="mrow" style="margin-top:12px">
+    <button class="mbtn green" id="srcopy" style="margin-top:0">📋 제목 복사</button>
+    <button class="mbtn" id="shortsave" style="margin-top:0;display:none">🎬 영상 저장</button>
+  </div>
+  <button class="mbtn gray" id="srclose">닫기</button>
+</div></div>
+
+<!-- 👫 친구 초대 -->
+<div class="modal" id="friends"><div class="mbox">
+  <div class="mhead"><h2>👫 친구와 함께</h2><div style="font-size:18px" id="friendnum">0명</div></div>
+  <div class="msub">내 이름: <b id="myname"></b> · 이름과 6글자 코드 말고는 아무것도 담기지 않아요.</div>
+
+  <div class="mlabel">① 내 초대 코드를 친구에게 보내요</div>
+  <textarea class="mcode" id="mycode" spellcheck="false" readonly></textarea>
+  <div class="mrow" style="margin-top:9px">
+    <button class="mbtn green" id="copyinvite" style="margin-top:0">📋 초대 코드 복사</button>
+    <button class="mbtn gray" id="changenick" style="margin-top:0">✏️ 이름 바꾸기</button>
+  </div>
+
+  <div class="mlabel">② 친구가 보낸 코드를 여기에 넣어요</div>
+  <input class="mfield" id="friendinput" placeholder="BWF1:... 또는 BWT1:..." spellcheck="false">
+  <button class="mbtn" id="friendgo">넣기</button>
+  <div id="friendmsg"></div>
+
+  <div id="thanksbox" style="display:none">
+    <div class="mlabel">③ 이 "고마워 코드"를 초대해 준 친구에게 보내 주세요 (그래야 그 친구도 선물을 받아요)</div>
+    <textarea class="mcode" id="thankscode" spellcheck="false" readonly></textarea>
+    <button class="mbtn green" id="copythanks">📋 고마워 코드 복사</button>
+  </div>
+
+  <div class="mlabel">내 친구들</div>
+  <div id="friendlist"></div>
+  <div class="mlabel">친구 선물</div>
+  <div id="giftlist"></div>
+  <button class="mbtn gray" id="friendclose">닫기</button>
+</div></div>
+
+<!-- 💬 아이디어 -->
+<div class="modal" id="ideas"><div class="mbox">
+  <div class="mhead"><h2>💬 내 아이디어</h2></div>
+  <div class="msub">이 게임에 넣고 싶은 걸 말해 주세요. 만드는 사람이 보고 <b>다음 버전에 진짜로 넣어 줘요.</b>
+    들어가면 아래 명예의 전당에 내 이름이 남아요!</div>
+  <input class="mfield" id="ideainput" placeholder="예) 무지개 슬라이드 넣어 주세요!" maxlength="120">
+  <button class="mbtn green" id="ideago">💡 아이디어 보내기</button>
+  <textarea class="mcode" id="ideacode" spellcheck="false" readonly style="margin-top:10px"></textarea>
+  <div id="ideamsg"></div>
+  <div class="mlabel">내가 보낸 아이디어</div>
+  <div id="idealist"></div>
+  <div class="mlabel">🏆 명예의 전당 — 진짜로 게임에 들어간 아이디어</div>
+  <div id="hall"></div>
+  <button class="mbtn gray" id="ideaclose">닫기</button>
+</div></div>
+
+<!-- 이름 정하기 -->
+<div class="modal" id="nick" style="z-index:43"><div class="mbox">
+  <div class="dbig">🙋</div>
+  <div style="font-size:21px;margin:8px 0 2px">뭐라고 부를까요?</div>
+  <div class="msub" style="margin-bottom:0">친구에게 보여 줄 별명이에요. 진짜 이름은 쓰지 말고 재미있는 별명으로 지어요!</div>
+  <div id="nickrow">
+    <input class="mfield" id="nickinput" maxlength="10" placeholder="별명" spellcheck="false">
+    <button id="nickdice" title="아무거나 골라 주기">🎲</button>
+  </div>
+  <button class="mbtn green" id="nickok">이걸로 할래요!</button>
 </div></div>
 
 <div id="btoast"><div class="tbic" id="tbic"></div><div class="tbnm" id="tbnm"></div>
@@ -1431,10 +1565,12 @@ const NO_SCROLL = {Space:1, ArrowUp:1, ArrowDown:1, ArrowLeft:1, ArrowRight:1};
 function panelOpen(){
   const el = document.activeElement;
   if(el && (el.tagName==='TEXTAREA' || el.tagName==='INPUT')) return true;
-  return shopOpen || craftOpen || plansOpen ||
+  return shopOpen || craftOpen || plansOpen || friendsOpen || ideaOpen || shortsOpen ||
          $('#badges').style.display==='flex' ||
          $('#share').style.display==='flex' ||
-         $('#daily').style.display==='flex';
+         $('#daily').style.display==='flex' ||
+         $('#nick').style.display==='flex' ||
+         $('#shortresult').style.display==='flex';
 }
 addEventListener('keydown', e=>{
   if(panelOpen()){ for(const k in keys) keys[k]=false; return; }
@@ -1561,6 +1697,7 @@ const Sound = (function(){
 /* ═══════════════════════════════════════════════════
    10.5 저장 데이터 + 경험치
    ═══════════════════════════════════════════════════ */
+const GAME_VER = '1.1';
 const SAVE_KEY = 'blockworld_save_v6';
 const state = {
   coins:0, exp:0, level:1,
@@ -1573,6 +1710,9 @@ const state = {
   bpDone:{}, bpActive:null,            // 청사진 완성 · 진행 중
   lastDay:'', streak:0,                // 출석
   timeMode:'auto', lampNight:0, undos:0, shared:0,
+  nick:'', uid:'',                     // 별명 + 무작위 6글자 (개인정보 아님)
+  friends:{}, invitedBy:'', thanksCode:'', giftsFromInvite:0,
+  ideas:[], shortsDone:{},
   edits:{},                // "x,y,z" -> 블록 번호 (0 = 부순 자리)
   collected:{},            // 이미 먹은 코인/별
   obbyDone:{}              // 완주한 코스
@@ -1596,6 +1736,9 @@ function saveNow(){
       badges:state.badges, bpDone:state.bpDone, bpActive:state.bpActive,
       lastDay:state.lastDay, streak:state.streak, timeMode:state.timeMode,
       lampNight:state.lampNight, undos:state.undos, shared:state.shared,
+      nick:state.nick, uid:state.uid, friends:state.friends,
+      invitedBy:state.invitedBy, thanksCode:state.thanksCode,
+      giftsFromInvite:state.giftsFromInvite, ideas:state.ideas, shortsDone:state.shortsDone,
       pos:{x:player.x, y:player.y, z:player.z}, slot:selectedSlot
     }));
   }catch(e){ /* 저장 공간이 없어도 게임은 계속 */ }
@@ -1626,6 +1769,11 @@ function loadSave(){
   state.lastDay = d.lastDay || ''; state.streak = d.streak|0;
   state.timeMode = d.timeMode || 'auto';
   state.lampNight = d.lampNight|0; state.undos = d.undos|0; state.shared = d.shared|0;
+  state.nick = d.nick || ''; state.uid = d.uid || '';
+  state.friends = d.friends || {}; state.invitedBy = d.invitedBy || '';
+  state.thanksCode = d.thanksCode || ''; state.giftsFromInvite = d.giftsFromInvite|0;
+  state.ideas = Array.isArray(d.ideas) ? d.ideas : [];
+  state.shortsDone = d.shortsDone || {};
   if(typeof d.slot === 'number') selectedSlot = clamp(d.slot,0,7);
   if(d.pos && isFinite(d.pos.x)){ SPAWN_LOAD = d.pos; }
 }
@@ -2604,7 +2752,7 @@ let shopOpen = false;
 function skinById(id){ return SKINS.find(s=>s.id===id) || SKINS[0]; }
 
 function applySkin(id){
-  const sk = skinById(id);
+  let sk = skinById(id);
   const ud = avatar.userData;
   ud.body.material.color.setHex(sk.body);
   ud.pLegL.children[0].material.color.setHex(sk.legs);
@@ -2612,8 +2760,9 @@ function applySkin(id){
   ud.pArmL.children[0].material.color.setHex(sk.skin);
   ud.pArmR.children[0].material.color.setHex(sk.skin);
   for(let i=0;i<6;i++) if(i!==4) ud.head.material[i].color.setHex(sk.skin);
-  // 모자
+  // 모자 (친구 3명을 모으면 황금 왕관이 스킨 모자를 이긴다)
   if(ud.hatMesh){ avatar.remove(ud.hatMesh); ud.hatMesh = null; }
+  if(giftLevel() >= 3) sk = Object.assign({}, sk, {hat:{color:0xffd93d, tall:true}});
   ud.hair.visible = !sk.hat;
   if(sk.hat){
     const h = new THREE.Group();
@@ -2686,6 +2835,8 @@ function closeShop(){
 function buildPet(kind){
   const c = kind==='dog'
     ? {body:0xc8853f, head:0xdca05a, ear:0x8a5a2b, belly:0xf2d6a8}
+    : kind==='rabbit'
+    ? {body:0xfff1f6, head:0xffffff, ear:0xffb3d1, belly:0xffd9e8}
     : {body:0x9e9e9e, head:0xb0b0b0, ear:0x707070, belly:0xe0e0e0};
   const g = new THREE.Group();
   const body = boxMesh(.42,.34,.62, c.body); body.position.set(0,.34,0);
@@ -2695,10 +2846,14 @@ function buildPet(kind){
   const nose = boxMesh(.09,.08,.06, 0x332222); nose.position.set(0,.57,-.68);
   const eyeL = boxMesh(.07,.09,.05, 0x221a14); eyeL.position.set(-.1,.66,-.58);
   const eyeR = boxMesh(.07,.09,.05, 0x221a14); eyeR.position.set(.1,.66,-.58);
-  const earL = kind==='dog' ? boxMesh(.1,.22,.1, c.ear) : boxMesh(.12,.18,.08, c.ear);
+  const earL = kind==='dog' ? boxMesh(.1,.22,.1, c.ear)
+             : kind==='rabbit' ? boxMesh(.11,.42,.09, c.ear)   // 토끼는 귀가 쫑긋 길다
+             : boxMesh(.12,.18,.08, c.ear);
   const earR = earL.clone();
-  earL.position.set(-.15,.8,-.4); earR.position.set(.15,.8,-.4);
-  const tail = boxMesh(.09,.09, kind==='dog'?.34:.5, c.body);
+  const eh = kind==='rabbit' ? .95 : .8;
+  earL.position.set(-.13,eh,-.4); earR.position.set(.13,eh,-.4);
+  const tail = kind==='rabbit' ? boxMesh(.16,.16,.16, 0xffffff)
+             : boxMesh(.09,.09, kind==='dog'?.34:.5, c.body);
   tail.position.set(0,.5,.34);
   const legs = [];
   for(const [lx,lz] of [[-.14,-.2],[.14,-.2],[-.14,.2],[.14,.2]]){
@@ -2710,7 +2865,7 @@ function buildPet(kind){
   scene.add(g);
   return g;
 }
-const pets = {dog:null, cat:null};
+const pets = {dog:null, cat:null, rabbit:null};
 let petBarkAt = 0, petTarget = null;
 
 function surfaceHeight(x, z, fromY){
@@ -2721,10 +2876,11 @@ function surfaceHeight(x, z, fromY){
 }
 
 function updatePets(dt){
-  const list = [['dog','강아지 친구'], ['cat','고양이 친구']];
+  // 토끼는 레벨이 아니라 "친구"로 열린다
+  const list = [['dog','강아지 친구'], ['cat','고양이 친구'], ['rabbit', null]];
   let order = 0;
   list.forEach(([kind, unlockName])=>{
-    const has = hasUnlock(unlockName);
+    const has = unlockName ? hasUnlock(unlockName) : giftLevel() >= 1;
     if(has && !pets[kind]) pets[kind] = buildPet(kind);
     const pet = pets[kind];
     if(!pet) return;
@@ -3093,6 +3249,9 @@ function buildHelp(){
     ['🏅 단추','내가 모은 배지 보기'],
     ['📤 단추','내 월드를 코드로 친구에게 보내기'],
     ['🌗 단추','낮 / 밤 고정하기'],
+    ['🎬 단추','15초 도전 — 영상으로 찍어 자랑하기'],
+    ['👫 단추','친구 초대 코드 주고받기'],
+    ['💬 단추','넣고 싶은 걸 말하면 다음 버전에 들어가요'],
   ] : [
     ['W A S D','움직이기'],
     ['← ↑ ↓ →','둘러보기'],
@@ -3108,6 +3267,9 @@ function buildHelp(){
     ['V  또는 🏅','내가 모은 배지 보기'],
     ['📤 단추','내 월드를 코드로 친구에게 보내기'],
     ['🌗 단추','낮 / 밤 고정하기'],
+    ['🎬 단추','15초 도전 — 영상으로 찍어 자랑하기'],
+    ['G  또는 👫','친구 초대 코드 주고받기'],
+    ['💬 단추','넣고 싶은 걸 말하면 다음 버전에 들어가요'],
   ];
   $('#helptable').innerHTML = rows.map(r=>'<tr><td>'+r[0]+'</td><td>'+r[1]+'</td></tr>').join('');
 }
@@ -3730,6 +3892,11 @@ const BADGES = [
   {id:'streak3',     icon:'📅', name:'개근상',      desc:'3일 연속 놀러 오기',     ok:()=>(state.streak|0)>=3},
   {id:'dressup',     icon:'🎩', name:'멋쟁이',      desc:'옷 3벌 모으기',          ok:()=>Object.keys(state.skinsOwned).length>=3},
   {id:'share1',      icon:'📤', name:'나눔이',      desc:'내 월드 코드 복사해 보기', ok:()=>!!state.shared},
+  {id:'friend1',     icon:'👫', name:'첫 친구',     desc:'친구와 코드 주고받기',     ok:()=>giftLevel()>=1},
+  {id:'friend3',     icon:'🎪', name:'인기쟁이',    desc:'친구 3명 모으기',         ok:()=>friendCount()>=3},
+  {id:'idea1',       icon:'💡', name:'아이디어 뱅크', desc:'아이디어 보내 보기',     ok:()=>(state.ideas||[]).length>=1},
+  {id:'short1',      icon:'🎬', name:'쇼츠 스타',   desc:'15초 도전 하나 성공',     ok:()=>Object.keys(state.shortsDone||{}).length>=1},
+  {id:'short_all',   icon:'📺', name:'도전 왕',     desc:'15초 도전 4개 모두 성공',  ok:()=>SHORTS.every(x=>state.shortsDone[x.id])},
 ];
 
 let toastQueue = [], toastBusy = false;
@@ -3910,6 +4077,467 @@ function shareLoad(){
 }
 
 /* ═══════════════════════════════════════════════════
+   10.29 닉네임 · 친구 초대  (게임이 아니라 "플랫폼"으로)
+   ───────────────────────────────────────────────────
+   서버도 로그인도 없다. 그래서 "코드를 주고받는" 방식으로 만든다.
+     ① 내 초대 코드를 친구에게 보낸다
+     ② 친구가 넣으면 친구가 바로 펫을 받고 "고마워 코드"가 나온다
+     ③ 친구가 그 코드를 나에게 보내 주면 나도 펫 + 친구 1명 추가
+   개인정보는 하나도 담기지 않는다 — 닉네임과 무작위 6글자뿐.
+   ═══════════════════════════════════════════════════ */
+const NICK_A = ['용감한','빠른','반짝','폭신','튼튼','신난','귀여운','씩씩한','날쌘','따끈'];
+const NICK_B = ['토끼','호랑이','펭귄','공룡','고래','여우','다람쥐','부엉이','거북이','수달'];
+function randomNick(){
+  return NICK_A[(Math.random()*NICK_A.length)|0] + NICK_B[(Math.random()*NICK_B.length)|0];
+}
+function newUid(){
+  const C = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';   // 헷갈리는 글자(O,0,I,1)는 뺐다
+  let s = '';
+  for(let i=0;i<6;i++) s += C[(Math.random()*C.length)|0];
+  return s;
+}
+
+/* 한글이 섞여도 안전하게 글자 → base64 */
+function utf8ToB64(str){
+  const bytes = new TextEncoder().encode(str);
+  let bin = '';
+  for(const b of bytes) bin += String.fromCharCode(b);
+  return btoa(bin).replace(/=+$/,'');
+}
+function b64ToUtf8(b64){
+  const pad = b64 + '==='.slice((b64.length + 3) % 4);
+  const bin = atob(pad);
+  const bytes = new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++) bytes[i] = bin.charCodeAt(i);
+  return new TextDecoder().decode(bytes);
+}
+/* 오타를 잡아내는 아주 작은 검사 글자 */
+function checksum(s){
+  let h = 7;
+  for(let i=0;i<s.length;i++) h = (h*31 + s.charCodeAt(i)) % 1296;
+  return h.toString(36).toUpperCase().padStart(2,'0');
+}
+function packCode(tag, obj){
+  const body = utf8ToB64(JSON.stringify(obj));
+  return tag + ':' + body + '-' + checksum(body);
+}
+function unpackCode(tag, code){
+  code = (code||'').trim().replace(/\s+/g,'');
+  if(code.indexOf(tag + ':') !== 0) return null;
+  const rest = code.slice(tag.length + 1);
+  const i = rest.lastIndexOf('-');
+  if(i < 0) return null;
+  const body = rest.slice(0, i), sum = rest.slice(i+1);
+  if(checksum(body) !== sum.toUpperCase()) return null;
+  try{ return JSON.parse(b64ToUtf8(body)); }catch(e){ return null; }
+}
+
+function myInviteCode(){ return packCode('BWF1', {n:state.nick, u:state.uid}); }
+
+/* 친구 수에 따른 선물 */
+const FRIEND_GIFTS = [
+  {n:1, icon:'🐰', name:'콩콩 토끼',   desc:'폴짝폴짝 따라다니는 친구 전용 펫'},
+  {n:3, icon:'👑', name:'황금 왕관',   desc:'머리 위에서 반짝이는 왕관'},
+  {n:5, icon:'🌟', name:'별똥별 꼬리', desc:'뛸 때마다 별이 흩날려요'},
+];
+function friendCount(){ return Object.keys(state.friends || {}).length; }
+/* 초대를 "받은" 쪽도 1명분 선물을 받는다 */
+function giftLevel(){ return Math.max(friendCount(), state.giftsFromInvite|0); }
+
+let friendsOpen = false;
+function renderFriends(){
+  $('#myname').textContent = state.nick || '(아직 없어요)';
+  $('#mycode').value = myInviteCode();
+  const cnt = friendCount();
+  $('#friendnum').textContent = cnt + '명';
+  const list = $('#friendlist');
+  list.innerHTML = '';
+  const names = Object.keys(state.friends || {}).map(k=>state.friends[k]);
+  if(!names.length){
+    list.innerHTML = '<div style="font-size:14px;opacity:.6">아직 없어요. 위 코드를 친구에게 보내 보세요!</div>';
+  } else {
+    names.forEach(n=>{
+      const el = document.createElement('div');
+      el.className = 'bagchip';
+      el.textContent = '👋 ' + n;
+      list.appendChild(el);
+    });
+  }
+  const gl = giftLevel();
+  const g = $('#giftlist');
+  g.innerHTML = '';
+  FRIEND_GIFTS.forEach(gift=>{
+    const got = gl >= gift.n;
+    const el = document.createElement('div');
+    el.className = 'badge ' + (got ? 'got' : 'lock');
+    el.innerHTML = '<div class="bic">' + gift.icon + '</div>' +
+                   '<div class="bnm">' + gift.name + '</div>' +
+                   '<div class="bds">' + (got ? gift.desc : '친구 ' + gift.n + '명') + '</div>';
+    g.appendChild(el);
+  });
+  $('#thanksbox').style.display = state.thanksCode ? 'block' : 'none';
+  if(state.thanksCode) $('#thankscode').value = state.thanksCode;
+}
+function openFriends(){
+  friendsOpen = true;
+  $('#friends').style.display = 'flex';
+  if(document.pointerLockElement) document.exitPointerLock();
+  if(!state.nick) askNick(()=>renderFriends());
+  renderFriends();
+  Sound.shop();
+}
+function closeFriends(){ friendsOpen = false; $('#friends').style.display = 'none'; }
+
+function friendMsg(text, good){
+  const el = $('#friendmsg');
+  el.textContent = text;
+  el.style.color = good ? '#38b862' : '#c0392b';
+}
+
+/* 친구가 보낸 코드를 넣는다 — 초대 코드도, 고마워 코드도 여기로 */
+function enterFriendCode(){
+  const raw = $('#friendinput').value;
+  const inv = unpackCode('BWF1', raw);
+  const th  = unpackCode('BWT1', raw);
+
+  if(inv){
+    if(inv.u === state.uid){ friendMsg('그건 내 코드예요 😅 친구에게 보내 주세요!', false); Sound.deny(); return; }
+    if(state.invitedBy){ friendMsg('초대 코드는 한 번만 넣을 수 있어요.', false); Sound.deny(); return; }
+    state.invitedBy = inv.u;
+    state.giftsFromInvite = Math.max(1, state.giftsFromInvite|0);
+    // 고마워 코드를 만들어 준다 → 이걸 초대해 준 친구에게 보내면 그 친구도 선물을 받는다
+    state.thanksCode = packCode('BWT1', {n:state.nick || randomNick(), u:state.uid, to:inv.u});
+    gainCoins(100, true);
+    addExp(60);
+    Sound.fanfare();
+    showBanner('🐰 콩콩 토끼가 왔어요!', (inv.n || '친구') + '님의 초대 고마워요');
+    friendMsg('✅ ' + (inv.n || '친구') + '님의 초대를 받았어요! 아래 "고마워 코드"를 그 친구에게 꼭 보내 주세요.', true);
+    $('#friendinput').value = '';
+    applySkin(state.skin);
+    renderFriends();
+    checkBadges();
+    saveSoon();
+    return;
+  }
+
+  if(th){
+    if(th.to !== state.uid){ friendMsg('이 코드는 다른 친구에게 가야 하는 코드예요.', false); Sound.deny(); return; }
+    if(th.u === state.uid){ friendMsg('내 코드는 넣을 수 없어요 😅', false); Sound.deny(); return; }
+    if(state.friends[th.u]){ friendMsg('이미 등록한 친구예요!', false); Sound.deny(); return; }
+    state.friends[th.u] = th.n || '친구';
+    const cnt = friendCount();
+    gainCoins(120, true);
+    addExp(80);
+    Sound.fanfare();
+    const gift = FRIEND_GIFTS.find(g=>g.n === cnt);
+    showBanner('👫 친구 ' + cnt + '명!', gift ? gift.icon + ' ' + gift.name + ' 받았어요!' : (th.n || '친구') + '님이 함께해요');
+    friendMsg('✅ ' + (th.n || '친구') + '님이 친구가 됐어요!', true);
+    $('#friendinput').value = '';
+    renderFriends();
+    applySkin(state.skin);
+    checkBadges();
+    saveSoon();
+    return;
+  }
+
+  friendMsg('😢 코드가 이상해요. 친구가 보낸 코드를 통째로 붙여넣어 주세요.', false);
+  Sound.deny();
+}
+
+function copyField(id, okMsg){
+  const el = $('#' + id);
+  el.select(); el.setSelectionRange(0, 999999);
+  let ok = false;
+  try{ ok = document.execCommand('copy'); }catch(e){}
+  if(!ok && navigator.clipboard){ navigator.clipboard.writeText(el.value); ok = true; }
+  return ok ? okMsg : '길게 눌러서 직접 복사해 주세요.';
+}
+
+/* ── 닉네임 정하기 ── */
+let nickThen = null;
+function askNick(then){
+  nickThen = then || null;
+  $('#nickinput').value = state.nick || randomNick();
+  $('#nick').style.display = 'flex';
+  if(document.pointerLockElement) document.exitPointerLock();
+  setTimeout(()=>$('#nickinput').focus(), 80);
+}
+function saveNick(){
+  let v = ($('#nickinput').value || '').trim().slice(0, 10);
+  if(!v) v = randomNick();
+  state.nick = v;
+  if(!state.uid) state.uid = newUid();
+  $('#nick').style.display = 'none';
+  Sound.click();
+  saveNow();
+  if(nickThen){ const f = nickThen; nickThen = null; f(); }
+}
+
+/* ═══════════════════════════════════════════════════
+   10.30 아이디어 보내기 💬  (아이의 말이 게임이 되는 루프)
+   ───────────────────────────────────────────────────
+   "무지개 슬라이드 넣어 줘!" 라고 쓰면 아이디어 코드가 나온다.
+   그 코드를 보내 주면 다음 버전에 실제로 들어가고,
+   아래 "명예의 전당"에 그 아이 이름이 남는다.
+   ═══════════════════════════════════════════════════ */
+/* 새 버전을 낼 때마다 여기에 한 줄씩 추가한다 (누구의 아이디어였는지 남긴다) */
+const APPLIED_IDEAS = [
+  // {who:'용감한토끼', what:'무지개 슬라이드', ver:'1.1'},
+];
+
+let ideaOpen = false;
+function ideaCode(text){
+  return packCode('BWI1', {n:state.nick || '이름없음', u:state.uid, i:text, v:GAME_VER});
+}
+function renderIdeas(){
+  const list = $('#idealist');
+  list.innerHTML = '';
+  const mine = state.ideas || [];
+  if(!mine.length){
+    list.innerHTML = '<div style="font-size:14px;opacity:.6">아직 보낸 아이디어가 없어요.</div>';
+  } else {
+    mine.slice().reverse().forEach(it=>{
+      const el = document.createElement('div');
+      el.className = 'recipe';
+      el.innerHTML = '<div class="ric">💡</div><div class="rmid">' +
+        '<div class="rnm">' + escapeHtml(it.t) + '</div>' +
+        '<div class="rds">' + it.at + ' · ' + (it.done ? '🎉 게임에 들어갔어요!' : '📨 보냄') + '</div>' +
+        '</div>';
+      const b = document.createElement('button');
+      b.className = 'makebtn';
+      b.textContent = '코드 복사';
+      b.addEventListener('click', ()=>{
+        $('#ideacode').value = ideaCode(it.t);
+        $('#ideamsg').textContent = copyField('ideacode', '✅ 복사했어요! 카톡으로 보내 주세요.');
+        $('#ideamsg').style.color = '#38b862';
+        Sound.click();
+      });
+      el.appendChild(b);
+      list.appendChild(el);
+    });
+  }
+  const hall = $('#hall');
+  hall.innerHTML = '';
+  if(!APPLIED_IDEAS.length){
+    hall.innerHTML = '<div style="font-size:14px;opacity:.6">아직 비어 있어요. 첫 번째 주인공이 되어 보세요! 🏆</div>';
+  } else {
+    APPLIED_IDEAS.forEach(a=>{
+      const el = document.createElement('div');
+      el.className = 'bagchip';
+      el.innerHTML = '🏆 <b>' + escapeHtml(a.what) + '</b> — ' + escapeHtml(a.who) + '님';
+      hall.appendChild(el);
+    });
+  }
+}
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c=>
+    ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function sendIdea(){
+  const v = ($('#ideainput').value || '').trim().slice(0, 120);
+  if(v.length < 2){
+    $('#ideamsg').style.color = '#c0392b';
+    $('#ideamsg').textContent = '무엇을 넣고 싶은지 조금만 더 써 주세요!';
+    Sound.deny(); return;
+  }
+  if(!state.nick) { askNick(()=>sendIdea()); return; }
+  const now = new Date();
+  state.ideas.push({t:v, at:(now.getMonth()+1) + '월 ' + now.getDate() + '일', done:0});
+  $('#ideainput').value = '';
+  $('#ideacode').value = ideaCode(v);
+  $('#ideamsg').style.color = '#38b862';
+  $('#ideamsg').textContent = copyField('ideacode',
+    '✅ 아이디어 코드를 복사했어요! 카톡이나 유튜브 댓글로 보내 주세요.');
+  gainCoins(30, true);
+  addExp(25);
+  Sound.quest();
+  popText('💡 아이디어 보냄!', '#7ae582');
+  renderIdeas();
+  checkBadges();
+  saveSoon();
+}
+function openIdeas(){
+  ideaOpen = true;
+  $('#ideas').style.display = 'flex';
+  if(document.pointerLockElement) document.exitPointerLock();
+  $('#ideamsg').textContent = '';
+  renderIdeas();
+  Sound.shop();
+}
+function closeIdeas(){ ideaOpen = false; $('#ideas').style.display = 'none'; }
+
+/* ═══════════════════════════════════════════════════
+   10.31 15초 쇼츠 도전 🎬  (유튜브 쇼츠로 퍼지게)
+   ───────────────────────────────────────────────────
+   짧고, 눈에 보이고, 따라 하고 싶어지는 것만 골랐다.
+   브라우저가 되면 15초 영상 파일로도 저장해 준다.
+   ═══════════════════════════════════════════════════ */
+const SHORT_SEC = 15;
+const SHORTS = [
+  {id:'coin8',   icon:'🪙', name:'15초에 코인 8개 먹기', need:8,  unit:'개',
+   how:'코인이 많은 곳에서 시작하세요!',
+   title:'15초에 코인 8개 먹기 성공!', track:()=>state.coinsEarned},
+  {id:'break25', icon:'⛏️', name:'15초에 블록 25개 부수기', need:25, unit:'개',
+   how:'Q를 꾹 누르고 있으면 계속 부숴져요',
+   title:'15초에 블록 25개 부수기!', track:()=>state.broken},
+  {id:'place20', icon:'🧱', name:'15초에 블록 20개 쌓기', need:20, unit:'개',
+   how:'E를 꾹 누르면 발밑에 쌓으면서 위로 올라가요',
+   title:'15초에 탑 20층 쌓기!', track:()=>state.placed},
+  {id:'jump10',  icon:'🟩', name:'통통 블록으로 10칸 뛰어오르기', need:10, unit:'칸',
+   how:'제작대에서 통통 블록을 만들어 밟아 보세요',
+   title:'콩콩 점프로 하늘까지!', track:()=>0, height:true},
+];
+const SHORT_TAGS = '#블록월드어드벤처 #15초도전 #복셀게임';
+
+const Shorts = (function(){
+  let cur = null;        // {def, base, endAt, startY, best}
+  let count = 0;         // 시작 전 카운트다운
+  let rec = null, chunks = [], blobUrl = null;
+
+  function canRecord(){
+    return !!(window.MediaRecorder && canvas.captureStream);
+  }
+  function startRec(){
+    if(!canRecord()) return;
+    try{
+      const stream = canvas.captureStream(30);
+      const types = ['video/webm;codecs=vp9','video/webm;codecs=vp8','video/webm'];
+      const mime = types.find(t=>MediaRecorder.isTypeSupported(t));
+      rec = new MediaRecorder(stream, mime ? {mimeType:mime} : undefined);
+      chunks = [];
+      rec.ondataavailable = e=>{ if(e.data && e.data.size) chunks.push(e.data); };
+      rec.onstop = ()=>{
+        if(blobUrl) URL.revokeObjectURL(blobUrl);
+        blobUrl = chunks.length ? URL.createObjectURL(new Blob(chunks, {type:'video/webm'})) : null;
+        $('#shortsave').style.display = blobUrl ? 'block' : 'none';
+      };
+      rec.start();
+    }catch(e){ rec = null; }
+  }
+  function stopRec(){
+    if(rec && rec.state !== 'inactive'){ try{ rec.stop(); }catch(e){} }
+    rec = null;
+  }
+  function saveClip(){
+    if(!blobUrl) return;
+    const a = document.createElement('a');
+    a.href = blobUrl;
+    a.download = '블록월드-15초도전.webm';
+    a.click();
+    Sound.click();
+  }
+
+  function start(id){
+    const def = SHORTS.find(s=>s.id===id);
+    if(!def) return;
+    closeShorts();
+    cur = {def, base:def.track(), best:0, startY:player.y, endAt:0};
+    count = 3;
+    $('#shortbar').style.display = 'block';
+    $('#shorttitle').textContent = def.icon + ' ' + def.name;
+    $('#shortnum').textContent = '준비...';
+    $('#shortfill').style.width = '0%';
+    Sound.click();
+    tickCount();
+  }
+  function tickCount(){
+    if(!cur) return;
+    if(count > 0){
+      $('#shortnum').textContent = count + ' ...';
+      popText(String(count), '#ffd93d');
+      Sound.click();
+      count--;
+      setTimeout(tickCount, 800);
+      return;
+    }
+    $('#shortnum').textContent = '시작!';
+    popText('시작!', '#7ae582');
+    Sound.quest();
+    cur.base = cur.def.track();
+    cur.startY = player.y;
+    cur.best = 0;
+    cur.endAt = performance.now()/1000 + SHORT_SEC;
+    startRec();
+  }
+  function score(){
+    if(!cur) return 0;
+    if(cur.def.height) return Math.floor(cur.best);
+    return Math.max(0, cur.def.track() - cur.base);
+  }
+  function update(){
+    if(!cur || !cur.endAt) return;
+    if(cur.def.height) cur.best = Math.max(cur.best, player.y - cur.startY);
+    const left = cur.endAt - performance.now()/1000;
+    const s = score();
+    $('#shortnum').textContent = Math.max(0, left).toFixed(1) + '초  ·  ' +
+                                 s + ' / ' + cur.def.need + cur.def.unit;
+    $('#shortfill').style.width = clamp(s / cur.def.need * 100, 0, 100) + '%';
+    if(left <= 0) finish();
+  }
+  function finish(){
+    const def = cur.def, s = score();
+    cur = null;
+    stopRec();
+    $('#shortbar').style.display = 'none';
+    const won = s >= def.need;
+    if(won){
+      state.shortsDone[def.id] = 1;
+      gainCoins(150, true);
+      addExp(120);
+      Sound.fanfare();
+    } else Sound.deny();
+    $('#shortresult').style.display = 'flex';
+    $('#sricon').textContent = won ? '🎉' : '💪';
+    $('#srtitle').textContent = won ? '성공!' : '아깝다!';
+    $('#srbody').textContent = def.icon + ' ' + def.name + ' — ' + s + ' / ' + def.need + def.unit +
+                               (won ? '  ·  🪙150' : '  ·  다시 해 볼까요?');
+    $('#srcap').value = (won ? '🎉 ' : '') + def.title + '\n' + SHORT_TAGS;
+    $('#shortsave').style.display = 'none';
+    if(document.pointerLockElement) document.exitPointerLock();
+    checkBadges();
+    saveSoon();
+  }
+  function stop(){
+    if(!cur) return;
+    cur = null; count = 0;
+    stopRec();
+    $('#shortbar').style.display = 'none';
+  }
+  return {start, update, stop, saveClip, canRecord, running(){ return !!cur; }};
+})();
+
+let shortsOpen = false;
+function renderShorts(){
+  const list = $('#shortlist');
+  list.innerHTML = '';
+  SHORTS.forEach(def=>{
+    const done = !!state.shortsDone[def.id];
+    const el = document.createElement('div');
+    el.className = 'bplan' + (done ? ' done' : '');
+    el.innerHTML =
+      '<div class="pic">' + def.icon + '</div>' +
+      '<div style="flex:1">' +
+        '<div class="pnm">' + def.name + (done ? ' ✅' : '') + '</div>' +
+        '<div class="pds">' + def.how + '</div>' +
+      '</div>' +
+      '<div style="font-size:14px;opacity:.6">시작 ▶</div>';
+    el.addEventListener('click', ()=>Shorts.start(def.id));
+    list.appendChild(el);
+  });
+  $('#recnote').textContent = Shorts.canRecord()
+    ? '🎬 도전하는 15초가 영상 파일로 저장돼요 (화면의 글자는 빼고 게임 화면만 담겨요).'
+    : '이 브라우저에서는 영상 저장이 안 돼요. 도전은 그대로 할 수 있어요!';
+}
+function openShorts(){
+  shortsOpen = true;
+  $('#shorts').style.display = 'flex';
+  if(document.pointerLockElement) document.exitPointerLock();
+  renderShorts();
+  Sound.shop();
+}
+function closeShorts(){ shortsOpen = false; $('#shorts').style.display = 'none'; }
+
+/* ═══════════════════════════════════════════════════
    12. 메인 루프
    ═══════════════════════════════════════════════════ */
 let started = false;
@@ -3938,6 +4566,7 @@ function stepGame(dt){
   updateAmbient(dt);
   DayNight.update(dt);
   Lamps.update();
+  Shorts.update();
   tutCheckMove();
 }
 
@@ -4002,9 +4631,11 @@ $('#btnTime').textContent = {auto:'🌗', day:'☀️', night:'🌙'}[state.time
 /* 창이 이미 떠 있으면 그 위에 또 열지 않는다 */
 function guard(fn){
   return ()=>{
-    if($('#daily').style.display === 'flex') return;
-    closeCraft(); closePlans();
+    if($('#daily').style.display === 'flex' || $('#nick').style.display === 'flex') return;
+    if(Shorts.running()) Shorts.stop();
+    closeCraft(); closePlans(); closeFriends(); closeIdeas(); closeShorts();
     $('#badges').style.display='none'; $('#share').style.display='none';
+    $('#shortresult').style.display='none';
     fn();
   };
 }
@@ -4013,6 +4644,9 @@ $('#btnCraft').addEventListener('click', guard(openCraft));
 $('#btnPlan').addEventListener('click', guard(openPlans));
 $('#btnBadge').addEventListener('click', guard(openBadges));
 $('#btnShare').addEventListener('click', guard(openShare));
+$('#btnShorts').addEventListener('click', guard(openShorts));
+$('#btnFriend').addEventListener('click', guard(openFriends));
+$('#btnIdea').addEventListener('click', guard(openIdeas));
 $('#btnTime').addEventListener('click', cycleTimeMode);
 $('#craftclose').addEventListener('click', closeCraft);
 $('#planclose').addEventListener('click', closePlans);
@@ -4022,6 +4656,25 @@ $('#dailyclose').addEventListener('click', ()=>{ $('#daily').style.display='none
 $('#sharecopy').addEventListener('click', shareCopy);
 $('#shareload').addEventListener('click', shareLoad);
 $('#bpstop').addEventListener('click', ()=>Blueprint.stop());
+$('#shortsclose').addEventListener('click', closeShorts);
+$('#friendclose').addEventListener('click', closeFriends);
+$('#ideaclose').addEventListener('click', closeIdeas);
+$('#srclose').addEventListener('click', ()=>{ $('#shortresult').style.display='none'; });
+$('#srcopy').addEventListener('click', ()=>{ copyField('srcap',''); Sound.click(); });
+$('#shortsave').addEventListener('click', ()=>Shorts.saveClip());
+$('#friendgo').addEventListener('click', enterFriendCode);
+$('#friendinput').addEventListener('keydown', e=>{ if(e.code==='Enter') enterFriendCode(); });
+$('#copyinvite').addEventListener('click', ()=>friendMsg(copyField('mycode',
+  '✅ 초대 코드를 복사했어요! 카톡으로 친구에게 보내 주세요.'), true));
+$('#copythanks').addEventListener('click', ()=>friendMsg(copyField('thankscode',
+  '✅ 고마워 코드를 복사했어요! 초대해 준 친구에게 보내 주세요.'), true));
+$('#changenick').addEventListener('click', ()=>askNick(()=>renderFriends()));
+$('#ideago').addEventListener('click', sendIdea);
+$('#ideainput').addEventListener('keydown', e=>{ if(e.code==='Enter') sendIdea(); });
+$('#nickok').addEventListener('click', saveNick);
+$('#nickdice').addEventListener('click', ()=>{ $('#nickinput').value = randomNick(); Sound.click(); });
+$('#nickinput').addEventListener('keydown', e=>{ if(e.code==='Enter') saveNick(); });
+if(!state.uid) state.uid = newUid();
 addEventListener('keydown', e=>{
   if(!started) return;
   const typing = document.activeElement && document.activeElement.tagName === 'TEXTAREA';
@@ -4038,6 +4691,7 @@ addEventListener('keydown', e=>{
   if(e.code==='KeyC') craftOpen ? closeCraft() : openCraft();
   if(e.code==='KeyB') plansOpen ? closePlans() : openPlans();
   if(e.code==='KeyV') openBadges();
+  if(e.code==='KeyG') openFriends();
 });
 checkBadges();
 setSoundOn(state.soundOn !== 0);
@@ -4058,11 +4712,15 @@ $('#startbtn').addEventListener('click', ()=>{
   started = true;
   Sound.resume();
   canvas.focus && canvas.focus();
-  if(!state.tutorialDone) tutStart();
-  else { showHint(touchMode ? '즐겁게 놀아요! 막히면 ❓ 를 눌러요'
-                            : '화살표로 둘러보고, Q로 부수고, E로 블록을 놓아요!', 4500); }
-  showMouseHintBriefly();
-  setTimeout(()=>{ checkDaily(); checkBadges(); }, 700);
+  function afterNick(){
+    if(!state.tutorialDone) tutStart();
+    else { showHint(touchMode ? '즐겁게 놀아요! 막히면 ❓ 를 눌러요'
+                              : '화살표로 둘러보고, Q로 부수고, E로 블록을 놓아요!', 4500); }
+    showMouseHintBriefly();
+    setTimeout(()=>{ checkDaily(); checkBadges(); }, 600);
+  }
+  if(!state.nick) askNick(afterNick);
+  else afterNick();
 });
 
 window.BW = {player, setBlock, getBlock, scene, camera, renderer, voxels, W,H,D, IDX, keys,
@@ -4080,7 +4738,11 @@ window.BW = {player, setBlock, getBlock, scene, camera, renderer, voxels, W,H,D,
   Undo, DayNight, Lamps, cycleTimeMode,
   BLUEPRINTS, Blueprint, bpCells, bpSize, openPlans, closePlans,
   BADGES, checkBadges, openBadges, checkDaily,
-  encodeWorld, decodeWorld, openShare, TRAMP, LAMP, ICE};
+  encodeWorld, decodeWorld, openShare, TRAMP, LAMP, ICE,
+  GAME_VER, randomNick, newUid, packCode, unpackCode, myInviteCode,
+  friendCount, giftLevel, FRIEND_GIFTS, enterFriendCode, openFriends, closeFriends,
+  askNick, saveNick, SHORTS, Shorts, openShorts, closeShorts,
+  sendIdea, openIdeas, closeIdeas, APPLIED_IDEAS, ideaCode};
 })();
 </script>
 </body>
