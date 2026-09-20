@@ -156,6 +156,74 @@
   }
   #banner .small{display:block; font-size:.5em; margin-top:8px; opacity:.95;}
 
+  /* 우상단 퀘스트 */
+  #quests{position:fixed; right:14px; top:14px; width:224px;}
+  #qtitle{font-size:15px; margin-bottom:7px; opacity:.85;}
+  .quest{
+    display:flex; gap:8px; align-items:flex-start; padding:6px 0;
+    border-top:2px dotted rgba(0,0,0,.10);
+  }
+  .quest:first-child{border-top:none;}
+  .quest .qic{font-size:19px; line-height:1.15;}
+  .quest .qbody{flex:1; min-width:0;}
+  .quest .qtx{font-size:13px; line-height:1.3;}
+  .quest .qbar{height:7px; background:#e8e3f0; border-radius:99px; margin-top:4px; overflow:hidden;}
+  .quest .qfill{height:100%; width:0%; border-radius:99px; background:linear-gradient(90deg,#ffd93d,#ff9f1a); transition:width .35s ease;}
+  .quest .qnum{font-size:11px; opacity:.6; margin-top:2px;}
+  .quest.done{animation:questDone .9s ease-out;}
+  .quest.done .qtx{text-decoration:line-through; opacity:.55;}
+  .quest.done .qfill{background:linear-gradient(90deg,#7ae582,#38d39f);}
+  @keyframes questDone{
+    0%{transform:scale(1);} 30%{transform:scale(1.09); background:rgba(122,229,130,.35);}
+    100%{transform:scale(1); background:transparent;}
+  }
+
+  /* 콤보 */
+  #combo{
+    position:fixed; left:50%; top:16%; transform:translateX(-50%) scale(.6);
+    font-size:clamp(22px,5vw,40px); color:#fff; opacity:0; pointer-events:none; z-index:19;
+    text-shadow:0 4px 0 #e0590b, 0 8px 20px rgba(0,0,0,.35);
+  }
+  #combo.on{animation:comboPop .8s ease-out;}
+  @keyframes comboPop{
+    0%{opacity:0; transform:translateX(-50%) scale(.5) rotate(-8deg);}
+    35%{opacity:1; transform:translateX(-50%) scale(1.2) rotate(4deg);}
+    100%{opacity:0; transform:translateX(-50%) scale(1) rotate(0);}
+  }
+
+  /* 레벨업 — 화면 가득 */
+  #levelfx{
+    position:fixed; inset:0; z-index:30; pointer-events:none; display:none; overflow:hidden;
+  }
+  #levelfx .flash{
+    position:absolute; inset:0;
+    background:radial-gradient(circle at 50% 45%, rgba(255,255,255,.95) 0%, rgba(255,214,90,.6) 30%, rgba(255,214,90,0) 65%);
+    animation:flash 1.5s ease-out forwards;
+  }
+  @keyframes flash{0%{opacity:0; transform:scale(.3);}20%{opacity:1;}100%{opacity:0; transform:scale(1.7);}}
+  #levelfx .lvtext{
+    position:absolute; left:50%; top:40%; transform:translate(-50%,-50%);
+    font-size:clamp(38px,9vw,88px); color:#fff; text-align:center; white-space:nowrap;
+    text-shadow:0 6px 0 #e08a00, 0 14px 30px rgba(0,0,0,.4);
+    animation:lvup 2.6s cubic-bezier(.2,1.4,.4,1) forwards;
+  }
+  #levelfx .lvsub{display:block; font-size:.34em; margin-top:10px; text-shadow:0 3px 0 #b36b00;}
+  @keyframes lvup{
+    0%{opacity:0; transform:translate(-50%,-50%) scale(.2) rotate(-12deg);}
+    22%{opacity:1; transform:translate(-50%,-50%) scale(1.15) rotate(3deg);}
+    35%{transform:translate(-50%,-50%) scale(1) rotate(0);}
+    82%{opacity:1;}
+    100%{opacity:0; transform:translate(-50%,-60%) scale(1.05);}
+  }
+  .confetti{
+    position:absolute; width:12px; height:16px; border-radius:3px; top:-24px;
+    animation:fall linear forwards;
+  }
+  @keyframes fall{
+    0%{transform:translateY(0) rotate(0deg); opacity:1;}
+    100%{transform:translateY(112vh) rotate(720deg); opacity:.9;}
+  }
+
   #err{
     position:fixed; inset:0; z-index:99; display:none; align-items:center; justify-content:center;
     background:#2b2140; color:#fff; text-align:center; padding:30px; font-size:20px; line-height:1.7;
@@ -178,7 +246,12 @@
   </div>
   <div class="card" id="hint"></div>
   <div id="pops"></div>
+  <div class="card" id="quests">
+    <div id="qtitle">📋 퀘스트</div>
+    <div id="qlist"></div>
+  </div>
   <div id="hotbar"></div>
+  <div id="combo"></div>
   <div id="banner"></div>
   <div id="fps"></div>
 </div>
@@ -200,6 +273,7 @@
   </div>
 </div>
 
+<div id="levelfx"></div>
 <div id="err"></div>
 
 <!-- Three.js (CDN 3중 백업) -->
@@ -704,7 +778,7 @@ const player = {
   x:SPAWN.x, y:SPAWN.y, z:SPAWN.z,
   vx:0, vy:0, vz:0,
   onGround:false, yaw:0, pitch:-0.18,
-  squash:0, walkPhase:0, inWater:false, boost:1
+  squash:0, walkPhase:0, inWater:false, rocketLeft:0
 };
 
 function anySolidIn(minX,minY,minZ,maxX,maxY,maxZ){
@@ -766,10 +840,24 @@ function updatePlayer(dt){
   player.inWater = getBlock(hx, Math.floor(player.y+0.4), hz)===WATER;
 
   if(input.jumpWanted() && (player.onGround || player.inWater)){
-    player.vy = player.inWater ? JUMP_V*0.62 : JUMP_V * (player.boost || 1);
+    player.vy = player.inWater ? JUMP_V*0.62 : JUMP_V;
     player.onGround = false;
+    player.rocketLeft = hasUnlock('로켓 점프') ? 1 : 0;
     input.consumeJump();
     Sound.jump();
+  } else if(input.jumpWanted() && !player.onGround && player.rocketLeft > 0){
+    // 🚀 공중에서 한 번 더! (레벨 7 해금)
+    player.rocketLeft = 0;
+    player.vy = 9.6;
+    input.consumeJump();
+    Sound.rocket();
+    for(let i=0;i<3;i++)
+      Particles.burst(player.x, player.y+0.15, player.z, [0xff7a3d,0xffd93d,0xffffff][i], 10, 3.2);
+  }
+  if(player.onGround) player.rocketLeft = hasUnlock('로켓 점프') ? 1 : 0;
+  if(player.onGround){
+    const h = Math.round(player.y);
+    if(h > state.maxHeight){ state.maxHeight = h; checkQuests(); }
   }
   player.vy += (player.inWater ? GRAV*0.35 : GRAV) * dt;
   if(player.inWater) player.vy = Math.max(player.vy, -5);
@@ -967,6 +1055,9 @@ const Sound = (function(){
     placeBlock(){ blip(520,.09,'square',.32,760); noise(.06,.12,900); },
     breakBlock(){ noise(.13,.34,900); blip(330,.11,'square',.22,150); },
     coin(){ blip(880,.09,'square',.3); blip(1320,.12,'square',.22); },
+    quest(){ [659,880,1109].forEach((f,i)=> setTimeout(()=>blip(f,.2,'triangle',.42), i*80)); },
+    combo(){ [440,554,659,880].forEach((f,i)=> setTimeout(()=>blip(f,.14,'square',.35), i*55)); },
+    rocket(){ blip(300,.32,'sawtooth',.34,1100); noise(.24,.2,2200); },
     star(){ [784,988,1319,1568].forEach((f,i)=> setTimeout(()=>blip(f,.16,'triangle',.4), i*60)); },
     fanfare(){ [523,523,523,659,784,1047,1319].forEach((f,i)=> setTimeout(()=>blip(f,.3,'triangle',.5), i*140)); },
     levelUp(){ [523,659,784,1047].forEach((f,i)=> setTimeout(()=>blip(f,.22,'triangle',.45), i*90)); }
@@ -976,10 +1067,12 @@ const Sound = (function(){
 /* ═══════════════════════════════════════════════════
    10.5 저장 데이터 + 경험치
    ═══════════════════════════════════════════════════ */
-const SAVE_KEY = 'blockworld_save_v3';
+const SAVE_KEY = 'blockworld_save_v4';
 const state = {
   coins:0, exp:0, level:1,
   placed:0, broken:0, starsGot:0,
+  coinsEarned:0, maxHeight:0, rainbowPlaced:0, combosMade:0, goldFound:0,
+  quests:[], questsDone:{},
   edits:{},                // "x,y,z" -> 블록 번호 (0 = 부순 자리)
   collected:{},            // 이미 먹은 코인/별
   obbyDone:{}              // 완주한 코스
@@ -991,8 +1084,11 @@ function saveSoon(){ clearTimeout(saveTimer); saveTimer = setTimeout(saveNow, 70
 function saveNow(){
   try{
     localStorage.setItem(SAVE_KEY, JSON.stringify({
-      v:3, coins:state.coins, exp:state.exp, level:state.level,
+      v:4, coins:state.coins, exp:state.exp, level:state.level,
       placed:state.placed, broken:state.broken, starsGot:state.starsGot,
+      coinsEarned:state.coinsEarned, maxHeight:state.maxHeight,
+      rainbowPlaced:state.rainbowPlaced, combosMade:state.combosMade, goldFound:state.goldFound,
+      quests:state.quests, questsDone:state.questsDone,
       edits:state.edits, collected:state.collected, obbyDone:state.obbyDone,
       pos:{x:player.x, y:player.y, z:player.z}, slot:selectedSlot
     }));
@@ -1003,12 +1099,17 @@ function loadSave(){
   try{ raw = localStorage.getItem(SAVE_KEY); }catch(e){ return; }
   if(!raw) return;
   let d; try{ d = JSON.parse(raw); }catch(e){ return; }
-  if(!d || d.v !== 3) return;
+  if(!d || d.v !== 4) return;
   state.coins = d.coins|0; state.exp = d.exp|0; state.level = Math.max(1, d.level|0);
   state.placed = d.placed|0; state.broken = d.broken|0; state.starsGot = d.starsGot|0;
   state.edits = d.edits || {};
   state.collected = d.collected || {};
   state.obbyDone = d.obbyDone || {};
+  state.coinsEarned = d.coinsEarned|0; state.maxHeight = d.maxHeight|0;
+  state.rainbowPlaced = d.rainbowPlaced|0; state.combosMade = d.combosMade|0;
+  state.goldFound = d.goldFound|0;
+  state.quests = Array.isArray(d.quests) ? d.quests : [];
+  state.questsDone = d.questsDone || {};
   if(typeof d.slot === 'number') selectedSlot = clamp(d.slot,0,7);
   if(d.pos && isFinite(d.pos.x)){ SPAWN_LOAD = d.pos; }
 }
@@ -1036,11 +1137,16 @@ function addExp(n){
   saveSoon();
 }
 function onLevelUp(){
-  popText('🎉 레벨 ' + state.level + '!', '#ffe66d');
   Sound.levelUp();
   buildHotbar();
-  const newly = HOTBAR.filter(t => UNLOCK_LEVEL[t] === state.level);
-  if(newly.length) showHint('🔓 새 블록 해금: ' + newly.map(t=>BLOCKS[t].icon+' '+BLOCKS[t].name).join(', '), 3500);
+  levelUpShow(state.level);
+  // 레벨업 보너스 코인
+  state.coins += 15 * state.level;
+  state.coinsEarned += 15 * state.level;
+  for(let i=0;i<4;i++)
+    setTimeout(()=>Particles.burst(player.x, player.y+1.2, player.z,
+      [0xffd93d,0x6ee86e,0x4fc3ff,0xff7ddb][i], 22, 6.5), i*120);
+  checkQuests();
 }
 function updateHud(){
   $('#coins').textContent = state.coins;
@@ -1092,6 +1198,13 @@ function selectSlot(i){
 const Particles = (function(){
   const CAP = 260;
   const geo = new THREE.BoxGeometry(.16,.16,.16);
+  // vertexColors 를 쓰면 지오메트리에 color 속성이 꼭 있어야 한다.
+  // 없으면 색이 (0,0,0)으로 들어가 조각이 전부 까맣게 나온다.
+  {
+    const n = geo.attributes.position.count;
+    const white = new Float32Array(n*3); white.fill(1);
+    geo.setAttribute('color', new THREE.BufferAttribute(white, 3));
+  }
   const mat = new THREE.MeshLambertMaterial({vertexColors:true});
   const mesh = new THREE.InstancedMesh(geo, mat, CAP);
   mesh.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(CAP*3), 3);
@@ -1206,6 +1319,7 @@ function breakBlock(){
   Sound.breakBlock();
   state.broken++;
   addExp(1);
+  checkQuests();
   return true;
 }
 function placeBlock(){
@@ -1222,7 +1336,9 @@ function placeBlock(){
   Particles.burst(x+.5, y+.5, z+.5, BLOCK_COLOR[t] || 0xffffff, 10, 3);
   Sound.placeBlock();
   state.placed++;
+  if(t === RAINBOW) state.rainbowPlaced++;
   addExp(2);
+  checkQuests();
   return true;
 }
 
@@ -1507,24 +1623,26 @@ const Collect = (function(){
 
 function pickCoin(c){
   state.collected[c.id] = 1;
-  const amount = 1;
-  state.coins += amount;
-  Particles.burst(c.x, c.y, c.z, 0xffd93d, 12, 3.4);
+  registerCoinForCombo();
+  const amount = gainCoins(1);
+  Particles.burst(c.x, c.y, c.z, comboOn ? 0xff7a3d : 0xffd93d, comboOn ? 20 : 12, 3.4);
   Sound.coin();
-  popText('+' + amount, '#ffe66d');
+  popText('+' + amount + (comboOn ? ' 🔥' : ''), comboOn ? '#ffb36b' : '#ffe66d');
   sparkleBoost();
   addExp(4);
+  checkQuests();
   saveSoon();
 }
 function pickStar(c){
   state.collected[c.id] = 1;
-  state.coins += 10;
+  gainCoins(10);
   state.starsGot = (state.starsGot||0) + 1;
   Particles.burst(c.x, c.y, c.z, 0xfff2a0, 26, 5.5);
   Sound.star();
   popText('⭐ +10', '#fff6b0');
   sparkleBoost();
   addExp(30);
+  checkQuests();
   saveSoon();
 }
 
@@ -1602,13 +1720,14 @@ function updateObby(dt){
 function finishObby(ci){
   const o = OBBIES[ci];
   state.obbyDone[o.id] = 1;
-  state.coins += o.coins;
+  gainCoins(o.coins, true);
   showBanner(o.emoji + ' ' + o.name + ' 완주!', '코인 +' + o.coins + '  ·  EXP +' + o.exp);
   Sound.fanfare();
   for(let i=0;i<5;i++)
     setTimeout(()=> Particles.burst(player.x, player.y+1, player.z,
       [0xff5d5d,0xffd93d,0x6ee86e,0x4fc3ff,0xff7ddb][i], 24, 7), i*110);
   addExp(o.exp);
+  checkQuests();
   saveSoon();
 }
 
@@ -1618,6 +1737,190 @@ function showBanner(big, small){
   el.classList.remove('show');
   void el.offsetWidth;
   el.classList.add('show');
+}
+
+/* ═══════════════════════════════════════════════════
+   10.12 해금 · 퀘스트 · 콤보
+   ═══════════════════════════════════════════════════ */
+const UNLOCKS = [
+  {lv:2,  icon:'🪟', name:'유리 블록'},
+  {lv:3,  icon:'🌈', name:'무지개 블록'},
+  {lv:5,  icon:'🐶', name:'강아지 친구'},
+  {lv:7,  icon:'🚀', name:'로켓 점프'},
+  {lv:10, icon:'🐱', name:'고양이 친구'},
+];
+function hasUnlock(name){
+  const u = UNLOCKS.find(u=>u.name===name);
+  return u ? state.level >= u.lv : false;
+}
+
+/* ---- 퀘스트 목록 ---- */
+const QUEST_POOL = [
+  {id:'coin10',  icon:'🪙', text:'코인 {g}개 모으기',      goal:10, coins:20, exp:35, track:()=>state.coinsEarned},
+  {id:'coin25',  icon:'🪙', text:'코인 {g}개 모으기',      goal:25, coins:45, exp:70, track:()=>state.coinsEarned},
+  {id:'build20', icon:'🧱', text:'블록 {g}개 쌓기',        goal:20, coins:25, exp:45, track:()=>state.placed},
+  {id:'build50', icon:'🏰', text:'블록 {g}개 쌓기',        goal:50, coins:60, exp:90, track:()=>state.placed},
+  {id:'dig15',   icon:'⛏️', text:'블록 {g}개 부수기',      goal:15, coins:20, exp:35, track:()=>state.broken},
+  {id:'star2',   icon:'⭐', text:'별 {g}개 찾기',           goal:2,  coins:50, exp:80, track:()=>state.starsGot},
+  {id:'star4',   icon:'🌟', text:'별 {g}개 찾기',           goal:4,  coins:90, exp:140, track:()=>state.starsGot},
+  {id:'high22',  icon:'🪜', text:'높이 {g}칸까지 올라가기', goal:22, coins:40, exp:60, track:()=>state.maxHeight},
+  {id:'rain8',   icon:'🌈', text:'무지개 블록 {g}개 놓기',  goal:8,  coins:55, exp:85, track:()=>state.rainbowPlaced, need:'무지개 블록'},
+  {id:'obbyB',   icon:'🥉', text:'동 코스 완주하기',        goal:1,  coins:80, exp:120, track:()=>state.obbyDone.bronze?1:0},
+  {id:'obbyS',   icon:'🥈', text:'은 코스 완주하기',        goal:1,  coins:150, exp:220, track:()=>state.obbyDone.silver?1:0},
+  {id:'obbyG',   icon:'🥇', text:'금 코스 완주하기',        goal:1,  coins:300, exp:400, track:()=>state.obbyDone.gold?1:0},
+  {id:'combo1',  icon:'🔥', text:'콤보 {g}번 터뜨리기',     goal:1,  coins:45, exp:70, track:()=>state.combosMade},
+  {id:'gold1',   icon:'✨', text:'황금 블록 {g}개 찾기',    goal:1,  coins:100, exp:150, track:()=>state.goldFound},
+];
+const questDef = id => QUEST_POOL.find(q=>q.id===id);
+
+function questAvailable(q){
+  if(state.questsDone[q.id]) return false;
+  if(state.quests.some(a=>a.id===q.id)) return false;
+  if(q.need && !hasUnlock(q.need)) return false;
+  if(q.id==='gold1' && !GOLD_EVENT_READY) return false;
+  return true;
+}
+let GOLD_EVENT_READY = false;   // 5단계에서 황금 블록이 생기면 true
+
+function pickNewQuest(){
+  const pool = QUEST_POOL.filter(questAvailable);
+  if(!pool.length) return null;
+  // 이미 많이 진행된 것보다 이제 막 시작할 수 있는 걸 고른다
+  const q = pool[Math.floor(Math.random()*pool.length)];
+  return {id:q.id, base:q.track()};
+}
+function refillQuests(){
+  while(state.quests.length < 3){
+    const nq = pickNewQuest();
+    if(!nq) break;
+    state.quests.push(nq);
+  }
+  renderQuests();
+  saveSoon();
+}
+function questProgress(a){
+  const q = questDef(a.id);
+  if(!q) return {cur:0, goal:1};
+  const cur = clamp(q.track() - a.base, 0, q.goal);
+  return {cur, goal:q.goal};
+}
+function renderQuests(){
+  const list = $('#qlist');
+  list.innerHTML = '';
+  if(!state.quests.length){
+    list.innerHTML = '<div class="qtx" style="opacity:.6">모든 퀘스트를 다 했어요! 🎊</div>';
+    return;
+  }
+  state.quests.forEach(a=>{
+    const q = questDef(a.id); if(!q) return;
+    const {cur, goal} = questProgress(a);
+    const el = document.createElement('div');
+    el.className = 'quest' + (a.done ? ' done' : '');
+    el.dataset.qid = a.id;
+    el.innerHTML =
+      '<div class="qic">'+q.icon+'</div>' +
+      '<div class="qbody">' +
+        '<div class="qtx">'+q.text.replace('{g}', goal)+'</div>' +
+        '<div class="qbar"><div class="qfill" style="width:'+(cur/goal*100)+'%"></div></div>' +
+        '<div class="qnum">'+cur+' / '+goal+'  ·  🪙'+q.coins+' ✨'+q.exp+'</div>' +
+      '</div>';
+    list.appendChild(el);
+  });
+}
+function checkQuests(){
+  let changed = false;
+  for(const a of state.quests){
+    if(a.done) continue;
+    const {cur, goal} = questProgress(a);
+    if(cur >= goal){
+      a.done = true;
+      const q = questDef(a.id);
+      state.questsDone[q.id] = 1;
+      gainCoins(q.coins, true);
+      addExp(q.exp);
+      Sound.quest();
+      popText('📋 퀘스트 완료!', '#7ae582');
+      showHint('✅ ' + q.text.replace('{g}', q.goal) + ' 완료!  🪙+' + q.coins, 2600);
+      changed = true;
+      setTimeout(()=>{
+        const i = state.quests.indexOf(a);
+        if(i >= 0) state.quests.splice(i,1);
+        refillQuests();
+      }, 1700);
+    }
+  }
+  renderQuests();
+  if(changed) saveSoon();
+}
+
+/* ---- 콤보: 30초 안에 코인 5개 ---- */
+const COMBO_WINDOW = 30, COMBO_NEED = 5;
+let comboTimes = [], comboOn = false, comboHideAt = 0;
+
+function registerCoinForCombo(){
+  const now = performance.now()/1000;
+  comboTimes.push(now);
+  comboTimes = comboTimes.filter(t => now - t <= COMBO_WINDOW);
+  const wasOn = comboOn;
+  comboOn = comboTimes.length >= COMBO_NEED;
+  if(comboOn && !wasOn){
+    state.combosMade = (state.combosMade||0) + 1;
+    showCombo('🔥 콤보! 코인 2배!');
+    Sound.combo();
+    checkQuests();
+  } else if(comboOn && comboTimes.length % 3 === 0){
+    showCombo('🔥 콤보 x' + comboTimes.length + '!');
+  }
+}
+function updateCombo(){
+  if(!comboOn) return;
+  const now = performance.now()/1000;
+  comboTimes = comboTimes.filter(t => now - t <= COMBO_WINDOW);
+  if(comboTimes.length < COMBO_NEED){
+    comboOn = false;
+    showHint('콤보가 끝났어요. 다시 모아 보세요!', 1800);
+  }
+}
+function showCombo(text){
+  const el = $('#combo');
+  el.textContent = text;
+  el.classList.remove('on'); void el.offsetWidth; el.classList.add('on');
+}
+
+/* ---- 코인 획득 한 곳으로 모으기 ---- */
+function gainCoins(n, noCombo){
+  let amount = n;
+  if(!noCombo && comboOn) amount *= 2;
+  state.coins += amount;
+  state.coinsEarned = (state.coinsEarned||0) + amount;
+  updateHud();
+  return amount;
+}
+
+/* ---- 레벨업: 화면 가득 축하 ---- */
+function levelUpShow(lv){
+  const box = $('#levelfx');
+  const newly = UNLOCKS.filter(u => u.lv === lv);
+  box.style.display = 'block';
+  box.innerHTML = '<div class="flash"></div>' +
+    '<div class="lvtext">레벨 ' + lv + '!' +
+      '<span class="lvsub">' +
+      (newly.length ? newly.map(u=>u.icon+' '+u.name+' 열림!').join('  ') : '계속 가자! 🎉') +
+      '</span></div>';
+  const cols = ['#ff5d5d','#ffa53d','#ffe93d','#6ee86e','#4fc3ff','#9a7dff','#ff7ddb'];
+  for(let i=0;i<46;i++){
+    const c = document.createElement('div');
+    c.className = 'confetti';
+    c.style.left = (Math.random()*100) + '%';
+    c.style.background = cols[i % cols.length];
+    c.style.animationDuration = (1.5 + Math.random()*1.6) + 's';
+    c.style.animationDelay = (Math.random()*0.7) + 's';
+    c.style.width = (7 + Math.random()*9) + 'px';
+    c.style.height = (10 + Math.random()*12) + 'px';
+    box.appendChild(c);
+  }
+  clearTimeout(levelUpShow._t);
+  levelUpShow._t = setTimeout(()=>{ box.style.display='none'; box.innerHTML=''; }, 3600);
 }
 
 /* ═══════════════════════════════════════════════════
@@ -1662,6 +1965,7 @@ function stepGame(dt){
   updateActions(dt);
   updateObby(dt);
   Collect.update(dt);
+  updateCombo();
 }
 
 function frame(t){
@@ -1703,6 +2007,7 @@ rebuildWorldMesh();
 buildHotbar();
 updateHud();
 Collect.build();
+refillQuests();
 player.x=SPAWN.x; player.y=SPAWN.y+1; player.z=SPAWN.z;
 if(SPAWN_LOAD){ player.x=SPAWN_LOAD.x; player.y=SPAWN_LOAD.y+0.5; player.z=SPAWN_LOAD.z; }
 addEventListener('beforeunload', saveNow);
@@ -1722,7 +2027,9 @@ window.BW = {player, setBlock, getBlock, scene, camera, renderer, voxels, W,H,D,
   pressJump(){ jumpBuffer=0.14; },
   state, updateAim, breakBlock, placeBlock, selectSlot, addExp,
   aim(){ return aimed; }, hotbarSlot(){ return selectedSlot; },
-  OBBIES, Collect, finishObby, remaining(){ return Collect.remaining(); }};
+  OBBIES, Collect, finishObby, remaining(){ return Collect.remaining(); },
+  QUEST_POOL, checkQuests, refillQuests, gainCoins, hasUnlock, UNLOCKS,
+  comboOn(){ return comboOn; }, registerCoinForCombo};
 })();
 </script>
 </body>
