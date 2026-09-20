@@ -274,6 +274,122 @@
   }
   #shopclose:active{transform:translateY(3px); box-shadow:0 2px 0 #4335ad;}
 
+  /* ── 모바일 터치 조작 ── */
+  #touch{position:fixed; inset:0; display:none; z-index:13; pointer-events:none;}
+  body.touchmode #touch{display:block;}
+  #stick{
+    position:absolute; left:26px; bottom:26px; width:132px; height:132px; border-radius:50%;
+    background:rgba(255,255,255,.34); box-shadow:inset 0 0 0 4px rgba(255,255,255,.55), 0 4px 16px rgba(0,0,0,.2);
+    pointer-events:auto; touch-action:none;
+  }
+  #stickknob{
+    position:absolute; left:50%; top:50%; width:62px; height:62px; margin:-31px 0 0 -31px;
+    border-radius:50%; background:rgba(255,255,255,.92); box-shadow:0 4px 0 rgba(0,0,0,.18);
+    transition:transform .05s linear;
+  }
+  #tbtns{
+    position:absolute; right:20px; bottom:24px;
+    display:grid; grid-template-columns:78px 78px; gap:12px; pointer-events:none;
+  }
+  .tbtn{
+    width:78px; height:78px; border-radius:50%; border:none; font-size:32px; cursor:pointer;
+    background:rgba(255,255,255,.88); box-shadow:0 5px 0 rgba(0,0,0,.2);
+    pointer-events:auto; touch-action:none; font-family:inherit;
+    display:flex; align-items:center; justify-content:center; flex-direction:column; gap:1px;
+  }
+  .tbtn small{font-size:10px; font-weight:800; opacity:.7;}
+  .tbtn:active{transform:translateY(4px); box-shadow:0 1px 0 rgba(0,0,0,.2);}
+  .tbtn.jump{
+    grid-column:1 / span 2; width:auto; height:70px; border-radius:38px; font-size:26px;
+    background:linear-gradient(#9be7a0,#4fc86a); color:#0f3d1c;
+  }
+  body.touchmode #hotbar{bottom:118px; transform:translateX(-50%) scale(.92);}
+  body.touchmode #fps{bottom:4px; right:6px;}
+
+  /* ── 튜토리얼 ── */
+  #tut{
+    position:fixed; left:50%; bottom:130px; transform:translateX(-50%);
+    z-index:22; display:none; text-align:center; pointer-events:none; max-width:92vw;
+  }
+  #tut .tcard{
+    background:rgba(255,255,255,.95); border-radius:20px; padding:14px 22px;
+    box-shadow:0 6px 0 rgba(0,0,0,.18), 0 14px 30px rgba(0,0,0,.25);
+    font-size:clamp(16px,3.4vw,21px); line-height:1.5;
+  }
+  #tut .tstep{font-size:12px; opacity:.55; margin-bottom:4px;}
+  #tut .tarrow{font-size:34px; animation:tbounce .9s ease-in-out infinite;}
+  @keyframes tbounce{0%,100%{transform:translateY(0)}50%{transform:translateY(10px)}}
+  body.touchmode #tut{bottom:210px;}
+
+  /* ── 작은 동그란 버튼들 ── */
+  #tools{position:fixed; right:14px; bottom:14px; display:flex; gap:8px; pointer-events:auto; z-index:14;}
+  .tool{
+    width:44px; height:44px; border-radius:50%; border:none; cursor:pointer; font-size:20px;
+    background:rgba(255,255,255,.85); box-shadow:0 4px 0 rgba(0,0,0,.16); font-family:inherit;
+  }
+  .tool:active{transform:translateY(3px); box-shadow:0 1px 0 rgba(0,0,0,.16);}
+  body.touchmode #tools{bottom:auto; top:70px; right:14px; flex-direction:column;}
+
+  /* ── 도움말 ── */
+  #help{
+    position:fixed; inset:0; z-index:39; display:none; align-items:center; justify-content:center;
+    background:rgba(25,20,45,.55); pointer-events:auto;
+  }
+  #helpbox{
+    background:#fffdf7; border-radius:24px; padding:22px; width:min(520px,92vw); max-height:86vh; overflow:auto;
+    box-shadow:0 12px 0 rgba(0,0,0,.18), 0 24px 50px rgba(0,0,0,.35);
+  }
+  #helpbox h2{margin:0 0 12px; font-size:24px;}
+  #helpbox table{width:100%; border-collapse:collapse; font-size:16px;}
+  #helpbox td{padding:7px 4px; border-bottom:2px dotted rgba(0,0,0,.09);}
+  #helpbox td:first-child{width:42%; font-weight:900;}
+
+  /* ── 좁은 화면(휴대폰) ── */
+  @media (max-width:620px){
+    #hud-left{left:8px; top:8px; gap:6px;}
+    #coinbox{font-size:17px; padding:6px 10px;}
+    .coinicon{width:20px; height:20px;}
+    #lvlbox{min-width:126px; padding:6px 10px;}
+    #lvlrow{font-size:12px; margin-bottom:4px;}
+    #expbar{height:9px;}
+
+    #quests{width:46vw; max-width:206px; right:8px; top:8px; padding:8px 10px;}
+    #qtitle{font-size:12px; margin-bottom:4px;}
+    .quest{padding:4px 0; gap:6px;}
+    .quest .qic{font-size:15px;}
+    .quest .qtx{font-size:11px;}
+    .quest .qbar{height:5px;}
+    .quest .qnum{font-size:9px;}
+
+    .slot{width:40px; height:48px; border-radius:11px;}
+    .slot .ic{font-size:18px;}
+    .slot .nm{font-size:8px;}
+    .slot .num{font-size:8px; top:2px; left:4px;}
+    #hotbar{gap:4px; padding:4px 6px;}
+    .slot.sel{transform:translateY(-7px) scale(1.08);}
+
+    .tbtn{width:66px; height:66px; font-size:27px;}
+    .tbtn small{font-size:9px;}
+    .tbtn.jump{height:60px; font-size:22px;}
+    #tbtns{grid-template-columns:66px 66px; right:14px; bottom:20px;}
+    #stick{width:118px; height:118px; left:18px; bottom:20px;}
+    #stickknob{width:54px; height:54px; margin:-27px 0 0 -27px;}
+
+    body.touchmode #hotbar{bottom:196px; transform:translateX(-50%) scale(1);}
+    body.touchmode #tut{bottom:262px;}
+    body.touchmode #tools{top:34%; bottom:auto; right:8px; flex-direction:column;}
+    .tool{width:38px; height:38px; font-size:17px;}
+    #tut .tcard{font-size:15px; padding:11px 16px;}
+    #banner{top:22%;}
+    #fps{display:none;}
+    .worldlabel{font-size:13px; padding:7px 11px; max-width:180px;}
+  }
+  @media (max-width:620px) and (orientation:landscape){
+    body.touchmode #hotbar{bottom:96px; transform:translateX(-50%) scale(.85);}
+    body.touchmode #tut{bottom:150px;}
+    #quests{max-height:38vh; overflow:hidden;}
+  }
+
   #err{
     position:fixed; inset:0; z-index:99; display:none; align-items:center; justify-content:center;
     background:#2b2140; color:#fff; text-align:center; padding:30px; font-size:20px; line-height:1.7;
@@ -322,6 +438,28 @@
     <span style="opacity:.75">마우스를 써도 돼요 (클릭 = 부수기 / 놓기)</span>
   </div>
 </div>
+
+<div id="touch">
+  <div id="stick"><div id="stickknob"></div></div>
+  <div id="tbtns">
+    <button class="tbtn" id="tBreak">⛏️<small>부수기</small></button>
+    <button class="tbtn" id="tPlace">🧱<small>놓기</small></button>
+    <button class="tbtn jump" id="tJump">⬆️ 점프</button>
+  </div>
+</div>
+
+<div id="tools">
+  <button class="tool" id="btnSound" title="소리 켜기/끄기">🔊</button>
+  <button class="tool" id="btnHelp" title="조작법">❓</button>
+</div>
+
+<div id="tut"></div>
+
+<div id="help"><div id="helpbox">
+  <h2>❓ 조작법</h2>
+  <table id="helptable"></table>
+  <button id="shopclose" style="margin-top:16px" onclick="document.getElementById('help').style.display='none'">알겠어요!</button>
+</div></div>
 
 <div class="worldlabel" id="npclabel"></div>
 <div class="worldlabel bob" id="shoplabel"></div>
@@ -907,6 +1045,7 @@ function updatePlayer(dt){
     player.rocketLeft = hasUnlock('로켓 점프') ? 1 : 0;
     input.consumeJump();
     Sound.jump();
+    tut.jumped = true; tutAdvance();
   } else if(input.jumpWanted() && !player.onGround && player.rocketLeft > 0){
     // 🚀 공중에서 한 번 더! (레벨 7 해금)
     player.rocketLeft = 0;
@@ -1033,16 +1172,18 @@ function requestLock(){
 document.addEventListener('pointerlockchange', ()=>{
   locked = (document.pointerLockElement === canvas);
   document.body.classList.toggle('nolock', !locked);
-  $('#resume').style.display = (started && !locked) ? 'block' : 'none';
-  if(started && !locked) showMouseHintBriefly();
+  $('#resume').style.display = 'none';
+  if(started && !locked && !touchMode) showMouseHintBriefly();
 });
 addEventListener('mousemove', e=>{
   if(!locked) return;
   player.yaw   -= e.movementX * 0.0024;
   player.pitch  = clamp(player.pitch - e.movementY * 0.0024, -1.18, 0.95);
+  tutSeeLook();
 });
 let mouseHintTimer = null;
 function showMouseHintBriefly(){
+  if(touchMode) return;
   $('#resume').style.display = 'block';
   clearTimeout(mouseHintTimer);
   mouseHintTimer = setTimeout(()=>{ $('#resume').style.display='none'; }, 6000);
@@ -1063,6 +1204,7 @@ function updateLook(dt){
   lp += touch.lookY || 0;
   if(ly) player.yaw   += ly * LOOK_YAW * dt;
   if(lp) player.pitch  = clamp(player.pitch + lp * LOOK_PITCH * dt, -1.18, 0.95);
+  if(ly || lp) tutSeeLook();
 }
 
 /* ═══════════════════════════════════════════════════
@@ -1125,6 +1267,11 @@ const Sound = (function(){
     buy(){ [659,880,1109,1319].forEach((f,i)=> setTimeout(()=>blip(f,.18,'triangle',.4), i*70)); },
     shop(){ blip(523,.12,'triangle',.3); setTimeout(()=>blip(784,.16,'triangle',.28),90); },
     goldSpawn(){ [1047,1319,1568].forEach((f,i)=> setTimeout(()=>blip(f,.26,'sine',.42), i*130)); },
+    bird(){
+      const base = 1500 + Math.random()*900;
+      blip(base, .09, 'sine', .12, base*1.5);
+      setTimeout(()=>blip(base*1.2, .07, 'sine', .10, base*0.8), 120);
+    },
     star(){ [784,988,1319,1568].forEach((f,i)=> setTimeout(()=>blip(f,.16,'triangle',.4), i*60)); },
     fanfare(){ [523,523,523,659,784,1047,1319].forEach((f,i)=> setTimeout(()=>blip(f,.3,'triangle',.5), i*140)); },
     levelUp(){ [523,659,784,1047].forEach((f,i)=> setTimeout(()=>blip(f,.22,'triangle',.45), i*90)); }
@@ -1134,13 +1281,13 @@ const Sound = (function(){
 /* ═══════════════════════════════════════════════════
    10.5 저장 데이터 + 경험치
    ═══════════════════════════════════════════════════ */
-const SAVE_KEY = 'blockworld_save_v5';
+const SAVE_KEY = 'blockworld_save_v6';
 const state = {
   coins:0, exp:0, level:1,
   placed:0, broken:0, starsGot:0,
   coinsEarned:0, maxHeight:0, rainbowPlaced:0, combosMade:0, goldFound:0,
   quests:[], questsDone:{},
-  skin:'basic', skinsOwned:{},
+  skin:'basic', skinsOwned:{}, tutorialDone:0, soundOn:1,
   edits:{},                // "x,y,z" -> 블록 번호 (0 = 부순 자리)
   collected:{},            // 이미 먹은 코인/별
   obbyDone:{}              // 완주한 코스
@@ -1152,12 +1299,13 @@ function saveSoon(){ clearTimeout(saveTimer); saveTimer = setTimeout(saveNow, 70
 function saveNow(){
   try{
     localStorage.setItem(SAVE_KEY, JSON.stringify({
-      v:5, coins:state.coins, exp:state.exp, level:state.level,
+      v:6, coins:state.coins, exp:state.exp, level:state.level,
       placed:state.placed, broken:state.broken, starsGot:state.starsGot,
       coinsEarned:state.coinsEarned, maxHeight:state.maxHeight,
       rainbowPlaced:state.rainbowPlaced, combosMade:state.combosMade, goldFound:state.goldFound,
       quests:state.quests, questsDone:state.questsDone,
       skin:state.skin, skinsOwned:state.skinsOwned,
+      tutorialDone:state.tutorialDone, soundOn:state.soundOn,
       edits:state.edits, collected:state.collected, obbyDone:state.obbyDone,
       pos:{x:player.x, y:player.y, z:player.z}, slot:selectedSlot
     }));
@@ -1168,7 +1316,7 @@ function loadSave(){
   try{ raw = localStorage.getItem(SAVE_KEY); }catch(e){ return; }
   if(!raw) return;
   let d; try{ d = JSON.parse(raw); }catch(e){ return; }
-  if(!d || d.v !== 5) return;
+  if(!d || d.v !== 6) return;
   state.coins = d.coins|0; state.exp = d.exp|0; state.level = Math.max(1, d.level|0);
   state.placed = d.placed|0; state.broken = d.broken|0; state.starsGot = d.starsGot|0;
   state.edits = d.edits || {};
@@ -1181,6 +1329,8 @@ function loadSave(){
   state.questsDone = d.questsDone || {};
   state.skin = d.skin || 'basic';
   state.skinsOwned = d.skinsOwned || {};
+  state.tutorialDone = d.tutorialDone|0;
+  state.soundOn = (d.soundOn === 0) ? 0 : 1;
   if(typeof d.slot === 'number') selectedSlot = clamp(d.slot,0,7);
   if(d.pos && isFinite(d.pos.x)){ SPAWN_LOAD = d.pos; }
 }
@@ -1395,6 +1545,7 @@ function breakBlock(){
   Particles.burst(x+.5, y+.5, z+.5, BLOCK_COLOR[t] || 0xffffff, 16);
   Sound.breakBlock();
   state.broken++;
+  tut.broke = true; tutAdvance();
   addExp(1);
   checkQuests();
   return true;
@@ -1407,12 +1558,33 @@ function placeBlock(){
   if(!inside(x,y,z)) return false;
   const cur = getBlock(x,y,z);
   if(cur !== AIR && cur !== WATER) return false;
-  if(playerBoxOverlaps(x,y,z)){ showHint('🙅 내가 서 있는 자리에는 못 놓아요', 1500); Sound.deny(); return false; }
+  if(playerBoxOverlaps(x,y,z)){
+    // 아이들이 제일 많이 하는 "발밑에 놓고 위로 솟기" — 되도록 성공시켜 준다
+    const fx = Math.floor(player.x), fy = Math.floor(player.y), fz = Math.floor(player.z);
+    const headRoom = !solidAt(fx, fy+2, fz) && !solidAt(fx, fy+3, fz);
+    if(player.onGround && headRoom && getBlock(fx,fy,fz) === AIR){
+      setBlock(fx,fy,fz,t);
+      recordEdit(fx,fy,fz,t);
+      player.y = fy + 1; player.vy = 0;
+      Particles.burst(fx+.5, fy+.5, fz+.5, BLOCK_COLOR[t] || 0xffffff, 10, 3);
+      Sound.placeBlock();
+      state.placed++;
+      tut.placed = true; tutAdvance();
+      if(t === RAINBOW) state.rainbowPlaced++;
+      addExp(2);
+      checkQuests();
+      return true;
+    }
+    showHint('🙅 여기는 좁아서 못 놓아요. 조금 앞을 보고 놓아 보세요', 1800);
+    Sound.deny();
+    return false;
+  }
   setBlock(x,y,z,t);
   recordEdit(x,y,z,t);
   Particles.burst(x+.5, y+.5, z+.5, BLOCK_COLOR[t] || 0xffffff, 10, 3);
   Sound.placeBlock();
   state.placed++;
+  tut.placed = true; tutAdvance();
   if(t === RAINBOW) state.rainbowPlaced++;
   addExp(2);
   checkQuests();
@@ -1707,6 +1879,7 @@ function pickCoin(c){
   Sound.coin();
   popText('+' + amount + (comboOn ? ' 🔥' : ''), comboOn ? '#ffb36b' : '#ffe66d');
   sparkleBoost();
+  tut.coin = true; tutAdvance();
   addExp(4);
   checkQuests();
   saveSoon();
@@ -2382,6 +2555,213 @@ function updateLabels(dt){
 }
 
 /* ═══════════════════════════════════════════════════
+   10.18 모바일 터치 조작
+   ═══════════════════════════════════════════════════ */
+const IS_TOUCH = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+let touchMode = IS_TOUCH;
+
+function setTouchMode(on){
+  touchMode = on;
+  document.body.classList.toggle('touchmode', on);
+}
+
+function setupTouch(){
+  const stick = $('#stick'), knob = $('#stickknob');
+  let stickId = null, sc = {x:0,y:0}, R = 50;
+
+  function stickStart(e){
+    stickId = e.pointerId;
+    const r = stick.getBoundingClientRect();
+    sc.x = r.left + r.width/2; sc.y = r.top + r.height/2;
+    R = r.width/2 - 14;
+    stick.setPointerCapture(e.pointerId);
+    stickMove(e);
+    e.preventDefault();
+  }
+  function stickMove(e){
+    if(e.pointerId !== stickId) return;
+    let dx = e.clientX - sc.x, dy = e.clientY - sc.y;
+    const d = Math.hypot(dx,dy) || 1;
+    const k = Math.min(1, d/R);
+    dx = dx/d*k; dy = dy/d*k;
+    knob.style.transform = 'translate(' + (dx*R) + 'px,' + (dy*R) + 'px)';
+    touch.moveX =  dx;
+    touch.moveY = -dy;
+    e.preventDefault();
+  }
+  function stickEnd(e){
+    if(e.pointerId !== stickId) return;
+    stickId = null;
+    knob.style.transform = 'translate(0,0)';
+    touch.moveX = touch.moveY = 0;
+  }
+  stick.addEventListener('pointerdown', stickStart);
+  stick.addEventListener('pointermove', stickMove);
+  stick.addEventListener('pointerup', stickEnd);
+  stick.addEventListener('pointercancel', stickEnd);
+
+  /* 화면을 문질러서 둘러보기 (조이스틱·버튼 위가 아닐 때) */
+  let lookId = null, lx = 0, ly = 0;
+  canvas.addEventListener('pointerdown', e=>{
+    if(!started || shopOpen || e.pointerType === 'mouse') return;
+    lookId = e.pointerId; lx = e.clientX; ly = e.clientY;
+  });
+  canvas.addEventListener('pointermove', e=>{
+    if(e.pointerId !== lookId) return;
+    player.yaw   -= (e.clientX - lx) * 0.006;
+    player.pitch  = clamp(player.pitch - (e.clientY - ly) * 0.006, -1.18, 0.95);
+    lx = e.clientX; ly = e.clientY;
+    tutSeeLook();
+    e.preventDefault();
+  });
+  const endLook = e=>{ if(e.pointerId === lookId) lookId = null; };
+  canvas.addEventListener('pointerup', endLook);
+  canvas.addEventListener('pointercancel', endLook);
+
+  /* 버튼들 */
+  const hold = (el, on, off) => {
+    el.addEventListener('pointerdown', e=>{ on(); el.setPointerCapture(e.pointerId); e.preventDefault(); });
+    el.addEventListener('pointerup',   e=>{ off(); e.preventDefault(); });
+    el.addEventListener('pointercancel', off);
+    el.addEventListener('pointerleave', off);
+  };
+  hold($('#tBreak'), ()=>{ touch.breaking = true; }, ()=>{ touch.breaking = false; });
+  hold($('#tPlace'), ()=>{ touch.placing  = true; }, ()=>{ touch.placing  = false; });
+  $('#tJump').addEventListener('pointerdown', e=>{ jumpBuffer = 0.14; e.preventDefault(); });
+
+  setTouchMode(IS_TOUCH);
+}
+
+/* ═══════════════════════════════════════════════════
+   10.19 처음 하는 친구를 위한 30초 튜토리얼
+   ═══════════════════════════════════════════════════ */
+const tut = {step:0, on:false, moved:0, looked:0, jumped:false, broke:false, placed:false, coin:false, lastX:0, lastZ:0};
+
+const TUT_STEPS = [
+  {key:'move',  arrow:'👇',
+   pc:'먼저 움직여 볼까?\nW A S D 를 눌러 봐!',
+   mo:'먼저 움직여 볼까?\n왼쪽 동그라미를 손가락으로 밀어 봐!',
+   done:()=> tut.moved > 4},
+  {key:'look',  arrow:'👀',
+   pc:'주변을 둘러보자!\n화살표 ← → 를 눌러 봐',
+   mo:'주변을 둘러보자!\n화면을 손가락으로 문질러 봐',
+   done:()=> tut.looked > 1.2},
+  {key:'jump',  arrow:'⬆️',
+   pc:'폴짝! 스페이스를 눌러 봐',
+   mo:'폴짝! 초록 점프 버튼을 눌러 봐',
+   done:()=> tut.jumped},
+  {key:'break', arrow:'⛏️',
+   pc:'땅을 보고 Q 를 눌러 블록을 부숴 봐!',
+   mo:'땅을 보고 ⛏️ 버튼을 눌러 봐!',
+   done:()=> tut.broke},
+  {key:'place', arrow:'🧱',
+   pc:'이번엔 E 로 블록을 놓아 봐!\n발밑을 보고 놓으면 내가 위로 쑥 올라가!',
+   mo:'이번엔 🧱 버튼으로 블록을 놓아 봐!\n발밑을 보고 놓으면 내가 위로 쑥 올라가!',
+   done:()=> tut.placed},
+  {key:'coin',  arrow:'🪙',
+   pc:'마지막! 반짝이는 코인을 주워 봐 🪙',
+   mo:'마지막! 반짝이는 코인을 주워 봐 🪙',
+   done:()=> tut.coin},
+];
+
+function tutStart(){
+  tut.on = true; tut.step = 0;
+  tut.lastX = player.x; tut.lastZ = player.z;
+  tutRender();
+}
+function tutRender(){
+  const box = $('#tut');
+  if(!tut.on){ box.style.display = 'none'; return; }
+  const st = TUT_STEPS[tut.step];
+  if(!st){
+    box.style.display = 'block';
+    box.innerHTML = '<div class="tcard">🎉 준비 끝!\n이제 마음껏 놀아 봐!\n<span style="font-size:.8em;opacity:.7">막히면 오른쪽 아래 ❓ 를 눌러 봐</span></div>';
+    setTimeout(()=>{ tut.on = false; $('#tut').style.display='none'; }, 4200);
+    state.tutorialDone = 1; saveSoon();
+    Sound.fanfare();
+    return;
+  }
+  box.style.display = 'block';
+  box.innerHTML = '<div class="tcard">' +
+    '<div class="tstep">' + (tut.step+1) + ' / ' + TUT_STEPS.length + '</div>' +
+    (touchMode ? st.mo : st.pc) +
+    '<div class="tarrow">' + st.arrow + '</div></div>';
+}
+function tutAdvance(){
+  if(!tut.on) return;
+  const st = TUT_STEPS[tut.step];
+  if(st && st.done()){
+    tut.step++;
+    Sound.quest();
+    popText('잘했어! 👍', '#7ae582');
+    tutRender();
+  }
+}
+function tutCheckMove(){
+  if(!tut.on) return;
+  tut.moved += Math.hypot(player.x - tut.lastX, player.z - tut.lastZ);
+  tut.lastX = player.x; tut.lastZ = player.z;
+  tutAdvance();
+}
+let _lastYaw = 0;
+function tutSeeLook(){
+  if(!tut.on) return;
+  tut.looked += Math.abs(player.yaw - _lastYaw);
+  _lastYaw = player.yaw;
+}
+
+/* ═══════════════════════════════════════════════════
+   10.20 소리 켜기/끄기 · 발소리 · 새소리
+   ═══════════════════════════════════════════════════ */
+let stepTimer = 0, ambientTimer = 6;
+function updateAmbient(dt){
+  // 걸을 때 사각사각
+  const sp = Math.hypot(player.vx, player.vz);
+  if(player.onGround && sp > 1.2){
+    stepTimer -= dt * sp;
+    if(stepTimer <= 0){ Sound.step(); stepTimer = 2.6; }
+  } else stepTimer = 0.6;
+
+  // 가끔 새소리
+  ambientTimer -= dt;
+  if(ambientTimer <= 0){
+    ambientTimer = 9 + Math.random()*14;
+    Sound.bird();
+  }
+}
+function setSoundOn(on){
+  state.soundOn = on ? 1 : 0;
+  Sound.setEnabled(on);
+  $('#btnSound').textContent = on ? '🔊' : '🔇';
+  saveSoon();
+}
+
+/* ═══════════════════════════════════════════════════
+   10.21 도움말 창
+   ═══════════════════════════════════════════════════ */
+function buildHelp(){
+  const rows = touchMode ? [
+    ['왼쪽 동그라미','움직이기'],
+    ['화면 문지르기','둘러보기'],
+    ['⬆️ 점프','폴짝 뛰기'],
+    ['⛏️ 부수기','블록 부수기'],
+    ['🧱 놓기','블록 놓기'],
+    ['아래 블록 칸','블록 고르기'],
+    ['가게 안으로','상점 열기'],
+  ] : [
+    ['W A S D','움직이기'],
+    ['← ↑ ↓ →','둘러보기'],
+    ['스페이스','점프 (레벨 7부터 공중에서 한 번 더!)'],
+    ['Q','블록 부수기'],
+    ['E','블록 놓기'],
+    ['1 ~ 8','블록 고르기'],
+    ['마우스','클릭하면 마우스로 둘러보기 (Esc 로 해제)'],
+    ['가게 안으로','상점 열기'],
+  ];
+  $('#helptable').innerHTML = rows.map(r=>'<tr><td>'+r[0]+'</td><td>'+r[1]+'</td></tr>').join('');
+}
+
+/* ═══════════════════════════════════════════════════
    11. 화면 알림
    ═══════════════════════════════════════════════════ */
 let hintTimer = null;
@@ -2427,6 +2807,8 @@ function stepGame(dt){
   updatePets(dt);
   updateGold(dt);
   updateLabels(dt);
+  updateAmbient(dt);
+  tutCheckMove();
 }
 
 function frame(t){
@@ -2478,6 +2860,16 @@ $('#shopclose').addEventListener('click', ()=>{
   player.x = SHOP.door.x + 1.2; player.z = SHOP.door.z; player.y = SHOP.y + 0.2;
 });
 goldEvent.at = performance.now()/1000 - 45;   // 처음엔 15초쯤 뒤에 등장
+setupTouch();
+buildHelp();
+setSoundOn(state.soundOn !== 0);
+$('#btnSound').addEventListener('click', ()=>{ setSoundOn(!Sound.isEnabled()); Sound.resume(); Sound.click(); });
+$('#btnHelp').addEventListener('click', ()=>{ buildHelp(); $('#help').style.display='flex'; });
+if(IS_TOUCH){
+  const k = $('#start').querySelector('.keys');
+  if(k) k.innerHTML = '<span>왼쪽 동그라미 = 이동</span><span>화면 문지르기 = 둘러보기</span>' +
+                      '<span>⬆️ = 점프</span><span>⛏️ = 부수기</span><span>🧱 = 놓기</span>';
+}
 player.x=SPAWN.x; player.y=SPAWN.y+1; player.z=SPAWN.z;
 if(SPAWN_LOAD){ player.x=SPAWN_LOAD.x; player.y=SPAWN_LOAD.y+0.5; player.z=SPAWN_LOAD.z; }
 addEventListener('beforeunload', saveNow);
@@ -2488,7 +2880,9 @@ $('#startbtn').addEventListener('click', ()=>{
   started = true;
   Sound.resume();
   canvas.focus && canvas.focus();
-  showHint('화살표로 둘러보고, Q로 부수고, E로 블록을 놓아 보세요!', 5000);
+  if(!state.tutorialDone) tutStart();
+  else { showHint(touchMode ? '즐겁게 놀아요! 막히면 ❓ 를 눌러요'
+                            : '화살표로 둘러보고, Q로 부수고, E로 블록을 놓아요!', 4500); }
   showMouseHintBriefly();
 });
 
@@ -2501,7 +2895,8 @@ window.BW = {player, setBlock, getBlock, scene, camera, renderer, voxels, W,H,D,
   QUEST_POOL, checkQuests, refillQuests, gainCoins, hasUnlock, UNLOCKS,
   comboOn(){ return comboOn; }, registerCoinForCombo,
   SKINS, buySkin, applySkin, openShop, closeShop, shopOpen(){ return shopOpen; },
-  spawnGoldBlock, goldEvent, pets, SHOP, npc(){ return npcGroup; }, npcLine};
+  spawnGoldBlock, goldEvent, pets, SHOP, npc(){ return npcGroup; }, npcLine,
+  tut, tutStart, TUT_STEPS, setTouchMode, touchMode(){ return touchMode; }, touch, Sound, setSoundOn};
 })();
 </script>
 </body>
