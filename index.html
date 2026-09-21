@@ -911,6 +911,12 @@
     background:rgba(255,253,247,.93); border-radius:13px; padding:7px 12px;
     font-size:16px; font-weight:900; color:#3b3350; box-shadow:0 4px 0 rgba(0,0,0,.16);
   }
+  /* 띠 자체는 클릭이 통과하게 돼 있어서, 단추만 다시 눌리게 한다 */
+  #playbar .pvbtn{
+    pointer-events:auto; border:none; cursor:pointer; font-family:inherit;
+    background:linear-gradient(#ffcf3f,#ff9f1a); color:#5c3a00; box-shadow:0 4px 0 #c9700a;
+  }
+  #playbar .pvbtn:active{transform:translateY(3px); box-shadow:0 1px 0 #c9700a;}
   #playgoal{
     position:fixed; left:50%; top:56px; transform:translateX(-50%); z-index:30;
     display:none; background:rgba(25,20,45,.5); color:#fff; border-radius:999px;
@@ -1250,6 +1256,7 @@
   <button class="stbtn" id="sttest" title="처음부터 해보기 (P)">▶ 해보기</button>
   <button class="stbtn gray" id="sthere" title="여기서부터 해보기 (Shift+P)">📍 여기서</button>
   <button class="stbtn gray" id="stfly" title="날기 켜기/끄기 (V)">🕊️ 날기</button>
+  <button class="stbtn gray" id="stchat" title="대화창 (M)">💬</button>
   <button class="stbtn gray" id="stexit" title="스튜디오에서 나가기 (Esc)">🏝️ 나가기</button>
 </div>
 <div id="stside">
@@ -1318,6 +1325,8 @@
   <div class="pv" id="pvhigh" style="display:none">🧗 0</div>
   <div class="pv" id="pvstar" style="display:none">⭐ 0</div>
   <div class="pv" id="pvfind" style="display:none">🦤 0</div>
+  <button class="pv pvbtn" id="pvchat" title="대화창 (M)">💬</button>
+  <button class="pv pvbtn" id="pvexit" title="게임에서 나가기 (Esc)">🏝️ 나가기</button>
 </div>
 <div id="playgoal"></div>
 
@@ -1634,6 +1643,20 @@
 
 <div id="levelfx"></div>
 <div id="err"></div>
+
+<script>
+/* 무슨 오류가 났는지 나중에 물어볼 수 있게 몇 개만 적어 둔다.
+   개발용이라 화면에는 아무것도 안 보인다. 콘솔에 DODO_ERRORS 를 쳐 보면 나온다. */
+window.DODO_ERRORS = [];
+addEventListener('error', e=>{
+  window.DODO_ERRORS.push((e.message||'') + ' @ ' + (e.filename||'').split('/').pop() + ':' + (e.lineno||0));
+  if(window.DODO_ERRORS.length > 8) window.DODO_ERRORS.shift();
+});
+addEventListener('unhandledrejection', e=>{
+  window.DODO_ERRORS.push('promise: ' + String((e.reason && e.reason.message) || e.reason));
+  if(window.DODO_ERRORS.length > 8) window.DODO_ERRORS.shift();
+});
+</script>
 
 <!-- Three.js (CDN 3중 백업) -->
 <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.min.js"></script>
@@ -4636,6 +4659,7 @@ function buildHelp(){
     ['🎒 단추','도도 가방 — 내 섬 · 청사진 · 15초도전 · 친구 · 아이디어 · 제작대'],
     ['🎒 → 🏝️','내 섬 — 꾸미기 · 섬 이름 · 자랑 카드 · 섬 코드'],
     ['🎒 → 🛠️','도도 스튜디오 — 내 게임 만들기 · 친구 게임 하기'],
+    ['Esc  또는 🏝️ 나가기','게임에서 나와 섬으로 돌아가기'],
     ['🌗 단추','낮 / 밤 고정하기'],
   ] : [
     ['W A S D','움직이기'],
@@ -4661,6 +4685,7 @@ function buildHelp(){
     ['V','내 배지'],
     ['G','친구 초대'],
     ['🎒 → 🛠️','도도 스튜디오 — 내 게임 만들기 · 친구 게임 하기'],
+    ['Esc  또는 🏝️ 나가기','게임에서 나와 섬으로 돌아가기'],
     ['🌗 단추','낮 / 밤 고정하기'],
   ];
   $('#helptable').innerHTML = rows.map(r=>'<tr><td>'+r[0]+'</td><td>'+r[1]+'</td></tr>').join('');
@@ -8739,12 +8764,14 @@ addEventListener('keydown', e=>{
                    islandOpen || dodoOpen || lookOpen ||
                    $('#tune').style.display==='flex' || $('#huntdone').style.display==='flex' ||
                    $('#bragbox').style.display==='flex' || $('#recbox').style.display==='flex' ||
-                   $('#badges').style.display==='flex' || $('#share').style.display==='flex';
+                   $('#badges').style.display==='flex' || $('#share').style.display==='flex' ||
+                   chatOpen;
   if(e.code==='Escape' && anyModal){
     closeCraft(); closePlans(); closeBag(); closeFriends(); closeIdeas(); closeShorts();
     closeIsland(); closeDodo(); closeLook(); closeTune();
     $('#badges').style.display='none'; $('#share').style.display='none';
     $('#bragbox').style.display='none'; $('#recbox').style.display='none';
+    Chat.close();
     return;
   }
   if(e.code==='Tab'){
@@ -8753,10 +8780,12 @@ addEventListener('keydown', e=>{
     if(!anyModal) guard(openBag)();
     return;
   }
+  if(e.code==='KeyM'){ Chat.toggle(); return; }     // 대화창은 섬·스튜디오·플레이 어디서나, 열려 있어도 닫히게
   if(anyModal || shopOpen) return;
   if(e.code==='Enter'){ e.preventDefault(); aiFocus(); return; }
   /* 🛠️ 스튜디오 · 🎮 플레이 전용 키 — 섬 전용 키와 겹치지 않게 여기서 갈린다 */
   if(!inIsland()){
+    if(!inStudio() && e.code==='Escape'){ modeExitToIsland(); return; }   // 🎮 플레이에서 나가기
     if(inStudio()){
       if(e.code==='KeyZ') Undo.undo();
       if(e.code==='KeyP'){ e.preventDefault(); Studio.test(e.shiftKey); }
@@ -8769,7 +8798,6 @@ addEventListener('keydown', e=>{
   }
   if(e.code==='KeyZ') Undo.undo();
   if(e.code==='KeyC') craftOpen ? closeCraft() : openCraft();
-  if(e.code==='KeyM') Chat.toggle();
   if(e.code==='KeyB') plansOpen ? closePlans() : openPlans();
   if(e.code==='KeyV') openBadges();
   if(e.code==='KeyG') openFriends();
@@ -8857,6 +8885,10 @@ $('#stnameinput').addEventListener('keydown', e=>{ if(e.code==='Enter') Studio.r
 $('#presretry').addEventListener('click', ()=>Play.retry());
 $('#presedit').addEventListener('click', ()=>modeGo('studio', Mode.game));
 $('#presexit').addEventListener('click', ()=>modeExitToIsland());
+
+$('#pvexit').addEventListener('click', ()=>modeExitToIsland());
+$('#pvchat').addEventListener('click', ()=>Chat.toggle());
+$('#stchat').addEventListener('click', ()=>Chat.toggle());
 
 $('#shclose').addEventListener('click', closeStudioHome);
 $('#studiohome').addEventListener('click', e=>{ if(e.target.id==='studiohome') closeStudioHome(); });
