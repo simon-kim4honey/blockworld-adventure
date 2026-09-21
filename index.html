@@ -358,6 +358,7 @@
   /* 화면이 낮으면 늘어놓을 자리가 없다 — 가방 하나로 접는다 */
   body.compact #tools .tool{display:none;}
   body.compact #tools #btnBag,
+  body.compact #tools #btnChat,
   body.compact #tools #btnStudio,
   body.compact #tools #btnDodo,
   body.compact #tools #btnRec,
@@ -381,6 +382,57 @@
   .bagcard .cic{font-size:36px; line-height:1;}
   .bagcard .cnm{font-size:16px; margin-top:6px;}
   .bagcard .cds{font-size:12px; opacity:.62; margin-top:3px; line-height:1.35;}
+
+  /* ══ 💬 골라 쓰는 말 대화창 ══
+     카톡처럼 오른쪽에 붙는 창. 아이는 글자를 치지 않고 아래에서 문장을 고른다. */
+  #chat{
+    position:fixed; right:12px; top:12px; bottom:12px; width:min(330px,88vw);
+    background:#fffdf7; border-radius:22px; z-index:37; display:none;
+    flex-direction:column; overflow:hidden; pointer-events:auto;
+    box-shadow:0 10px 0 rgba(0,0,0,.16), 0 20px 44px rgba(0,0,0,.3);
+  }
+  #chathead{display:flex; align-items:center; gap:6px; padding:10px 10px 8px; background:#f3eefc;}
+  #chatrooms{display:flex; gap:6px; flex:1; min-width:0;}
+  .croom{
+    border:none; cursor:pointer; font-family:inherit; font-size:14px; font-weight:900;
+    padding:7px 10px; border-radius:13px; background:#fff; color:#6b6480; white-space:nowrap;
+  }
+  .croom.on{background:linear-gradient(#ffcf3f,#ff9f1a); color:#5c3a00;}
+  #chathead .cx{
+    border:none; cursor:pointer; background:#fff; width:30px; height:30px;
+    border-radius:50%; font-size:15px; font-family:inherit; flex:none;
+  }
+  #chatwhere{font-size:12px; padding:5px 13px; color:#6b6480; background:#f3eefc;}
+  #chatwhere b{color:#c9700a;}
+  #chatlog{flex:1; overflow:auto; padding:11px 12px; display:flex; flex-direction:column; gap:8px;}
+  .cmsg{display:flex; flex-direction:column; max-width:84%;}
+  .cmsg .cwho{font-size:11px; opacity:.6; margin:0 6px 2px;}
+  .cmsg .cbub{
+    background:#efeaf8; border-radius:15px 15px 15px 4px; padding:8px 12px;
+    font-size:15px; line-height:1.4; word-break:break-word;
+  }
+  .cmsg.me{align-self:flex-end; align-items:flex-end;}
+  .cmsg.me .cbub{background:linear-gradient(#ffe08a,#ffc94d); border-radius:15px 15px 4px 15px; color:#5c3a00;}
+  .cmsg .cmute{
+    align-self:flex-start; border:none; background:none; cursor:pointer; font-family:inherit;
+    font-size:11px; opacity:.45; padding:2px 6px;
+  }
+  #chatempty{text-align:center; opacity:.5; font-size:13px; padding:20px 10px; line-height:1.6;}
+  #chatpick{border-top:2px dotted rgba(0,0,0,.1); background:#fffdf7;}
+  #chattabs{display:flex; flex-wrap:wrap; gap:4px; padding:8px 9px 0;}
+  .ctab{
+    border:none; cursor:pointer; font-family:inherit; font-size:13px; font-weight:900;
+    padding:6px 9px; border-radius:11px; background:#f3eefc; color:#6b6480; white-space:nowrap;
+  }
+  .ctab.on{background:#6b5bd6; color:#fff;}
+  #chatphrases{display:flex; flex-wrap:wrap; gap:6px; padding:9px; max-height:31vh; overflow:auto;}
+  .csay{
+    border:none; cursor:pointer; font-family:inherit; font-size:14px;
+    padding:8px 11px; border-radius:13px; background:#efeaf8; box-shadow:0 3px 0 rgba(0,0,0,.1);
+  }
+  .csay:active{transform:translateY(2px); box-shadow:0 1px 0 rgba(0,0,0,.1);}
+  .csay.emo{font-size:20px; padding:6px 10px;}
+  #chatnote{font-size:11px; opacity:.55; padding:6px 11px 9px; line-height:1.5;}
 
   /* ── 도움말 ── */
   #help{
@@ -1140,12 +1192,32 @@
   <button class="tool" id="btnUndo"  title="되감기 (Z)">⏪</button>
   <button class="tool" id="btnRec"   title="녹화 시작/멈추기 (Shift+R)">🎥</button>
   <button class="tool" id="btnDodo" title="도도 장로에게 말하기 (T)">🪶</button>
+  <button class="tool" id="btnChat"   title="대화창 — 골라 쓰는 말 (M)">💬</button>
   <button class="tool" id="btnStudio" title="도도 스튜디오 — 내 게임 만들기">🛠️</button>
   <button class="tool big" id="btnBag" title="도도 가방 (탭)">🎒</button>
   <button class="tool" id="btnTime"  title="밤낮 바꾸기">🌗</button>
   <button class="tool" id="btnSound" title="소리 켜기/끄기">🔊</button>
   <button class="tool" id="btnHelp"  title="조작법">❓</button>
   <button class="foldbtn" id="foldTools" title="단추 접기 / 펴기">▾</button>
+</div>
+
+<!-- 💬 골라 쓰는 말 대화창 -->
+<div id="chat">
+  <div id="chathead">
+    <div id="chatrooms">
+      <button class="croom on" id="croomPlaza">🏝️ 광장</button>
+      <button class="croom" id="croomIsland">💌 내 섬</button>
+    </div>
+    <button class="cx" id="chatgear" title="대화 서버 주소 넣기">⚙️</button>
+    <button class="cx" id="chatx" title="닫기 (M)">✕</button>
+  </div>
+  <div id="chatwhere"></div>
+  <div id="chatlog"></div>
+  <div id="chatpick">
+    <div id="chattabs"></div>
+    <div id="chatphrases"></div>
+    <div id="chatnote">글자를 직접 치지 않고 고르기만 해요. 그래서 나쁜 말이 오갈 수 없어요.</div>
+  </div>
 </div>
 
 <div id="tut"></div>
@@ -1231,7 +1303,7 @@
   <div class="mlabel">🟩 바닥 (안 고르면 게임에 어울리는 걸로 골라 줘요)</div>
   <div id="shground"></div>
   <div class="mlabel">👫 친구가 보낸 게임 코드를 넣어요</div>
-  <textarea class="mcode" id="shcode" spellcheck="false" placeholder="BWG1:..."></textarea>
+  <textarea class="mcode" id="shcode" spellcheck="false" placeholder="BWG2:..."></textarea>
   <button class="mbtn green" id="shgo">▶ 이 게임 하기</button>
   <div id="shmsg"></div>
   <button class="mbtn gray" id="shclose">닫기</button>
@@ -2580,7 +2652,7 @@ const NO_SCROLL = {Space:1, ArrowUp:1, ArrowDown:1, ArrowLeft:1, ArrowRight:1};
 function panelOpen(){
   const el = document.activeElement;
   if(el && (el.tagName==='TEXTAREA' || el.tagName==='INPUT')) return true;
-  return shopOpen || craftOpen || plansOpen || friendsOpen || ideaOpen || shortsOpen || bagOpen ||
+  return shopOpen || craftOpen || plansOpen || friendsOpen || ideaOpen || shortsOpen || bagOpen || chatOpen ||
          islandOpen || dodoOpen || rulesOpen || studioHomeOpen ||
          $('#playres').style.display==='flex' ||
          $('#strename').style.display==='flex' ||
@@ -4525,6 +4597,7 @@ function buildHelp(){
       ['Shift + P','📍 여기서부터 해보기'],
       ['Z','실수한 블록 되돌리기 (80번까지)'],
       ['T  또는 깃털 단추','도도AI — "점프 게임 만들어 줘" 처럼 말하면 만들어 줘요'],
+    ['M  또는 💬 단추','대화창 — 골라 쓰는 말로 친구와 이야기하기'],
       ['오른쪽 위 목록','🚩 🏁 🪙 … 누르면 그 자리로 날아가요'],
       ['Esc  또는 🏝️','스튜디오에서 나가기 (저절로 저장돼요)'],
     ];
@@ -4559,6 +4632,7 @@ function buildHelp(){
     ['⏪ 단추','실수한 블록 되돌리기'],
     ['🎥 단추','녹화 시작 / 멈추기 — 유튜브 쇼츠 모양(세로)으로 저장돼요'],
     ['깃털 단추','도도 장로 — 말하면 만들어 줘요'],
+    ['M  또는 💬 단추','대화창 — 골라 쓰는 말로 친구와 이야기하기'],
     ['🎒 단추','도도 가방 — 내 섬 · 청사진 · 15초도전 · 친구 · 아이디어 · 제작대'],
     ['🎒 → 🏝️','내 섬 — 꾸미기 · 섬 이름 · 자랑 카드 · 섬 코드'],
     ['🎒 → 🛠️','도도 스튜디오 — 내 게임 만들기 · 친구 게임 하기'],
@@ -4576,6 +4650,7 @@ function buildHelp(){
     ['C','제작대 — 부순 재료로 특별 블록 만들기'],
     ['Tab 또는 🎒','도도 가방 — 내 섬 · 청사진 · 15초도전 · 친구 · 아이디어'],
     ['T  또는 깃털 단추','도도 장로에게 말하기 — "무지개 미끄럼틀 만들어 줘"'],
+    ['M  또는 💬 단추','대화창 — 골라 쓰는 말로 친구와 이야기하기'],
     ['I','🏝️ 내 섬 — 꾸미기 · 섬 테마 · 오르골 · 사진 벽화 · 보물 숨기기'],
     ['K','🎨 도도 꾸미기 — 깃털색 · 부리색 · 모자'],
     ['👀','화면 한가운데 조준점이 가리키는 칸에 쌓고 부숴요. 노란 테두리가 새 블록이 생길 자리예요'],
@@ -5415,10 +5490,68 @@ function encodeEdits(edits){
     const b0 = bytes[i], b1 = bytes[i+1], b2 = bytes[i+2];
     out += B64[b0>>2] + B64[((b0&3)<<4)|(b1>>4)] + B64[((b1&15)<<2)|(b2>>6)] + B64[b2&63];
   }
-  return 'BW2:' + out;
+  const flat = 'BW2:' + out;
+  const run  = encodeRuns(edits);                  // 줄줄이 묶은 것
+  return (run && run.length < flat.length) ? run : flat;   // 둘 중 짧은 쪽
+}
+
+/* ── BW3 : 줄줄이 이어진 블록을 한 덩어리로 묶어서 짧게 ──
+   아이들은 바닥을 쫙 깔고 벽을 쭉 세운다. 그런 "줄"을 한 칸씩 적으면
+   칸마다 4글자가 드는데, 줄 하나를 통째로 적으면 5글자면 끝난다.
+   한 덩어리 = 5글자.  앞 4글자 = 시작 칸(x6 y6 z6 t6),
+                      5번째 글자 = 어느 쪽으로 뻗는지(2비트) + 길이(4비트, 1~16칸).
+   한 덩어리가 최대 16칸이라 더 긴 줄은 여러 덩어리로 나뉜다. */
+const RUN_STEP = [1<<18, 1<<12, 1<<6];      // 0=x 쪽, 1=y 쪽, 2=z 쪽
+const RUN_LIM  = [W, H, D];
+function encodeRuns(edits){
+  const vs = [];
+  for(const k of Object.keys(edits)){
+    const a = k.split(',');
+    const x = +a[0]|0, y = +a[1]|0, z = +a[2]|0, t = edits[k]|0;
+    if(x<0||x>=W||y<0||y>=H||z<0||z>=D||t<0||t>63) continue;
+    vs.push((x<<18) | (y<<12) | (z<<6) | t);
+  }
+  if(!vs.length) return 'BW3:';
+  vs.sort((a,b) => a - b);
+  const left = new Set(vs);
+  let out = '';
+  for(const v of vs){
+    if(!left.has(v)) continue;
+    let bestA = 2, bestN = 1;
+    for(let a=0;a<3;a++){
+      const st = RUN_STEP[a], co = (v >> (18 - a*6)) & 63;
+      let n = 1;
+      while(n < 16 && co + n < RUN_LIM[a] && left.has(v + st*n)) n++;
+      if(n > bestN){ bestN = n; bestA = a; }
+    }
+    for(let i=0;i<bestN;i++) left.delete(v + RUN_STEP[bestA]*i);
+    out += B64[(v>>18)&63] + B64[(v>>12)&63] + B64[(v>>6)&63] + B64[v&63]
+         + B64[(bestA<<4) | (bestN-1)];
+  }
+  return 'BW3:' + out;
+}
+function decodeRuns(body){
+  if(body.length % 5 !== 0) return null;
+  const edits = {};
+  for(let i=0;i<body.length;i+=5){
+    const c0=B64.indexOf(body[i]),   c1=B64.indexOf(body[i+1]), c2=B64.indexOf(body[i+2]);
+    const c3=B64.indexOf(body[i+3]), c4=B64.indexOf(body[i+4]);
+    if(c0<0||c1<0||c2<0||c3<0||c4<0) return null;
+    const v = (c0<<18)|(c1<<12)|(c2<<6)|c3;
+    const a = c4 >> 4, n = (c4 & 15) + 1;
+    if(a > 2) return null;
+    for(let j=0;j<n;j++){
+      const w = v + RUN_STEP[a]*j;
+      const x=(w>>18)&63, y=(w>>12)&63, z=(w>>6)&63, t=w&63;
+      if(x>=W||y>=H||z>=D) return null;
+      edits[x+','+y+','+z] = t;
+    }
+  }
+  return edits;
 }
 function decodeWorld(code){
   code = (code||'').trim().replace(/\s+/g, '');
+  if(code.indexOf('BW3:') === 0) return decodeRuns(code.slice(4));   // 줄줄이 묶은 새 코드
   const wide = code.indexOf('BW2:') === 0;                 // 블록 63종까지
   if(!wide && code.indexOf('BW1:') !== 0) return null;     // 예전 코드도 그대로 읽는다
   const body = code.slice(4);
@@ -5467,7 +5600,7 @@ function shareLoad(){
   const edits = decodeWorld($('#sharecode').value);
   if(!edits){
     $('#sharemsg').style.color = '#c0392b';
-    $('#sharemsg').textContent = '😢 코드가 이상해요. BW1: 로 시작하는 코드를 통째로 붙여넣어 주세요.';
+    $('#sharemsg').textContent = '😢 코드가 이상해요. BW 로 시작하는 코드를 통째로 붙여넣어 주세요.';
     Sound.deny();
     return;
   }
@@ -5542,6 +5675,32 @@ function unpackCode(tag, code){
   const body = rest.slice(0, i), sum = rest.slice(i+1);
   if(checksum(body) !== sum.toUpperCase()) return null;
   try{ return JSON.parse(b64ToUtf8(body)); }catch(e){ return null; }
+}
+
+/* ── 세계가 들어 있는 코드는 따로 담는다 ──
+   packCode 는 내용을 JSON 으로 만든 뒤 통째로 다시 base64 로 바꾼다.
+   그런데 세계 코드(BW2/BW3)는 이미 base64 라서, 한 번 더 싸면 길이가 1.33배로 분다.
+   그래서 세계만 빼서 날것 그대로 뒤에 붙인다. 머리말과 세계 사이는 점(.)으로 나눈다.
+   base64 글자에는 점도 빼기표도 없어서 헷갈릴 일이 없다. */
+function packWorldCode(tag, obj, world){
+  const body = utf8ToB64(JSON.stringify(obj)) + '.' + world;
+  return tag + ':' + body + '-' + checksum(body);
+}
+function unpackWorldCode(tag, code){
+  code = (code||'').trim().replace(/\s+/g,'');
+  if(code.indexOf(tag + ':') !== 0) return null;
+  const rest = code.slice(tag.length + 1);
+  const i = rest.lastIndexOf('-');
+  if(i < 0) return null;
+  const body = rest.slice(0, i), sum = rest.slice(i+1);
+  if(checksum(body) !== sum.toUpperCase()) return null;
+  const j = body.indexOf('.');
+  if(j < 0) return null;
+  try{
+    const head = JSON.parse(b64ToUtf8(body.slice(0, j)));
+    head.w = body.slice(j+1);
+    return head;
+  }catch(e){ return null; }
 }
 
 function myInviteCode(){ return packCode('BWF1', {n:state.nick, u:state.uid}); }
@@ -5994,6 +6153,7 @@ const BAG_ITEMS = [
   {icon:'📐', name:'청사진 건축학교', desc:'따라 지으면 돼요',      go:()=>openPlans()},
   {icon:'🎬', name:'15초 도전',      desc:'영상으로 찍어 자랑하기', go:()=>openShorts()},
   {icon:'👫', name:'친구',           desc:'초대 코드 주고받기',     go:()=>openFriends()},
+  {icon:'💬', name:'대화창',         desc:'골라 쓰는 말로 이야기하기', go:()=>{ closeBag(); Chat.open(); }},
   {icon:'💬', name:'아이디어',       desc:'넣고 싶은 걸 말해요',    go:()=>openIdeas()},
   {icon:'🛠️', name:'도도 스튜디오',  desc:'내 게임 만들기 · 친구 게임 하기', go:()=>openStudioHome()},
   {icon:'🏅', name:'내 배지',        desc:'모은 배지 구경하기',     go:()=>openBadges()},
@@ -6095,7 +6255,7 @@ function saveBrag(){
   if(bragCanvas) downloadCanvas(bragCanvas, '도도블록-자랑카드-' + islandName() + '.png');
 }
 function goVisit(){
-  const code = prompt('친구의 섬 코드를 붙여넣어 주세요 (BWS1: 로 시작해요)');
+  const code = prompt('친구의 섬 코드를 붙여넣어 주세요 (BWS 로 시작해요)');
   if(!code) return;
   if(!decodeIsland(code)){
     islandMsg('😢 코드를 못 읽었어요. 코드 전체를 빠뜨리지 말고 붙여넣어 주세요.');
@@ -6432,7 +6592,7 @@ function isVisiting(){
 function visitIsland(code){
   const got = decodeIsland(code);
   if(!got || !got.edits) return false;
-  const info = {edits:got.edits, name:got.name || '친구의 섬', nick:got.nick || '',
+  const info = {edits:got.edits, name:got.name || '친구의 섬', nick:got.nick || '', uid:got.uid || '',
                 theme:got.theme || 'basic', tune:got.tune || null,
                 tuneAt:got.tuneAt || null, hunt:got.hunt || null};
   try{ sessionStorage.setItem(VISIT_KEY, JSON.stringify(info)); }catch(e){ return false; }
@@ -6448,16 +6608,16 @@ function goHome(){
 /* 섬 코드 = 건축물 + 섬 이름 + 주인 별명 */
 function islandCode(){
   const body = encodeWorld();
-  const o = {n:state.nick, i:islandName(), w:body};
+  const o = {n:state.nick, i:islandName(), u:state.uid};   // u = 주인 번호, 💌 이야기방을 여는 열쇠
   if(state.theme && state.theme !== 'basic') o.t = state.theme;
   if(!tuneEmpty(state.tune) && state.tuneAt) o.m = {t:state.tune, p:state.tuneAt};
   if(state.hunt && state.hunt.spots && state.hunt.spots.length === 3)
     o.q = {s:state.hunt.spots, h:(state.hunt.hint || '').slice(0,20)};
-  return packCode('BWS1', o);
+  return packWorldCode('BWS2', o, body);
 }
 function decodeIsland(code){
-  const m = unpackCode('BWS1', code);
-  if(m && m.w) return {edits:decodeWorld(m.w), name:m.i, nick:m.n,
+  const m = unpackWorldCode('BWS2', code) || unpackCode('BWS1', code);  // 예전 코드도 받아 준다
+  if(m && m.w) return {edits:decodeWorld(m.w), name:m.i, nick:m.n, uid:m.u || '',
                        theme:m.t || 'basic',
                        tune:(m.m && Array.isArray(m.m.t)) ? m.m.t : null,
                        tuneAt:(m.m && Array.isArray(m.m.p)) ? m.m.p : null,
@@ -6742,14 +6902,14 @@ const Games = {
 };
 
 /* ---- 게임 카드 ↔ 글자 코드 (친구에게 보내는 것) ----
-   섬 코드(BWS1)와 똑같은 틀이다. 규칙과 설정만 더 담는다. */
+   섬 코드(BWS2)와 똑같은 틀이다. 규칙과 설정만 더 담는다. */
 function gameCode(g){
-  return packCode('BWG1', {
-    t:g.title, a:g.author, g:g.ground, k:g.kind, r:g.rules, o:g.opt, w:encodeEdits(g.edits)
-  });
+  return packWorldCode('BWG2', {
+    t:g.title, a:g.author, g:g.ground, k:g.kind, r:g.rules, o:g.opt
+  }, encodeEdits(g.edits));
 }
 function readGameCode(code){
-  const m = unpackCode('BWG1', code);
+  const m = unpackWorldCode('BWG2', code) || unpackCode('BWG1', code);  // 예전 코드도 받아 준다
   if(!m || !m.w) return null;
   const e = decodeWorld(m.w);
   if(!e) return null;
@@ -7632,7 +7792,7 @@ function studioHomeLoad(){
   const g = readGameCode(code);
   if(!g){
     $('#shmsg').style.color = '#c0392b';
-    $('#shmsg').textContent = '😢 코드가 이상해요. BWG1: 로 시작하는 게임 코드를 통째로 붙여넣어 주세요.';
+    $('#shmsg').textContent = '😢 코드가 이상해요. BWG 로 시작하는 게임 코드를 통째로 붙여넣어 주세요.';
     Sound.deny();
     return;
   }
@@ -7774,7 +7934,7 @@ function frame(t){
    ───────────────────────────────────────────────────
    섬 테마 · 보물찾기 미션 · 도도 오르골 · 사진 블록 벽화 · 도도 꾸미기.
    전부 "내 섬"에 붙는다 — 로비나 하우징 화면을 따로 만들지 않는다.
-   꾸민 것은 모두 섬 코드(BWS1)에 같이 담겨 친구에게 그대로 간다.
+   꾸민 것은 모두 섬 코드(BWS2)에 같이 담겨 친구에게 그대로 간다.
    ═══════════════════════════════════════════════════ */
 
 /* ---- 🌈 1. 섬 테마 : 하늘·안개·땅 색을 통째로 갈아 끼운다 ---- */
@@ -8609,6 +8769,7 @@ addEventListener('keydown', e=>{
   }
   if(e.code==='KeyZ') Undo.undo();
   if(e.code==='KeyC') craftOpen ? closeCraft() : openCraft();
+  if(e.code==='KeyM') Chat.toggle();
   if(e.code==='KeyB') plansOpen ? closePlans() : openPlans();
   if(e.code==='KeyV') openBadges();
   if(e.code==='KeyG') openFriends();
@@ -9949,6 +10110,301 @@ function aiSend(){
   aiChips(true);
 }
 
+/* ═══════════════════════════════════════════════════
+   25. 💬 골라 쓰는 말 대화창  (커뮤니티 1단계)
+   ───────────────────────────────────────────────────
+   카톡처럼 대화창을 열어 친구와 말을 주고받는다.
+   다만 **글자를 직접 치지 않는다.** 아래 판에서 문장을 골라 누르면 그게 간다.
+
+   왜 고르기만 하나 — 초등학생 게임에서 자유 채팅은 가장 위험한 기능이다.
+   욕설, 전화번호·학교 이름 흘리기, 모르는 어른이 말 거는 문제가 바로 따라온다.
+   고르기만 할 수 있으면 그런 일이 "일어날 방법 자체가" 없다.
+   서버로 가는 것도 문장 글자가 아니라 **문장 번호(숫자)** 하나뿐이다.
+
+   ★ 문장 번호는 절대 순서를 바꾸면 안 된다 ★
+     서버와 친구 화면에는 번호만 남아 있다. 중간에 문장을 끼워 넣으면
+     친구가 예전에 한 말이 딴 말로 바뀐다. 새 문장은 반드시 맨 뒤에 붙일 것.
+
+   방은 둘이다.
+     · plaza        — 🏝️ 도도 광장, 모두가 같이 쓴다
+     · island:AB12CD — 💌 그 섬 주인의 이야기방. 놀러 온 친구가 남기면 주인이 나중에 본다
+
+   서버 주소를 안 넣으면 🧪 혼자 시험 모드로 돈다(같은 컴퓨터의 다른 창끼리만).
+   ═══════════════════════════════════════════════════ */
+const CHAT_URL_KEY  = 'dodo_chat_url';
+const CHAT_MUTE_KEY = 'dodo_chat_mute';
+const CHAT_DEMO_KEY = 'dodo_chat_demo:';
+const CHAT_POLL_MS  = 2500;
+
+/* ── 고를 수 있는 말. 번호 = 이 줄의 순서. 절대 중간에 끼워 넣지 말 것 ── */
+const CHAT_SAY = [
+  /* 0 */  '안녕!', '또 왔어!', '반가워!', '오랜만이야!', '좋은 아침!',
+  /* 5 */  '잘 가!', '내일 또 보자!', '잘 자!', '나 이제 갈게!',
+  /* 9 */  '같이 놀자!', '내 섬에 놀러 와!', '지금 시간 돼?', '숨바꼭질 하자!', '달리기 시합하자!',
+  /* 14 */ '같이 집 짓자!', '보물찾기 하자!', '내 게임 해 볼래?', '기다릴게!', '여기로 와!',
+  /* 19 */ '우와 멋지다!', '진짜 잘한다!', '대단해!', '예쁘다!', '최고야!',
+  /* 24 */ '부럽다!', '나도 따라 만들래!', '고마워!', '잘했어!',
+  /* 28 */ '그거 어떻게 만들어?', '뭐 하고 있어?', '이거 뭐야?', '같이 할래?', '도와줄 수 있어?',
+  /* 33 */ '어느 게임이 제일 재밌어?', '내 섬 어때?', '다 만들었어?', '어디까지 했어?',
+  /* 37 */ '응!', '좋아!', '알았어!', '잠깐만!', '나중에!',
+  /* 42 */ '지금은 안 돼.', '잘 모르겠어.', '거의 다 됐어!', '다시 한번!',
+  /* 46 */ '신난다!', '재밌다!', '아쉽다...', '어렵다...', '놀랐어!',
+  /* 51 */ '웃겨!', '졸려...', '배고파!', '속상해...',
+  /* 55 */ '👍', '❤️', '😀', '😮', '😢', '🎉', '⭐', '🔥', '🍀', '🐦', '🧱', '🏝️'
+];
+/* 탭 = 문장 묶음. a 부터 b 까지(둘 다 포함) */
+const CHAT_TABS = [
+  {t:'👋 인사',   a:0,  b:8},
+  {t:'🎮 놀자',   a:9,  b:18},
+  {t:'👍 칭찬',   a:19, b:27},
+  {t:'❓ 물어봐', a:28, b:36},
+  {t:'💬 대답',   a:37, b:45},
+  {t:'😀 기분',   a:46, b:54},
+  {t:'✨ 그림',   a:55, b:66, emo:true}
+];
+
+/* 별명에 위험한 것이 섞이지 않게 거른다 (서버에서도 똑같이 한 번 더 거른다) */
+const CHAT_BAD = ['시발','씨발','ㅅㅂ','좆','병신','ㅂㅅ','새끼','ㄲㅈ','지랄','미친','죽어','바보','멍청',
+                  'fuck','shit','bitch','sex','섹스','카톡','카카오','전화','번호','주소','학교','아파트'];
+function safeNick(raw){
+  let n = String(raw == null ? '' : raw).trim().slice(0, 10);
+  n = n.replace(/[^가-힣ㄱ-ㅎㅏ-ㅣa-zA-Z0-9 ]/g, '').replace(/\s+/g,' ').trim();
+  if(/\d{3,}/.test(n)) return '';                       // 숫자 세 개 넘게 = 전화번호일 수 있다
+  const low = n.toLowerCase().replace(/\s/g,'');
+  for(const b of CHAT_BAD) if(low.includes(b)) return '';
+  return n;
+}
+
+/* ── 말을 나르는 부분. 서버가 있으면 서버로, 없으면 이 컴퓨터 안에서만 ── */
+const ChatNet = {
+  url(){ try{ return localStorage.getItem(CHAT_URL_KEY) || ''; }catch(e){ return ''; } },
+  setUrl(u){
+    u = (u||'').trim().replace(/\/+$/,'');
+    try{ u ? localStorage.setItem(CHAT_URL_KEY, u) : localStorage.removeItem(CHAT_URL_KEY); }catch(e){}
+  },
+  live(){ return !!this.url(); },
+
+  async poll(room, since){
+    if(this.live()){
+      const r = await fetch(this.url() + '/r/' + encodeURIComponent(room) + '?since=' + (since|0), {cache:'no-store'});
+      if(!r.ok) throw new Error('poll ' + r.status);
+      return await r.json();
+    }
+    const all = demoRead(room);
+    const tenMin = Date.now() - 10*60*1000, who = new Set();
+    for(const m of all) if(m.t > tenMin) who.add(m.u);
+    return {ok:true, msgs:all.filter(m => m.i > (since|0)),
+            last:all.length ? all[all.length-1].i : 0, people:who.size};
+  },
+
+  async send(room, uid, nick, p){
+    if(this.live()){
+      const r = await fetch(this.url() + '/r/' + encodeURIComponent(room), {
+        method:'POST',
+        headers:{'content-type':'text/plain'},          // 이러면 미리 물어보는 절차(preflight)가 없어서 빠르다
+        body: JSON.stringify({u:uid, n:nick, p:p})
+      });
+      return await r.json();
+    }
+    const all = demoRead(room);
+    const id = all.length ? all[all.length-1].i + 1 : 1;
+    all.push({i:id, u:uid, n:nick, p:p, t:Date.now()});
+    while(all.length > 120) all.shift();
+    demoWrite(room, all);
+    return {ok:true, i:id, n:nick};
+  }
+};
+function demoRead(room){
+  try{ return JSON.parse(localStorage.getItem(CHAT_DEMO_KEY + room) || '[]'); }catch(e){ return []; }
+}
+function demoWrite(room, list){
+  try{ localStorage.setItem(CHAT_DEMO_KEY + room, JSON.stringify(list)); }catch(e){}
+}
+
+/* ── 안 보고 싶은 친구 (내 기기에만 저장된다) ── */
+function chatMuted(){
+  try{ return JSON.parse(localStorage.getItem(CHAT_MUTE_KEY) || '{}'); }catch(e){ return {}; }
+}
+function chatMute(uid){
+  const m = chatMuted(); m[uid] = 1;
+  try{ localStorage.setItem(CHAT_MUTE_KEY, JSON.stringify(m)); }catch(e){}
+  Chat.redraw();
+}
+
+let chatOpen = false;
+const Chat = {
+  room:'plaza', tab:0, since:0, seen:[], timer:null, busy:false, warned:false, people:0, polling:false,
+
+  /* 지금 열어야 할 섬 방 — 친구 섬에 놀러 가 있으면 그 친구 방이다 */
+  islandRoom(){
+    const v = (typeof visitInfo === 'function') ? visitInfo() : null;
+    const owner = (v && v.uid) ? v.uid : state.uid;
+    return owner ? ('island:' + owner) : '';
+  },
+
+  open(){
+    if(!state.uid) state.uid = newUid();
+    if(!state.nick){ askNick(()=>Chat.open()); return; }
+    chatOpen = true;
+    $('#chat').style.display = 'flex';
+    if(document.pointerLockElement) document.exitPointerLock();
+    this.buildTabs();
+    this.go(this.room);
+    Sound.shop();
+  },
+  close(){
+    chatOpen = false;
+    $('#chat').style.display = 'none';
+    if(this.timer){ clearInterval(this.timer); this.timer = null; }
+  },
+  toggle(){ chatOpen ? this.close() : this.open(); },
+
+  go(room){
+    if(room === 'island'){ room = this.islandRoom() || 'plaza'; }
+    this.room = room;
+    this.since = 0; this.seen = []; this.people = 0;
+    $('#croomPlaza').className = 'croom' + (room === 'plaza' ? ' on' : '');
+    $('#croomIsland').className = 'croom' + (room !== 'plaza' ? ' on' : '');
+    this.where();
+    $('#chatlog').innerHTML = '<div id="chatempty">불러오는 중...</div>';
+    if(this.timer) clearInterval(this.timer);
+    this.tick();
+    this.timer = setInterval(()=>this.tick(), CHAT_POLL_MS);
+  },
+
+  where(){
+    const v = (typeof visitInfo === 'function') ? visitInfo() : null;
+    let s;
+    if(this.room === 'plaza') s = '🏝️ <b>도도 광장</b> — 모두가 같이 쓰는 방';
+    else if(v)               s = '💌 <b>' + (v.name || '친구의 섬') + '</b> 이야기방 — 남기면 주인이 나중에 봐요';
+    else                     s = '💌 <b>내 섬</b> 이야기방 — 놀러 온 친구가 남긴 말';
+    if(this.people > 0) s += ' · 방금 말한 친구 <b>' + this.people + '</b>명';
+    if(!ChatNet.live()) s += ' · 🧪 <b>혼자 시험</b>(이 컴퓨터 안에서만)';
+    $('#chatwhere').innerHTML = s;
+  },
+
+  buildTabs(){
+    const t = $('#chattabs'); t.innerHTML = '';
+    CHAT_TABS.forEach((g,i)=>{
+      const b = document.createElement('button');
+      b.className = 'ctab' + (i === this.tab ? ' on' : '');
+      b.textContent = g.t;
+      b.onclick = ()=>{ this.tab = i; this.buildTabs(); };
+      t.appendChild(b);
+    });
+    const ph = $('#chatphrases'); ph.innerHTML = '';
+    const g = CHAT_TABS[this.tab];
+    for(let i=g.a; i<=g.b && i<CHAT_SAY.length; i++){
+      const b = document.createElement('button');
+      b.className = 'csay' + (g.emo ? ' emo' : '');
+      b.textContent = CHAT_SAY[i];
+      b.onclick = ()=>this.say(i);
+      ph.appendChild(b);
+    }
+  },
+
+  async say(p){
+    if(this.busy) return;
+    const nick = safeNick(state.nick) || ('도도' + (state.uid||'').slice(0,2));
+    if(!safeNick(state.nick)){
+      showHint('😅 별명에 못 쓰는 글자가 있어서 "' + nick + '" 으로 보낼게요', 2600);
+    }
+    this.busy = true;
+    try{
+      const r = await ChatNet.send(this.room, state.uid, nick, p);
+      if(r && r.ok){ Sound.click(); this.tick(); }
+      else if(r && r.why === 'slow') showHint('🐢 조금만 천천히 보내 주세요', 1800);
+      else showHint('😢 못 보냈어요', 1800);
+    }catch(e){
+      showHint('😢 대화 서버에 못 닿았어요. ⚙️ 에서 주소를 확인해 주세요', 3000);
+    }
+    this.busy = false;
+  },
+
+  async tick(){
+    if(!chatOpen || this.polling) return;     // 두 번 겹쳐 가져오면 같은 말이 두 번 뜬다
+    const room = this.room;
+    this.polling = true;
+    try{
+      const r = await ChatNet.poll(room, this.since);
+      if(room !== this.room) return;          // 가져오는 사이에 방을 옮겼으면 버린다
+      if(typeof r.people === 'number'){ this.people = r.people; this.where(); }
+      let got = 0;
+      if(r && r.msgs){
+        for(const m of r.msgs){
+          if(m.i <= this.since) continue;     // 이미 받은 말은 넘긴다
+          this.seen.push(m); this.since = m.i; got++;
+        }
+        while(this.seen.length > 120) this.seen.shift();
+      }
+      if(got || $('#chatempty')) this.redraw();
+      this.warned = false;
+    }catch(e){
+      if(!this.warned){ this.warned = true; $('#chatlog').innerHTML =
+        '<div id="chatempty">😢 대화 서버에 못 닿았어요.<br>⚙️ 를 눌러 주소를 확인해 주세요.</div>'; }
+    }finally{ this.polling = false; }
+  },
+
+  redraw(){
+    const log = $('#chatlog');
+    const muted = chatMuted();
+    const list = this.seen.filter(m => !muted[m.u]);
+    if(!list.length){
+      log.innerHTML = '<div id="chatempty">아직 아무 말도 없어요.<br>아래에서 하고 싶은 말을 골라 보세요!</div>';
+      return;
+    }
+    log.innerHTML = '';
+    const shown = {};                 // 🚫 단추는 친구 한 명당 한 번만 (줄줄이 붙으면 지저분하다)
+    for(const m of list){
+      const mine = m.u === state.uid;
+      const row = document.createElement('div');
+      row.className = 'cmsg' + (mine ? ' me' : '');
+      const who = document.createElement('div');
+      who.className = 'cwho';
+      who.textContent = mine ? '나' : (m.n || '도도');
+      const bub = document.createElement('div');
+      bub.className = 'cbub';
+      bub.textContent = CHAT_SAY[m.p] || '(모르는 말)';
+      row.appendChild(who); row.appendChild(bub);
+      if(!mine && !shown[m.u]){
+        shown[m.u] = 1;
+        const mb = document.createElement('button');
+        mb.className = 'cmute'; mb.textContent = '🚫 이 친구 말 안 보기';
+        mb.onclick = ()=>{ if(confirm((m.n||'이 친구') + ' 의 말을 이제 안 볼까요?')) chatMute(m.u); };
+        row.appendChild(mb);
+      }
+      log.appendChild(row);
+    }
+    log.scrollTop = log.scrollHeight;
+  },
+
+  gear(){
+    const now = ChatNet.url();
+    const v = prompt(
+      '대화 서버 주소를 넣어 주세요.\n' +
+      '비워 두면 🧪 혼자 시험 모드로 돌아요(같은 컴퓨터의 다른 창끼리만).\n\n' +
+      '예) https://dodoblock-chat.내계정.workers.dev', now);
+    if(v === null) return;
+    if(v.trim() && !/^https:\/\//.test(v.trim())){
+      showHint('😢 https:// 로 시작하는 주소여야 해요', 2600); return;
+    }
+    ChatNet.setUrl(v);
+    showHint(ChatNet.url() ? '✅ 대화 서버를 연결했어요' : '🧪 혼자 시험 모드로 바꿨어요', 2400);
+    this.go(this.room === 'plaza' ? 'plaza' : 'island');
+  }
+};
+
+/* 다른 창을 보다가 돌아오면 바로 새 말을 가져온다.
+   (브라우저는 안 보고 있는 창의 타이머를 느리게 만든다) */
+document.addEventListener('visibilitychange', ()=>{ if(!document.hidden && chatOpen) Chat.tick(); });
+addEventListener('focus', ()=>{ if(chatOpen) Chat.tick(); });
+
+$('#btnChat').onclick    = ()=>Chat.toggle();
+$('#chatx').onclick      = ()=>Chat.close();
+$('#chatgear').onclick   = ()=>Chat.gear();
+$('#croomPlaza').onclick = ()=>Chat.go('plaza');
+$('#croomIsland').onclick= ()=>Chat.go('island');
+
 window.BW = {player, setBlock, getBlock, scene, camera, renderer, voxels, W,H,D, IDX, keys,
   Mode, Studio, Play, Games, newGame, gameCode, readGameCode, modeGo, magicCount,
   openStudioHome, closeStudioHome, tmplObby, tmplTreasure, tmplMaze, stLayPlats,
@@ -9984,6 +10440,7 @@ window.BW = {player, setBlock, getBlock, scene, camera, renderer, voxels, W,H,D,
   Hunt, huntBury, huntReset, huntSaveHint, enterHuntCode, renderHunt,
   pickMuralPhoto, muralFromFile, MURAL_PALETTE, avatar, doLog, MATS, TINT_TYPES, recolorTexture,
   Rec,
+  Chat, ChatNet, CHAT_SAY, CHAT_TABS, safeNick, chatMuted, chatOpenNow(){ return chatOpen; },
   GAME_VER, randomNick, newUid, packCode, unpackCode, myInviteCode,
   friendCount, giftLevel, FRIEND_GIFTS, enterFriendCode, openFriends, closeFriends,
   askNick, saveNick, SHORTS, Shorts, openShorts, closeShorts,

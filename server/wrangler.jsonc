@@ -1,0 +1,15 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "dodoblock-chat",
+  "main": "src/worker.js",
+  "compatibility_date": "2025-09-01",
+  "observability": { "enabled": true },
+
+  // 방 하나가 Durable Object 하나다. SQLite 방식이라 무료 요금제에서도 쓸 수 있다.
+  "durable_objects": {
+    "bindings": [{ "name": "DODO_ROOM", "class_name": "DodoRoom" }]
+  },
+  "migrations": [
+    { "tag": "v1", "new_sqlite_classes": ["DodoRoom"] }
+  ]
+}
