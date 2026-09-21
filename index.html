@@ -872,11 +872,63 @@
     .slot .num{font-size:8px; top:2px; left:4px;}
     #bpbar{max-width:170px;}
   }
+  /* 화면이 낮으면 블록 바가 여러 줄로 불어나 게임 화면을 덮어 버린다.
+     줄바꿈을 끄고 한 줄로 만든 뒤 옆으로 밀어서 보게 한다. */
+  @media (max-height:600px), (max-width:430px){
+    #hotbar{
+      flex-wrap:nowrap; justify-content:flex-start; width:auto;
+      max-width:calc(100vw - 16px); overflow-x:auto; overflow-y:hidden;
+      -webkit-overflow-scrolling:touch; scrollbar-width:none;
+    }
+    #hotbar::-webkit-scrollbar{display:none;}
+    #hotbar .slot{flex:none;}
+    body.fold-bar #hotbar{width:auto; max-width:none; overflow:visible;}
+  }
   @media (max-width:620px) and (orientation:landscape){
     body.touchmode #hotbar{bottom:96px; transform:translateX(-50%) scale(.85);}
     body.touchmode #tut{bottom:150px;}
     #quests{max-height:38vh; overflow:hidden;}
   }
+
+  /* ── 📱 메뉴 접기 ──
+     휴대폰 화면은 손바닥만 한데 칸이 네 개나 떠 있어서 정작 게임이 안 보인다.
+     칸마다 작은 단추를 달아 접었다 폈다 할 수 있게 했다.
+     접은 상태는 기억하니까 다음에 들어와도 그대로다.
+     큰 화면에서는 접을 일이 없으니 단추 자체가 안 나온다. */
+  .foldbtn{
+    border:none; width:24px; height:24px; min-width:24px; border-radius:50%; cursor:pointer;
+    background:rgba(0,0,0,.09); color:#3b3350; font-family:inherit; font-weight:900;
+    font-size:12px; line-height:1; padding:0; display:none; align-items:center;
+    justify-content:center; flex:none; pointer-events:auto;
+  }
+  body.canfold .foldbtn{display:flex;}
+  .foldbtn:active{transform:translateY(2px); background:rgba(0,0,0,.16);}
+
+  /* 🪙 코인 · 레벨 */
+  #coinbox .foldbtn{margin-left:2px;}
+  body.fold-hud #lvlbox{display:none;}
+
+  /* 📋 퀘스트 */
+  #qtitle{display:flex; align-items:center; gap:6px;}
+  #qtitle .sp{flex:1;}
+  body.fold-q #qlist{display:none;}
+  body.fold-q #quests{width:auto; min-width:0;}
+  body.fold-q #qtitle{margin-bottom:0;}
+
+  /* 🧱 블록 바 — 접으면 지금 고른 블록 하나만 남는다 */
+  body.fold-bar #hotbar .slot{display:none;}
+  body.fold-bar #hotbar .slot.sel{display:flex; transform:none;}
+  /* 접기 단추는 줄바꿈에 끼어들면 안 되니 칸 안에 따로 띄운다 */
+  #barfold{
+    position:absolute; right:6px; top:50%; transform:translateY(-50%);
+    background:rgba(0,0,0,.10);
+  }
+  body.canfold #hotbar{padding-right:34px;}
+
+  /* ⚙️ 오른쪽 동그란 단추들 — 접으면 🎒 가방만 남는다 */
+  #tools .foldbtn{width:38px; height:38px; min-width:38px; font-size:15px;}
+  body.fold-tools #tools .tool{display:none;}
+  body.fold-tools #tools #btnBag{display:block;}
 
   /* 🎥 녹화 */
   #recdot{
@@ -909,7 +961,8 @@
 
 <div id="ui">
   <div id="hud-left">
-    <div class="card" id="coinbox"><div class="coinicon"></div><span id="coins">0</span></div>
+    <div class="card" id="coinbox"><div class="coinicon"></div><span id="coins">0</span>
+      <button class="foldbtn" id="foldHud" title="레벨 칸 접기 / 펴기">▾</button></div>
     <div class="card" id="lvlbox">
       <div id="lvlrow"><span>레벨 <b id="lvl">1</b></span><span id="exptext">0 / 100</span></div>
       <div id="expbar"><div id="expfill"></div></div>
@@ -918,7 +971,8 @@
   <div class="card" id="hint"></div>
   <div id="pops"></div>
   <div class="card" id="quests">
-    <div id="qtitle">📋 퀘스트</div>
+    <div id="qtitle">📋 퀘스트<span class="sp"></span>
+      <button class="foldbtn" id="foldQ" title="퀘스트 접기 / 펴기">▾</button></div>
     <div id="qlist"></div>
   </div>
   <div id="hotbar"></div>
@@ -967,6 +1021,7 @@
   <button class="tool" id="btnTime"  title="밤낮 바꾸기">🌗</button>
   <button class="tool" id="btnSound" title="소리 켜기/끄기">🔊</button>
   <button class="tool" id="btnHelp"  title="조작법">❓</button>
+  <button class="foldbtn" id="foldTools" title="단추 접기 / 펴기">▾</button>
 </div>
 
 <div id="tut"></div>
@@ -2630,6 +2685,32 @@ let selectedSlot = 0;
 function blockUnlocked(t){ if(!inIsland()) return true; return (UNLOCK_LEVEL[t] || 1) <= state.level; }
 
 const SLOT_KEY = ['1','2','3','4','5','6','7','8','9','0','-'];
+/* ── 📱 메뉴 접기 ──
+   사헌 님 요청: "모바일에서 볼 때 메뉴들 접었다 폈다 할 수 있게 해 줘."
+   칸을 아예 없애면 안 된다(아이가 못 찾는다). 접으면 제목이나 고른 블록
+   하나는 남겨서 어디 있었는지 알 수 있게 한다. */
+const FOLD_KEY = 'dodo_fold';
+const fold = {hud:0, q:0, bar:0, tools:0};
+function applyFold(){
+  for(const k in fold) document.body.classList.toggle('fold-' + k, !!fold[k]);
+  const mark = (id, on)=>{ const el = $(id); if(el) el.textContent = on ? '▸' : '▾'; };
+  mark('#foldHud', fold.hud); mark('#foldQ', fold.q);
+  mark('#barfold', fold.bar); mark('#foldTools', fold.tools);
+  if(typeof layoutUI === 'function') layoutUI();
+}
+function toggleFold(k){
+  fold[k] = fold[k] ? 0 : 1;
+  applyFold();
+  try{ localStorage.setItem(FOLD_KEY, JSON.stringify(fold)); }catch(e){}
+  if(typeof Sound !== 'undefined') Sound.click();
+}
+function loadFold(){
+  let d = null;
+  try{ d = JSON.parse(localStorage.getItem(FOLD_KEY) || 'null'); }catch(e){}
+  if(d) for(const k in fold) fold[k] = d[k] ? 1 : 0;
+  applyFold();
+}
+
 function buildHotbar(){
   const bar = $('#hotbar');
   const HB = hotbarList();
@@ -2649,6 +2730,14 @@ function buildHotbar(){
     el.addEventListener('click', (e)=>{ e.stopPropagation(); selectSlot(i); });
     bar.appendChild(el);
   });
+  /* 접기 단추는 블록 바를 새로 그릴 때마다 다시 달아 준다 */
+  const fb = document.createElement('button');
+  fb.className = 'foldbtn';
+  fb.id = 'barfold';
+  fb.textContent = fold.bar ? '▸' : '▾';
+  fb.title = '블록 바 접기 / 펴기';
+  fb.addEventListener('click', (e)=>{ e.stopPropagation(); toggleFold('bar'); });
+  bar.appendChild(fb);
   if(typeof layoutUI === 'function') layoutUI();
 }
 function selectSlot(i){
@@ -7226,6 +7315,10 @@ function layoutUI(){
   const tools = $('#tools'), quests = $('#quests'), hotbar = $('#hotbar'), hint = $('#hint');
   if(!tools) return;
   document.body.classList.toggle('compact', innerHeight < 540);
+  /* 좁거나 낮은 화면(휴대폰)에서만 접기 단추를 보여 준다 */
+  document.body.classList.toggle('canfold',
+    document.body.classList.contains('touchmode') ||
+    innerWidth <= 820 || innerHeight <= 600);
 
   document.body.classList.remove('rowtools');
   tools.style.top = ''; tools.style.transform = '';
@@ -7422,6 +7515,10 @@ $('#copythanks').addEventListener('click', ()=>friendMsg(copyField('thankscode',
   '✅ 고마워 코드를 복사했어요! 초대해 준 친구에게 보내 주세요.'), true));
 $('#changenick').addEventListener('click', ()=>askNick(()=>renderFriends()));
 $('#ideago').addEventListener('click', sendIdea);
+$('#foldHud').addEventListener('click', ()=>toggleFold('hud'));
+$('#foldQ').addEventListener('click', ()=>toggleFold('q'));
+$('#foldTools').addEventListener('click', ()=>toggleFold('tools'));
+loadFold();
 $('#btnDodo').addEventListener('click', guard(openDodo));
 $('#dosend').addEventListener('click', doSend);
 $('#doclose').addEventListener('click', closeDodo);
