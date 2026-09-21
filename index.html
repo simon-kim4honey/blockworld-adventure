@@ -862,6 +862,26 @@
     flex-direction:column; gap:6px; align-items:flex-end; pointer-events:auto; max-width:40vw;
   }
   body.studio #stside{display:flex;}
+  /* 🎯 만들기 차례표 — 게임이 완성되기까지 뭘 해야 하는지 늘 보이게 */
+  #stquest{
+    background:rgba(255,253,247,.94); border-radius:16px; padding:10px 11px;
+    box-shadow:0 4px 0 rgba(0,0,0,.14); pointer-events:auto; font-size:13px;
+  }
+  #stqhead{font-weight:900; font-size:14px; display:flex; align-items:center; gap:6px;}
+  #stqhead span{margin-left:auto; font-size:12px; opacity:.6;}
+  #stqbar{height:7px; border-radius:99px; background:#e7e1f5; margin:7px 0 8px; overflow:hidden;}
+  #stqfill{height:100%; background:linear-gradient(90deg,#ffcf3f,#ff9f1a); width:0; transition:width .3s ease;}
+  .stq{
+    display:flex; gap:6px; align-items:flex-start; padding:4px 5px; border-radius:9px;
+    line-height:1.35; color:#6b6480;
+  }
+  .stq.done{opacity:.45; text-decoration:line-through;}
+  .stq.now{background:#fff3d6; color:#3b3350; font-weight:900; cursor:pointer;}
+  .stq.now:hover{background:#ffe9b8;}
+  .stq .qmark{flex:none; width:14px; text-align:center;}
+  .stq .qtip{display:none; font-weight:400; font-size:12px; opacity:.75; margin-top:2px;}
+  .stq.now .qtip{display:block;}
+  #stqdone{text-align:center; font-weight:900; color:#38b862; padding:3px 0 1px;}
   #stlist{display:flex; gap:5px; flex-wrap:wrap; justify-content:flex-end;}
   .stitem{
     border:none; font-family:inherit; font-weight:900; font-size:14px; cursor:pointer;
@@ -1290,6 +1310,7 @@
 </div>
 <div id="stside">
   <div id="stwarn"></div>
+  <div id="stquest"></div>
   <div id="stlist"></div>
 </div>
 <div id="ststrip"></div>
@@ -7473,7 +7494,7 @@ const Studio = (function(){
     if(!inStudio() || !game()) return;
     Games.put(game());
   }
-  function dirty(){ save(); list(); nudge('edit'); }
+  function dirty(){ save(); list(); quest(); nudge('edit'); }
 
   /* ── 위 띠: 단계 3개 + 해보기 + 나가기 ── */
   function head(){
@@ -7499,6 +7520,57 @@ const Studio = (function(){
     showHint((step+1) + ' ' + STEPS[step].icon + ' ' + STEPS[step].name + ' — ' + STEPS[step].tip, 2600);
     Sound.click();
   }
+
+  /* ── 🎯 만들기 차례표 — 지금 할 일 하나를 굵게 보여 준다 ── */
+  let questDone = {};                // 이미 칭찬한 칸
+  function quest(){
+    const g = game(); if(!g) return;
+    const box = $('#stquest'); if(!box) return;
+    const plan = stPlan(g);
+    const done = plan.filter(x => x.ok).length;
+    const now  = plan.find(x => !x.ok);
+    box.innerHTML = '';
+    const head = document.createElement('div');
+    head.id = 'stqhead';
+    head.innerHTML = '🎯 만들기 차례<span>' + done + ' / ' + plan.length + '</span>';
+    box.appendChild(head);
+    const bar = document.createElement('div');
+    bar.id = 'stqbar';
+    bar.innerHTML = '<div id="stqfill" style="width:' + Math.round(done/plan.length*100) + '%"></div>';
+    box.appendChild(bar);
+    plan.forEach(x=>{
+      const el = document.createElement('div');
+      const isNow = (now && x.id === now.id);
+      el.className = 'stq' + (x.ok ? ' done' : (isNow ? ' now' : ''));
+      el.innerHTML = '<div class="qmark">' + (x.ok ? '✓' : (isNow ? '▶' : '○')) + '</div>' +
+                     '<div>' + x.icon + ' ' + x.name +
+                     '<div class="qtip">' + x.tip + '</div></div>';
+      if(isNow) el.addEventListener('click', ()=>{ setStep(x.go); doAsk(x.chip); });
+      box.appendChild(el);
+    });
+    if(!now){
+      const d = document.createElement('div');
+      d.id = 'stqdone';
+      d.textContent = '🎉 다 만들었어요! 친구에게 보내 보세요';
+      box.appendChild(d);
+    }
+    /* 방금 끝낸 칸이 있으면 칭찬하고 다음 칸을 알려 준다 */
+    for(const x of plan){
+      if(!x.ok || questDone[x.id]) continue;
+      questDone[x.id] = 1;
+      if(!questStarted) continue;               // 들어오자마자 무더기로 칭찬하지 않게
+      Sound.buy();
+      showHint('✅ ' + x.icon + ' ' + x.name + ' 끝! ' +
+               (now ? ('다음은 ' + now.icon + ' ' + now.name) : '다 만들었어요 🎉'), 3000);
+      if(doVisible()){
+        doSay(now ? ('좋아, ' + x.name + ' 끝냈네! 👏\n다음은 ' + now.icon + ' ' + now.name + ' — ' + now.tip)
+                  : '🎉 다 만들었어! ▶ 해보기 로 한 번 더 해 보고, 마음에 들면 친구에게 보내 줘.',
+               now ? [{t:now.chip}] : [{t:'▶ 해볼래'}]);
+      }
+      break;
+    }
+  }
+  let questStarted = false;
 
   /* ── 물건 목록 — "골인을 어디 놨더라?" 를 잡아 준다 ── */
   function list(){
@@ -7646,6 +7718,7 @@ const Studio = (function(){
       setStep(1);
       return;
     }
+    g.tested = 1;                              // 🎯 차례표: "직접 해보기" 칸을 채운다
     save();
     FLYING = false;
     modeGo('play', g, {from:'studio', at: here ? {x:player.x, y:player.y, z:player.z} : null});
@@ -7657,7 +7730,8 @@ const Studio = (function(){
   function rename(){
     const g = game(); if(!g) return;
     const v = ($('#stnameinput').value || '').trim().slice(0, 20);
-    if(v){ g.title = v; save(); head(); showHint('✏️ 이름을 "' + v + '"(으)로 바꿨어요', 2000); }
+    if(v){ g.title = v; g.named = 1; save(); head(); quest();
+           showHint('✏️ 이름을 "' + v + '"(으)로 바꿨어요', 2000); }
     $('#strename').style.display = 'none';
   }
 
@@ -7674,12 +7748,12 @@ const Studio = (function(){
       el.className = 'goalcard' + (g.rules.goal === go.id ? ' on' : '');
       el.innerHTML = '<div class="cic">' + go.icon + '</div><div class="cnm">' + go.name +
                      '</div><div class="cds">' + go.tip + '</div>';
-      el.addEventListener('click', ()=>{ g.rules.goal = go.id; Sound.click(); save(); openRules(); head(); list(); });
+      el.addEventListener('click', ()=>{ g.rules.goal = go.id; Sound.click(); save(); openRules(); head(); list(); quest(); });
       box.appendChild(el);
     });
-    knob('#sttime', [0,30,60,120,180], g.rules.time, v=>{ g.rules.time = v; },
+    knob('#sttime', [0,30,60,120,180], g.rules.time, v=>{ g.rules.time = v; quest(); },
          v => v ? (v + '초') : '없음');
-    knob('#stlives', [0,1,3,5], g.rules.lives, v=>{ g.rules.lives = v; },
+    knob('#stlives', [0,1,3,5], g.rules.lives, v=>{ g.rules.lives = v; quest(); },
          v => v ? (v + '개') : '무한');
     knob('#stjump', [1,2,3], g.rules.jump, v=>{ g.rules.jump = v; },
          v => ['','보통','높이','아주 높이'][v]);
@@ -7701,40 +7775,39 @@ const Studio = (function(){
   /* ── 도도AI 가 먼저 말 걸기 ──
      아이는 AI 에게 "뭘 물어봐야 하는지" 를 모른다. 그래서 AI 가 먼저 말한다.
      같은 말을 두 번 하지 않고, 25초에 한 번을 넘지 않는다 (잔소리가 되면 끈다). */
+  /* ── 도도AI 가 먼저 말을 건다 — 언제나 "지금 할 일 한 칸" 을 짚어 준다 ──
+     예전에는 칸마다 딱 한 번만 말하고 끝이라, 아이가 흘려들으면 다시는 안 알려 줬다.
+     이제는 같은 칸이라도 조용해지면 다시 짚어 준다. */
   function nudge(why){
     if(!inStudio() || !doVisible()) return;
     const g = game(); if(!g) return;
     const now = performance.now()/1000;
-    let key = null, msg = null, btns = null;
     const k = kindDef(g.kind);
+
+    /* 판이 아예 비어 있으면 먼저 뼈대를 깔아 줄지 묻는다 */
     if(!Object.keys(g.edits).length && k.tmpl){
-      key = 'tmpl';
-      msg = k.icon + ' ' + k.name + stEul(k.name) + ' 고르셨네!\n기본 판을 하나 깔아 줄까? 그 위에서 고치면 훨씬 쉬워 😎';
-      btns = [{t:'응, 깔아 줘', go:()=>{ doPush('me','기본 판 깔아 줘'); runTemplate(g.kind); }},
-              {t:'아니, 내가 만들래', go:()=>doSay('좋아! 1 🧱 판 짓기 에서 블록을 쌓아 봐.\n막히면 나한테 말해 줘 🦤', doSuggest())}];
-    } else if(!magicCount(g, M_START)){
-      key = 'start';
-      msg = '🚩 시작점이 아직 없어! 여기서 시작하겠다는 자리에 놔 줘야 해.';
-      btns = [{t:'🚩 시작점 놔 줘'}];
-    } else if(g.rules.goal === 'reach' && !magicCount(g, M_GOAL)){
-      key = 'goal';
-      msg = '🏁 골인이 없으면 게임이 안 끝나! 맨 끝에 놓아 줄까?';
-      btns = [{t:'🏁 골인 놔 줘'}];
-    } else if(g.rules.goal === 'quiz' && !magicCount(g, M_YES)){
-      key = 'yes';
-      msg = '❓ 퀴즈에는 ⭕ 가 있어야 해. 표지판에 문제를 쓰고 그 앞에 ⭕ 와 ❌ 를 놔 봐!';
-    } else if(g.rules.goal === 'seek' && !magicCount(g, M_DODO)){
-      key = 'dodo';
-      msg = '🦤 숨은 도도를 아직 안 숨겼어! 나무 뒤나 집 안에 숨겨 봐.';
-    } else if(!nudged.ready){
-      key = 'ready';
-      msg = '이제 게임이 돌아가! ▶ 해보기 를 눌러서 직접 해 봐 🎮\n어려우면 "더 쉽게 해 줘" 라고 말하면 돼.';
-      btns = [{t:'▶ 해볼래'}];
+      if(nudged.tmpl || now - nudgeAt < 25) return;
+      nudged.tmpl = 1; nudgeAt = now;
+      doSay(k.icon + ' ' + k.name + stEul(k.name) + ' 고르셨네!\n' +
+            '놀 곳(뼈대)만 내가 깔아 줄게. 마법 블록은 네가 놓는 거야 😎',
+        [{t:'응, 깔아 줘', go:()=>{ doPush('me','기본 판 깔아 줘'); runTemplate(g.kind); }},
+         {t:'아니, 내가 만들래', go:()=>doSay('좋아! 1 🧱 판 짓기 에서 블록을 쌓아 봐.\n막히면 나한테 말해 줘 🦤', doStudioSuggest())}]);
+      return;
     }
-    if(!key || nudged[key]) return;
-    if(now - nudgeAt < 25) return;
-    nudged[key] = 1; nudgeAt = now;
-    doSay(msg, btns);
+
+    const nx = stNext(g);
+    if(!nx){
+      if(nudged.allDone || now - nudgeAt < 25) return;
+      nudged.allDone = 1; nudgeAt = now;
+      doSay('🎉 차례표를 다 채웠어! 이제 ▶ 해보기 로 한 번 더 해 보고,\n마음에 들면 📤 친구에게 보내 줘.', [{t:'▶ 해볼래'}]);
+      return;
+    }
+    /* 같은 칸은 40초에 한 번까지만 다시 말한다 */
+    const gap = (nudged['t_' + nx.id] || 0);
+    if(now - gap < 40 || now - nudgeAt < 20) return;
+    nudged['t_' + nx.id] = now; nudgeAt = now;
+    doSay(nx.icon + ' 다음은 ' + nx.name + '!\n' + nx.tip,
+          [{t:nx.chip}, {t:'다음에 뭐 해?'}]);
   }
 
   function enter(){
@@ -7747,11 +7820,15 @@ const Studio = (function(){
     hideStrip();
     FLYING = true;
     setAiDock(dockWide());
-    showHint('🛠️ 도도 스튜디오! 날아다니며 만들어요 · E 위 · Q 아래 · V 날기 끄기', 4200);
-    setTimeout(()=>nudge('enter'), 1200);
+    questDone = {}; questStarted = false;
+    quest();                                   // 지금까지 끝낸 칸은 칭찬 없이 표시만
+    stPlan(game()).forEach(x=>{ if(x.ok) questDone[x.id] = 1; });
+    setTimeout(()=>{ questStarted = true; }, 1500);
+    showHint('🛠️ 도도 스튜디오! 오른쪽 🎯 만들기 차례를 보면 뭘 할지 알 수 있어요', 4200);
+    setTimeout(()=>nudge('enter'), 1600);
   }
 
-  return {enter, setStep, step(){ return step; }, bar, save, dirty, list, head,
+  return {enter, setStep, step(){ return step; }, bar, save, dirty, list, head, quest,
           strip, hideStrip, checkReach, test, exit, rename, openRules, closeRules,
           goTo, nudge, lastPick(){ return pick; }};
 })();
@@ -9531,14 +9608,14 @@ function tmplObby(){
     if(up) y += 1;
     const z = Math.round(zf);
     for(let dx=-1;dx<=1;dx++) for(let dz=-1;dz<=1;dz++) stSet(x+dx, y-1, z+dz, PLANK);
-    if(i === 3 || i === 7) stSet(x, y, z, M_COIN);
+    if(i === 1 || i === 4 || i === 8) stSet(x, y, z, M_COIN);
     if(i === 5) stSet(x, y-1, z, TRAMP);
     if(i === 11) stSet(x, y, z, M_GOAL);
   }
   Undo.end('점프맵');
   g.rules = {goal:'reach', time:60, lives:3, jump:1, need:0};
   Studio.dirty(); Studio.head();
-  doSay('🧗 점프맵을 만들었어!\n발판 12개 · 🪙 코인 2개 · 🟩 통통 발판 1개 · 🏁 골인까지 놨어.\n▶ 해보기 를 눌러 보고, 어려우면 "더 쉽게 해 줘" 라고 말해 줘!');
+  stTmplDone('🧗 점프맵을 만들었어!\n발판 12개 · 🪙 코인 3개 · 🟩 통통 발판 1개 · 🏁 골인까지 놨어.\n▶ 해보기 를 눌러 보고, 어려우면 "더 쉽게 해 줘" 라고 말해 줘!');
 }
 function tmplTreasure(){
   const g = Mode.game;
@@ -9563,7 +9640,7 @@ function tmplTreasure(){
   Undo.end('보물찾기');
   g.rules = {goal:'collect', time:90, lives:0, jump:1, need:0};
   Studio.dirty(); Studio.head();
-  doSay('💎 보물찾기를 만들었어!\n🪙 코인 ' + put + '개를 섬 곳곳에 숨겼어. 다 모으면 이겨 🎉\n▶ 해보기 를 눌러 봐!');
+  stTmplDone('💎 보물찾기를 만들었어!\n🪙 코인 ' + put + '개를 섬 곳곳에 숨겼어. 다 모으면 이겨 🎉\n▶ 해보기 를 눌러 봐!');
 }
 function tmplMaze(){
   const g = Mode.game;
@@ -9612,7 +9689,7 @@ function tmplMaze(){
   Undo.end('미로');
   g.rules = {goal:'reach', time:120, lives:0, jump:1, need:0};
   Studio.dirty(); Studio.head();
-  doSay('🌀 미로를 만들었어!\n🔑 열쇠를 찾아서 🚪 문을 열고 🏁 골인까지 가면 이겨.\n▶ 해보기 를 눌러 봐!');
+  stTmplDone('🌀 미로를 만들었어!\n🔑 열쇠를 찾아서 🚪 문을 열고 🏁 골인까지 가면 이겨.\n▶ 해보기 를 눌러 봐!');
 }
 
 /* ══ 장르 템플릿 5종 더 — "블록 쌓기 말고 다른 게임" 의 실제 답 ══ */
@@ -9651,7 +9728,7 @@ function tmplDodge(){
   Undo.end('피하기');
   g.rules = {goal:'survive', time:45, lives:3, jump:1, need:0};
   Studio.dirty(); Studio.head();
-  doSay('⚡ 피하기를 만들었어!\n깜빡이는 함정 ' + n + '개 사이에서 45초를 버티면 이겨 😤\n함정은 1.5초마다 켜졌다 꺼져. 박자를 세면서 움직여 봐!');
+  stTmplDone('⚡ 피하기를 만들었어!\n깜빡이는 함정 ' + n + '개 사이에서 45초를 버티면 이겨 😤\n함정은 1.5초마다 켜졌다 꺼져. 박자를 세면서 움직여 봐!');
 }
 
 /* 🏃 달리기 시합 — 시간 안에 결승선까지 */
@@ -9678,7 +9755,7 @@ function tmplRace(){
   Undo.end('달리기 시합');
   g.rules = {goal:'reach', time:30, lives:0, jump:1, need:0};
   Studio.dirty(); Studio.head();
-  doSay('🏃 달리기 시합을 만들었어!\n30초 안에 🏁 결승선까지 달려야 해.\n🟩 통통 발판을 밟으면 더 빨리 갈 수 있어 💨\n너무 어려우면 "40초로 해 줘" 라고 말해 줘!');
+  stTmplDone('🏃 달리기 시합을 만들었어!\n30초 안에 🏁 결승선까지 달려야 해.\n🟩 통통 발판을 밟으면 더 빨리 갈 수 있어 💨\n너무 어려우면 "40초로 해 줘" 라고 말해 줘!');
 }
 
 /* ❓ 퀴즈 — 표지판을 읽고 ⭕ 또는 ❌ 를 밟는다 */
@@ -9714,7 +9791,7 @@ function tmplQuiz(){
   Undo.end('퀴즈');
   g.rules = {goal:'quiz', time:0, lives:3, jump:1, need:0};
   Studio.dirty(); Studio.head();
-  doSay('❓ 퀴즈를 만들었어! 문제 ' + Q.length + '개를 넣어 뒀어.\n표지판을 읽고 ⭕ 나 ❌ 를 밟으면 돼.\n문제를 바꾸려면 표지판을 놓고 글자를 고치면 되고,\n정답이 ❌ 쪽이면 그 발판을 놓고 "✅ 정답" 을 눌러 주면 돼 😎');
+  stTmplDone('❓ 퀴즈를 만들었어! 문제 ' + Q.length + '개를 넣어 뒀어.\n표지판을 읽고 ⭕ 나 ❌ 를 밟으면 돼.\n문제를 바꾸려면 표지판을 놓고 글자를 고치면 되고,\n정답이 ❌ 쪽이면 그 발판을 놓고 "✅ 정답" 을 눌러 주면 돼 😎');
 }
 
 /* 🦤 숨바꼭질 — 숨은 도도를 다 찾는다 */
@@ -9746,19 +9823,116 @@ function tmplSeek(){
   Undo.end('숨바꼭질');
   g.rules = {goal:'seek', time:0, lives:0, jump:1, need:0};
   Studio.dirty(); Studio.head();
-  doSay('🦤 숨바꼭질을 만들었어!\n작은 집 ' + hid + '채를 섬 곳곳에 세우고 그 안에 도도를 숨겼어.\n문은 앞쪽에 있어 — 들어가서 찾아 봐 🔍');
+  stTmplDone('🦤 숨바꼭질을 만들었어!\n작은 집 ' + hid + '채를 섬 곳곳에 세우고 그 안에 도도를 숨겼어.\n문은 앞쪽에 있어 — 들어가서 찾아 봐 🔍');
 }
 
 /* 장르 이름 → 템플릿 함수 */
+/* ═══════════════════════════════════════════════════
+   23.5 🎯 만들기 차례표 — "게임이 완성되기까지 뭘 해야 하나"
+   ───────────────────────────────────────────────────
+   사헌 님 지적: 도도AI 가 한 마디에 게임을 통째로 만들어 버려서
+   아이가 할 일이 남지 않는다. 그리고 다음에 뭘 해야 할지 모른다.
+
+   그래서 두 가지를 바꿨다.
+     ① 도도AI 는 **놀 곳(뼈대)까지만** 만든다. 마법 블록은 걷어 내고
+        아이가 직접 놓게 남긴다. "다 만들어 줘" 라고 하면 예전처럼 다 해 준다.
+     ② 차례표를 화면에 늘 띄워서, 지금 할 일 하나를 굵게 보여 준다.
+        한 칸을 끝낼 때마다 도도AI 가 칭찬하고 다음 칸을 알려 준다.
+
+   차례는 여섯 칸이고, 세 번째 칸만 장르마다 다르다.
+   ═══════════════════════════════════════════════════ */
+const ST_CORE = {
+  obby:     {icon:'🪙', name:'코인 놓기',      tip:'가는 길에 🪙 코인을 3개 넘게 놔 보자',
+             ok:g=>magicCount(g,M_COIN) >= 3, chip:'🪙 코인 놔 줘'},
+  treasure: {icon:'🪙', name:'보물 숨기기',    tip:'🪙 코인을 5개 넘게 숨겨 보자',
+             ok:g=>magicCount(g,M_COIN) + magicCount(g,M_STAR) >= 5, chip:'🪙 코인 놔 줘'},
+  maze:     {icon:'🔑', name:'열쇠와 문 놓기', tip:'🔑 열쇠 하나와 🚪 문 하나를 놔 보자',
+             ok:g=>magicCount(g,M_KEY) >= 1 && magicCount(g,M_DOOR) >= 1, chip:'🔑 열쇠 놔 줘'},
+  dodge:    {icon:'⚡', name:'함정 놓기',      tip:'⚡ 깜빡 함정을 3개 넘게 놔 보자',
+             ok:g=>magicCount(g,M_BLINK) + magicCount(g,M_TRAP) >= 3, chip:'⚡ 깜빡 함정 놔 줘'},
+  race:     {icon:'🪜', name:'달릴 길 만들기', tip:'시작점에서 결승선까지 길을 이어 보자',
+             ok:g=>Object.keys(g.edits).length >= 120, chip:'🪜 발판 12개 깔아 줘'},
+  quiz:     {icon:'⭕', name:'문제 만들기',    tip:'📋 표지판에 문제를 쓰고 ⭕ 와 ❌ 를 놔 보자',
+             ok:g=>magicCount(g,M_YES) >= 1 && magicCount(g,M_NO) >= 1, chip:'⭕ 정답 발판 놔 줘'},
+  seek:     {icon:'🦤', name:'도도 숨기기',    tip:'🦤 숨은 도도를 3마리 넘게 숨겨 보자',
+             ok:g=>magicCount(g,M_DODO) >= 3, chip:'🦤 숨은 도도 놔 줘'},
+  free:     {icon:'🧱', name:'마음껏 짓기',    tip:'하고 싶은 걸 지어 보자',
+             ok:g=>Object.keys(g.edits).length >= 60, chip:'🪜 발판 10개 깔아 줘'}
+};
+function stWinOk(g){
+  const n = Object.keys(g.edits).length;
+  switch(g.rules.goal){
+    case 'reach':   return magicCount(g, M_GOAL) >= 1;
+    case 'collect': return magicCount(g, M_COIN) + magicCount(g, M_STAR) >= 3;
+    case 'high':    return n >= 60;
+    case 'survive': return (g.rules.time|0) >= 10;
+    case 'quiz':    return magicCount(g, M_YES) >= 1;
+    case 'seek':    return magicCount(g, M_DODO) >= 1;
+  }
+  return true;
+}
+function stPlan(g){
+  if(!g) return [];
+  const k = kindDef(g.kind), core = ST_CORE[g.kind] || ST_CORE.free;
+  const n = Object.keys(g.edits).length;
+  const gl = goalDef(g.rules.goal);
+  return [
+    {id:'floor', icon:'🧱', name:'놀 곳 만들기', tip:'블록을 쌓아서 놀 곳을 만들어요',
+     ok:n >= 30, go:0, chip:k.icon + ' 기본 판 깔아 줘'},
+    {id:'start', icon:'🚩', name:'시작점 놓기', tip:'여기서 시작하겠다는 자리에 🚩 를 놔요',
+     ok:magicCount(g, M_START) >= 1, go:1, chip:'🚩 시작점 놔 줘'},
+    {id:'core',  icon:core.icon, name:core.name, tip:core.tip,
+     ok:core.ok(g), go:1, chip:core.chip},
+    {id:'win',   icon:gl.icon, name:'이기는 곳 만들기', tip:gl.tip,
+     ok:stWinOk(g), go:1, chip:'🏁 골인 놔 줘'},
+    {id:'test',  icon:'▶',  name:'직접 해보기', tip:'내가 먼저 해 봐야 너무 어려운지 알 수 있어요',
+     ok:!!g.tested, go:1, chip:'▶ 해볼래'},
+    {id:'name',  icon:'✏️', name:'이름 붙이기', tip:'친구에게 보낼 때 보이는 이름이에요',
+     ok:!!g.named, go:2, chip:'✏️ 이름 바꿀래'}
+  ];
+}
+function stNext(g){ return stPlan(g).find(x => !x.ok) || null; }
+function stDoneCount(g){ return stPlan(g).filter(x => x.ok).length; }
+
+/* 템플릿이 깔아 준 마법 블록을 걷어 낸다 — 아이가 직접 놓을 몫으로 남긴다 */
+function stStripMagic(){
+  const g = Mode.game; if(!g) return 0;
+  let n = 0;
+  Undo.begin();
+  for(const key in Object.assign({}, g.edits)){
+    if(!isMagic(g.edits[key]|0)) continue;
+    const p = key.split(','), x = +p[0], y = +p[1], z = +p[2];
+    stSet(x, y, z, baseVox ? baseVox[IDX(x,y,z)] : AIR);
+    n++;
+  }
+  Undo.end('뼈대만 남기기');
+  return n;
+}
+
+/* 템플릿이 끝나면 여기로 온다. "다 만들어 줘" 로 부른 게 아니면 뼈대만 남긴다. */
+let ST_FULL = false;
+function stTmplDone(msg){
+  if(ST_FULL){ doSay(msg); Studio.quest(); return; }
+  stStripMagic();
+  Studio.dirty(); Studio.head(); Studio.quest();
+  const g = Mode.game;
+  const nx = stNext(g);
+  doSay('🧱 놀 곳을 만들어 줬어! 여기서부터는 네가 채우는 거야 😎\n' +
+        (nx ? ('다음은 ' + nx.icon + ' ' + nx.name + ' — ' + nx.tip)
+            : '오른쪽 차례표를 보면 뭘 할지 알 수 있어!'),
+        nx ? [{t:nx.chip}, {t:'다음에 뭐 해?'}] : null);
+}
+
 const TMPL_FN = {tmplObby, tmplTreasure, tmplMaze, tmplDodge, tmplRace, tmplQuiz, tmplSeek};
-function runTemplate(kindId){
+function runTemplate(kindId, full){
   const k = kindDef(kindId);
   const fn = TMPL_FN[k.tmpl];
   if(!fn){
     doSay('🎨 자유롭게는 내가 깔아 줄 기본 판이 없어. 뭐부터 만들까?', doSuggest());
     return false;
   }
-  fn();
+  ST_FULL = !!full;              // stTmplDone 이 읽는다
+  try{ fn(); }finally{ ST_FULL = false; }
   return true;
 }
 
@@ -9795,28 +9969,58 @@ const ST_KIND = [
 
 function doStudioSuggest(){
   const g = Mode.game;
+  if(!g) return [];
   const out = [];
+  const nx = stNext(g);
+  if(nx) out.push({t:nx.chip});                     // 지금 할 일이 늘 맨 앞
   const k = kindDef(g.kind);
   if(!Object.keys(g.edits).length){
     if(k.tmpl) out.push({t:k.icon + ' ' + k.name + ' 기본 판 깔아 줘'});
-    KINDS.filter(x=>x.tmpl && x.id !== k.id).slice(0, 4)
+    KINDS.filter(x=>x.tmpl && x.id !== k.id).slice(0, 3)
          .forEach(x=>out.push({t:x.icon + ' ' + x.name + ' 만들어 줘'}));
     return out.slice(0, 5);
   }
+  out.push({t:'다음에 뭐 해?'});
   if(!magicCount(g, M_START)) out.push({t:'🚩 시작점 놔 줘'});
-  if(!magicCount(g, M_GOAL) && g.rules.goal === 'reach') out.push({t:'🏁 골인 놔 줘'});
-  if(g.rules.goal === 'quiz' && !magicCount(g, M_YES)) out.push({t:'⭕ 정답 발판 놔 줘'});
-  if(g.rules.goal === 'seek' && !magicCount(g, M_DODO)) out.push({t:'🦤 숨은 도도 놔 줘'});
-  if(g.rules.goal === 'survive') out.push({t:'⚡ 깜빡 함정 놔 줘'});
   out.push({t:'🪜 발판 10개 깔아 줘'});
   if(!magicCount(g, M_COIN)) out.push({t:'🪙 코인 놔 줘'});
-  out.push({t:'☠️ 함정 놔 줘'}, {t:'🎭 다른 장르로 바꿔 줘'}, {t:'▶ 해볼래'});
-  return out.slice(0, 6);
+  out.push({t:'☠️ 함정 놔 줘'}, {t:'▶ 해볼래'});
+  /* 같은 말이 두 번 뜨지 않게 */
+  const seen = {};
+  return out.filter(x=>{ if(seen[x.t]) return false; seen[x.t] = 1; return true; }).slice(0, 6);
 }
 
 /* 스튜디오에서 알아들으면 true, 아니면 false (그러면 원래 도도AI 가 받는다) */
 function doStudioBrain(s){
   const g = Mode.game;
+
+  /* 🎯 "다음에 뭐 해?" — 차례표의 지금 할 일을 짚어 준다 */
+  if(doHas(s,'다음','뭐 해','뭐해','뭐하','할 일','모르겠','어떻게 해','도와')){
+    const nx = stNext(g);
+    const done = stDoneCount(g), all = stPlan(g).length;
+    if(!nx){
+      doSay('🎉 차례표를 다 채웠어! ▶ 해보기 로 한 번 더 해 보고 친구에게 보내 줘.', [{t:'▶ 해볼래'}]);
+      return true;
+    }
+    doSay('지금 ' + done + ' / ' + all + ' 칸까지 왔어 😎\n' +
+          '다음은 ' + nx.icon + ' ' + nx.name + ' — ' + nx.tip,
+          [{t:nx.chip}, {t:'내가 할래'}]);
+    Studio.setStep(nx.go);
+    return true;
+  }
+  /* "다 만들어 줘" — 예전처럼 통째로 만들어 준다 (평소엔 뼈대까지만) */
+  if(doHas(s,'다 만들어','전부 만들어','통째로','완성해 줘','알아서 다')){
+    closeDodo();
+    runTemplate(g.kind, true);
+    buildHotbar();
+    return true;
+  }
+  if(doHas(s,'내가 할래','내가 만들래','직접 할래')){
+    const nx2 = stNext(g);
+    doSay('좋아, 네가 해 봐! 💪' + (nx2 ? ('\n' + nx2.icon + ' ' + nx2.name + ' — ' + nx2.tip) : ''));
+    if(nx2) Studio.setStep(nx2.go);
+    return true;
+  }
 
   /* 장르 + 템플릿 — 말 한 마디로 장르가 통째로 바뀐다 */
   const kd = ST_KIND.find(e=>doHas(s, ...e.k));
@@ -9825,7 +10029,7 @@ function doStudioBrain(s){
     g.kind = kd.id;
     const k = kindDef(kd.id);
     g.rules.goal = k.goal;
-    Studio.dirty(); Studio.head();
+    Studio.dirty(); Studio.head(); Studio.quest();
     runTemplate(kd.id);
     buildHotbar();
     return true;
@@ -10727,6 +10931,7 @@ window.BW = {player, setBlock, getBlock, scene, camera, renderer, voxels, W,H,D,
   Mode, Studio, Play, Games, newGame, gameCode, readGameCode, modeGo, magicCount,
   openStudioHome, closeStudioHome, tmplObby, tmplTreasure, tmplMaze, stLayPlats,
   KINDS, kindDef, GOALS, runTemplate, tmplDodge, tmplRace, tmplQuiz, tmplSeek,
+  stPlan, stNext, stDoneCount, ST_CORE, stStripMagic,
   rbxlxOf, exportRbxlx, setAiDock, dockWide, doAskDock(t){ doAsk(t); },
   M_VANISH, M_BLINK, M_DODO, M_YES, M_NO, MAGIC_LIST,
   M_START, M_GOAL, M_COIN, M_STAR, M_TRAP, M_KEY, M_DOOR, M_SIGN, M_CHECK,
