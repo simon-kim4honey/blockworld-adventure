@@ -602,6 +602,48 @@
   .decor .dnm{font-size:13px; margin-top:4px;}
   #islandmsg{font-size:14px; margin-top:9px; min-height:19px; line-height:1.45;}
 
+  /* 꾸미기 칸 글씨 (섬 꾸미기 · 섬 테마 · 모자) */
+  .decor .cic{font-size:29px; line-height:1;}
+  .decor .cnm{font-size:13px; margin-top:4px;}
+  .decor.on{background:linear-gradient(#ffe6a8,#ffcf66); box-shadow:0 4px 0 #d9a63a;}
+
+  /* 섬 테마 · 모자 칸 */
+  #themegrid, #hatgrid{display:grid; grid-template-columns:repeat(auto-fill,minmax(96px,1fr)); gap:9px;}
+
+  /* 색 고르기 동그라미 */
+  .swrow{display:flex; flex-wrap:wrap; gap:9px;}
+  .sw{
+    width:38px; height:38px; border-radius:50%; cursor:pointer;
+    box-shadow:0 3px 0 rgba(0,0,0,.18), inset 0 0 0 3px rgba(255,255,255,.55);
+    transition:transform .12s ease;
+  }
+  .sw:hover{transform:translateY(-3px);}
+  .sw.on{box-shadow:0 0 0 4px #7c6df0, 0 4px 0 rgba(0,0,0,.2);}
+
+  /* 도도 미리보기 */
+  #lookface{
+    width:130px; height:150px; border-radius:18px; display:block; margin:0 auto;
+    box-shadow:0 4px 0 rgba(0,0,0,.14);
+  }
+
+  /* 오르골 칸 */
+  #tunegrid{display:grid; grid-template-columns:44px repeat(8,1fr); gap:5px; align-items:center;}
+  .tlab{font-size:12px; opacity:.6; text-align:right; padding-right:3px;}
+  .tcell{
+    height:34px; border-radius:9px; background:#efeaf8; cursor:pointer;
+    box-shadow:0 3px 0 rgba(0,0,0,.10);
+  }
+  .tcell.on{background:linear-gradient(#ffd166,#f0a93d); box-shadow:0 3px 0 #c98a24;}
+
+  /* 보물찾기 띠 */
+  #huntbar{
+    position:fixed; left:50%; top:56px; transform:translateX(-50%); z-index:30;
+    display:none; pointer-events:none; white-space:nowrap;
+    background:linear-gradient(#ffe9f5,#ffc2e4); border-radius:999px; padding:8px 18px;
+    box-shadow:0 5px 0 #d982b4, 0 12px 24px rgba(0,0,0,.26); font-size:15px; max-width:94vw;
+  }
+  body.hunting #huntbar{display:block;}
+
   /* 친구 섬 구경 중 띠 */
   #visitbar{
     position:fixed; left:50%; top:10px; transform:translateX(-50%); z-index:30;
@@ -896,6 +938,37 @@
   <div class="mlabel">✨ 한 번에 꾸미기 — 내가 보는 쪽에 만들어 줘요</div>
   <div id="decorgrid"></div>
 
+  <div class="mlabel">🌈 섬 테마 — 색깔을 통째로 바꿔요</div>
+  <div id="themegrid"></div>
+
+  <div class="mlabel">🎨 도도 꾸미기 · 🎵 오르골 · 📷 사진 벽화</div>
+  <div class="mrow">
+    <button class="mbtn" id="lookbtn" style="margin-top:0">🎨 도도</button>
+    <button class="mbtn" id="tunebtn" style="margin-top:0">🎵 오르골</button>
+    <button class="mbtn" id="muralbtn" style="margin-top:0">📷 사진 벽화</button>
+  </div>
+  <div class="msub" style="margin:8px 0 0">📷 사진은 16칸짜리 블록 그림으로 바꿔서 벽에 붙여요.
+    <b>원본 사진은 저장하지도, 친구에게 보내지도 않아요.</b></div>
+  <input type="file" id="muralfile" accept="image/*" style="display:none">
+
+  <div class="mlabel">🎯 방문자 미션 — 보물 세 개 숨기기</div>
+  <div id="huntstate" class="msub" style="margin:0 0 8px"></div>
+  <div class="mrow">
+    <button class="mbtn green" id="huntbury" style="margin-top:0">🎁 여기에 숨기기</button>
+    <button class="mbtn gray" id="huntreset" style="margin-top:0">♻️ 다시</button>
+  </div>
+  <div class="fieldrow">
+    <input class="mfield" id="hunthint" maxlength="20" placeholder="힌트 예) 분수 근처를 봐!" spellcheck="false">
+    <button id="hunthintsave" class="mbtn" style="margin:0; width:auto; padding:11px 18px">힌트</button>
+  </div>
+
+  <div class="mlabel">🏆 친구가 보낸 기록 코드</div>
+  <div class="fieldrow">
+    <input class="mfield" id="huntcode" placeholder="BWH1: 로 시작하는 코드" spellcheck="false">
+    <button id="huntcodego" class="mbtn green" style="margin:0; width:auto; padding:11px 18px">넣기</button>
+  </div>
+  <div id="huntboard" class="msub" style="margin:8px 0 0"></div>
+
   <div class="mlabel">📣 자랑하기</div>
   <div class="mrow">
     <button class="mbtn green" id="bragbtn" style="margin-top:0">🪪 자랑 카드 만들기</button>
@@ -910,6 +983,45 @@
   </div>
   <div id="islandmsg"></div>
   <button class="mbtn gray" id="islandclose">닫기</button>
+</div></div>
+
+<!-- 🎵 도도 오르골 -->
+<div class="modal" id="tune"><div class="mbox">
+  <div class="mhead"><h2>🎵 도도 오르골</h2></div>
+  <div class="msub">칸을 눌러 여덟 칸짜리 내 노래를 만들어요.
+    섬에 오르골을 세우면 가까이 온 친구에게도 들려요.</div>
+  <div id="tunegrid"></div>
+  <div class="mrow" style="margin-top:14px">
+    <button class="mbtn" id="tuneplay" style="margin-top:0">▶️ 들어보기</button>
+    <button class="mbtn" id="tunerand" style="margin-top:0">🎲 아무거나</button>
+  </div>
+  <div id="tunemsg" class="msub" style="margin:10px 0 0"></div>
+  <button class="mbtn green" id="tunebuild">🎵 여기에 오르골 세우기</button>
+  <button class="mbtn gray" id="tuneclose">닫기</button>
+</div></div>
+
+<!-- 🎨 도도 꾸미기 -->
+<div class="modal" id="look"><div class="mbox">
+  <div class="mhead"><h2>🎨 도도 꾸미기</h2></div>
+  <div class="msub">내 도도의 깃털색·부리색·모자를 마음대로 고를 수 있어요.</div>
+  <canvas id="lookface" width="130" height="150"></canvas>
+  <div class="mlabel">🪶 깃털 색</div>
+  <div class="swrow" id="swbody"></div>
+  <div class="mlabel">🦶 부리·발 색</div>
+  <div class="swrow" id="swlegs"></div>
+  <div class="mlabel">🎩 모자</div>
+  <div id="hatgrid"></div>
+  <button class="mbtn gray" id="lookreset">↩️ 옷 그대로 (꾸미기 지우기)</button>
+  <button class="mbtn green" id="lookclose">다 됐어요!</button>
+</div></div>
+
+<!-- 🏆 보물찾기 성공 -->
+<div class="modal" id="huntdone"><div class="mbox" style="text-align:center">
+  <div class="mhead" style="justify-content:center"><h2>🏆 보물 3개 다 찾았어요!</h2></div>
+  <div class="msub">걸린 시간 <b id="hdtime"></b> — 아래 기록 코드를 섬 주인에게 보내 주세요!</div>
+  <textarea class="mcode" id="hdcode" spellcheck="false" readonly></textarea>
+  <button class="mbtn green" id="hdcopy">📋 기록 코드 복사</button>
+  <button class="mbtn gray" id="hdclose">닫기</button>
 </div></div>
 
 <!-- 🎥 녹화 결과 -->
@@ -930,6 +1042,7 @@
 <div id="recdot">🔴 녹화 중</div>
 
 <!-- 구경 중 알림 띠 -->
+<div id="huntbar"><span id="hunttext"></span></div>
 <div id="visitbar">
   <span id="visittext"></span>
   <button id="visithome">🏠 내 섬으로 돌아가기</button>
@@ -2065,7 +2178,8 @@ const Sound = (function(){
     },
     star(){ [784,988,1319,1568].forEach((f,i)=> setTimeout(()=>blip(f,.16,'triangle',.4), i*60)); },
     fanfare(){ [523,523,523,659,784,1047,1319].forEach((f,i)=> setTimeout(()=>blip(f,.3,'triangle',.5), i*140)); },
-    levelUp(){ [523,659,784,1047].forEach((f,i)=> setTimeout(()=>blip(f,.22,'triangle',.45), i*90)); }
+    levelUp(){ [523,659,784,1047].forEach((f,i)=> setTimeout(()=>blip(f,.22,'triangle',.45), i*90)); },
+    note(f, d, v){ blip(f, d || .26, 'triangle', v || .34); }
   };
 })();
 
@@ -2090,6 +2204,10 @@ const state = {
   friends:{}, invitedBy:'', thanksCode:'', giftsFromInvite:0,
   ideas:[], shortsDone:{},
   island:'', decor:0, clips:0, aiDone:0,   // 섬 이름 · 꾸민 횟수 · 찍은 영상 · AI 에게 말한 횟수
+  theme:'basic',           // 섬 테마 (색깔)
+  look:{},                 // 도도 꾸미기 — 깃털색 · 부리색 · 모자
+  tune:null, tuneAt:null,  // 오르골 노래 8칸 + 세워 둔 자리
+  hunt:null, huntLog:[],   // 보물찾기 — 숨긴 자리 3곳 + 친구들 기록
   edits:{},                // "x,y,z" -> 블록 번호 (0 = 부순 자리)
   collected:{},            // 이미 먹은 코인/별
   obbyDone:{}              // 완주한 코스
@@ -2117,6 +2235,8 @@ function saveNow(){
       invitedBy:state.invitedBy, thanksCode:state.thanksCode,
       giftsFromInvite:state.giftsFromInvite, ideas:state.ideas, shortsDone:state.shortsDone,
       island:state.island, decor:state.decor, clips:state.clips, aiDone:state.aiDone,
+      theme:state.theme, look:state.look, tune:state.tune, tuneAt:state.tuneAt,
+      hunt:state.hunt, huntLog:state.huntLog,
       pos:{x:player.x, y:player.y, z:player.z}, slot:selectedSlot
     }));
   }catch(e){ /* 저장 공간이 없어도 게임은 계속 */ }
@@ -2157,6 +2277,12 @@ function loadSave(){
   state.shortsDone = d.shortsDone || {};
   state.island = d.island || ''; state.decor = d.decor|0;
   state.clips = d.clips|0; state.aiDone = d.aiDone|0;
+  state.theme = d.theme || 'basic';
+  state.look = d.look || {};
+  state.tune = Array.isArray(d.tune) ? d.tune : null;
+  state.tuneAt = Array.isArray(d.tuneAt) ? d.tuneAt : null;
+  state.hunt = d.hunt || null;
+  state.huntLog = Array.isArray(d.huntLog) ? d.huntLog : [];
   state.quality = d.quality || 'auto';
   if(typeof d.slot === 'number') selectedSlot = clamp(d.slot,0,7);
   if(d.pos && isFinite(d.pos.x)){ SPAWN_LOAD = d.pos; }
@@ -3175,6 +3301,7 @@ function applySkin(id){
   ud.pLegR.children[0].material.color.setHex(sk.legs);
   ud.pArmL.children[0].material.color.setHex(sk.skin);
   ud.pArmR.children[0].material.color.setHex(sk.skin);
+  ud.tail.material.color.setHex(sk.body);        // 꼬리도 같이 (예전엔 민트색 그대로였다)
   for(let i=0;i<6;i++) if(i!==4) ud.head.material[i].color.setHex(sk.skin);
   // 모자 (친구 3명을 모으면 황금 왕관이 스킨 모자를 이긴다)
   if(ud.hatMesh){ avatar.remove(ud.hatMesh); ud.hatMesh = null; }
@@ -3194,6 +3321,7 @@ function applySkin(id){
     ud.hatMesh = h;
   }
   state.skin = id;
+  if(typeof applyLook === 'function') applyLook();   // 내가 고른 색·모자가 옷보다 세다
 }
 
 function renderShop(){
@@ -3698,7 +3826,8 @@ function buildHelp(){
     ['C','제작대 — 부순 재료로 특별 블록 만들기'],
     ['Tab 또는 🎒','도도 가방 — 내 섬 · 청사진 · 15초도전 · 친구 · 아이디어'],
     ['T  또는 깃털 단추','도도 장로에게 말하기 — "무지개 미끄럼틀 만들어 줘"'],
-    ['I','🏝️ 내 섬 — 꾸미기 · 섬 이름 · 자랑 카드 · 섬 코드'],
+    ['I','🏝️ 내 섬 — 꾸미기 · 섬 테마 · 오르골 · 사진 벽화 · 보물 숨기기'],
+    ['K','🎨 도도 꾸미기 — 깃털색 · 부리색 · 모자'],
     ['Shift + R  또는 🎥','녹화 시작 / 멈추기 (쇼츠 모양 세로 영상)'],
     ['B','청사진 건축학교'],
     ['V','내 배지'],
@@ -4018,6 +4147,12 @@ const DayNight = (function(){
 
   function apply(){
     const v = sample(t);
+    /* 섬 테마가 있으면 그 색을 하늘·안개에 섞는다 */
+    const th = (typeof curTheme === 'function') ? curTheme() : null;
+    if(th && th.mix){
+      cA.setHex(th.sky); cSky.lerp(cA, th.mix);
+      cA.setHex(th.fog); cFog.lerp(cA, th.mix);
+    }
     scene.background.copy(cSky);
     scene.fog.color.copy(cFog);
     sun.intensity = v.sun;
@@ -4927,7 +5062,7 @@ const SHORT_TAGS = '#도도블록 #신비의블록섬 #15초도전';
 const Shorts = (function(){
   let cur = null;        // {def, base, endAt, startY, best}
   let count = 0;         // 시작 전 카운트다운
-  let rec = null, chunks = [], blobUrl = null;
+  let rec = null, chunks = [], blobUrl = null, shortAudio = null;
 
   function canRecord(){
     return !!(window.MediaRecorder && canvas.captureStream);
@@ -4936,7 +5071,10 @@ const Shorts = (function(){
     if(!canRecord()) return;
     try{
       const stream = canvas.captureStream(30);
-      const types = ['video/webm;codecs=vp9','video/webm;codecs=vp8','video/webm'];
+      Sound.resume();
+      shortAudio = Sound.tap();
+      if(shortAudio) shortAudio.stream.getAudioTracks().forEach(tr=>stream.addTrack(tr));
+      const types = ['video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm'];
       const mime = types.find(t=>MediaRecorder.isTypeSupported(t));
       rec = new MediaRecorder(stream, mime ? {mimeType:mime} : undefined);
       chunks = [];
@@ -4952,6 +5090,7 @@ const Shorts = (function(){
   function stopRec(){
     if(rec && rec.state !== 'inactive'){ try{ rec.stop(); }catch(e){} }
     rec = null;
+    if(shortAudio){ shortAudio.stop(); shortAudio = null; }
   }
   function saveClip(){
     if(!blobUrl) return;
@@ -5085,6 +5224,7 @@ let bagOpen = false;
 const BAG_ITEMS = [
   {icon:'🪶', name:'도도 장로',     desc:'말하면 만들어 줘요 (T)',  go:()=>openDodo()},
   {icon:'🏝️', name:'내 섬',          desc:'꾸미고 이름 짓고 자랑하기', go:()=>openIsland()},
+  {icon:'🎨', name:'도도 꾸미기',    desc:'깃털색·부리색·모자 (K)',  go:()=>openLook()},
   {icon:'🎥', name:'녹화',
    get desc(){ return Rec.isOn() ? '지금 녹화 중 — 눌러서 멈추기' : '쇼츠 모양(세로)으로 찍기'; },
    go:()=>Rec.toggle()},
@@ -5159,6 +5299,8 @@ function openIsland(){
   $('#islandname').value = state.island || '';
   $('#islandname').placeholder = islandName();
   renderIslandDecor();
+  renderThemes();
+  renderHunt();
   $('#islandcode').value = islandCode();
   islandMsg('');
   Sound.shop();
@@ -5526,7 +5668,9 @@ function isVisiting(){
 function visitIsland(code){
   const got = decodeIsland(code);
   if(!got || !got.edits) return false;
-  const info = {edits:got.edits, name:got.name || '친구의 섬', nick:got.nick || ''};
+  const info = {edits:got.edits, name:got.name || '친구의 섬', nick:got.nick || '',
+                theme:got.theme || 'basic', tune:got.tune || null,
+                tuneAt:got.tuneAt || null, hunt:got.hunt || null};
   try{ sessionStorage.setItem(VISIT_KEY, JSON.stringify(info)); }catch(e){ return false; }
   saveNow();
   location.reload();
@@ -5540,11 +5684,20 @@ function goHome(){
 /* 섬 코드 = 건축물 + 섬 이름 + 주인 별명 */
 function islandCode(){
   const body = encodeWorld();
-  return packCode('BWS1', {n:state.nick, i:islandName(), w:body});
+  const o = {n:state.nick, i:islandName(), w:body};
+  if(state.theme && state.theme !== 'basic') o.t = state.theme;
+  if(!tuneEmpty(state.tune) && state.tuneAt) o.m = {t:state.tune, p:state.tuneAt};
+  if(state.hunt && state.hunt.spots && state.hunt.spots.length === 3)
+    o.q = {s:state.hunt.spots, h:(state.hunt.hint || '').slice(0,20)};
+  return packCode('BWS1', o);
 }
 function decodeIsland(code){
   const m = unpackCode('BWS1', code);
-  if(m && m.w) return {edits:decodeWorld(m.w), name:m.i, nick:m.n};
+  if(m && m.w) return {edits:decodeWorld(m.w), name:m.i, nick:m.n,
+                       theme:m.t || 'basic',
+                       tune:(m.m && Array.isArray(m.m.t)) ? m.m.t : null,
+                       tuneAt:(m.m && Array.isArray(m.m.p)) ? m.m.p : null,
+                       hunt:(m.q && Array.isArray(m.q.s) && m.q.s.length === 3) ? m.q : null};
   const e = decodeWorld(code);                       // 예전 월드 코드도 받아 준다
   return e ? {edits:e, name:'친구의 섬', nick:''} : null;
 }
@@ -5757,6 +5910,8 @@ function stepGame(dt){
   DayNight.update(dt);
   Lamps.update();
   Shorts.update();
+  Orgel.update(dt);
+  Hunt.update(dt);
   tutCheckMove();
 }
 
@@ -5789,6 +5944,616 @@ function frame(t){
   runSnap();                 // 사진·자랑 카드는 그린 직후에만 담을 수 있다
   Rec.frame();               // 녹화 중이면 세로(쇼츠) 화면도 같이 그린다
   Rec.update();
+}
+
+
+/* ═══════════════════════════════════════════════════
+   10.36 🏝️ 섬 꾸미기 2탄
+   ───────────────────────────────────────────────────
+   섬 테마 · 보물찾기 미션 · 도도 오르골 · 사진 블록 벽화 · 도도 꾸미기.
+   전부 "내 섬"에 붙는다 — 로비나 하우징 화면을 따로 만들지 않는다.
+   꾸민 것은 모두 섬 코드(BWS1)에 같이 담겨 친구에게 그대로 간다.
+   ═══════════════════════════════════════════════════ */
+
+/* ---- 🌈 1. 섬 테마 : 하늘·안개·땅 색을 통째로 갈아 끼운다 ---- */
+const THEMES = [
+  {id:'basic',  icon:'🏝️', name:'기본 섬',  mix:0},
+  {id:'sunset', icon:'🌇', name:'노을섬',   sky:0xff7a3d, fog:0xffbe92, mix:0.72, amt:0.78,
+   mats:{[GRASS]:0xffd2a8, [LEAF]:0xffbb8e, [SAND]:0xffdcae, [STONE]:0xf0c4ac, [DIRT]:0xdca078}},
+  {id:'snow',   icon:'❄️', name:'눈섬',     sky:0xcfe6f7, fog:0xeaf6ff, mix:0.66, amt:0.92,
+   mats:{[GRASS]:0xeaf8ff, [LEAF]:0xdcefff, [SAND]:0xf4fbff, [STONE]:0xe6eef4, [DIRT]:0xd6e2ec}},
+  {id:'sea',    icon:'🌌', name:'밤바다섬', sky:0x1b2b57, fog:0x27436f, mix:0.72, amt:0.88,
+   mats:{[GRASS]:0x74a0d8, [LEAF]:0x628bc8, [SAND]:0xb6c9e6, [STONE]:0x93a7c8, [DIRT]:0x7f90b4}},
+  {id:'candy',  icon:'🍬', name:'사탕섬',   sky:0xffb8e4, fog:0xffd8f0, mix:0.62, amt:0.86,
+   mats:{[GRASS]:0xffa6dd, [LEAF]:0xff8ccb, [SAND]:0xfff0c6, [STONE]:0xffd2ec, [DIRT]:0xeaa4d4}},
+];
+const TINT_TYPES = [GRASS, LEAF, SAND, STONE, DIRT];
+const TEX_THEMED = {};     // '테마:블록:면' -> 테마 색으로 다시 칠한 블록 그림
+const MAT_BASEMAP = {};    // 테마를 끄면 되돌릴 원래 블록 그림
+
+function themeById(id){ return THEMES.find(t=>t.id===id) || THEMES[0]; }
+/* 친구 섬을 구경할 때는 그 섬의 테마로 보인다 */
+function curTheme(){ return themeById((VISIT ? VISIT.theme : state.theme) || 'basic'); }
+
+/* 블록 그림의 명암(밝은 점·어두운 점)은 그대로 두고 색만 테마 쪽으로 옮긴다.
+   재료 색(material.color)을 곱하는 방법으로는 초록 잔디가 하얀 눈이 되지 않는다. */
+function recolorTexture(base, hex, amt){
+  const src = base.image;
+  const c = document.createElement('canvas');
+  c.width = src.width; c.height = src.height;
+  const g = c.getContext('2d');
+  g.drawImage(src, 0, 0);
+  const d = g.getImageData(0, 0, c.width, c.height), p = d.data;
+  const tr = (hex>>16)&255, tg = (hex>>8)&255, tb = hex&255;
+  for(let i=0;i<p.length;i+=4){
+    const l = (p[i]*0.3 + p[i+1]*0.59 + p[i+2]*0.11) / 255;   // 원래 밝기
+    const k = 0.62 + 0.62*l;                                   // 밝은 점은 더 밝게
+    p[i]   = lerp(p[i],   tr*k, amt);
+    p[i+1] = lerp(p[i+1], tg*k, amt);
+    p[i+2] = lerp(p[i+2], tb*k, amt);
+  }
+  g.putImageData(d, 0, 0);
+  const t = new THREE.CanvasTexture(c);
+  t.magFilter = THREE.NearestFilter;
+  t.minFilter = THREE.NearestMipmapLinearFilter;
+  t.anisotropy = 1;
+  return t;
+}
+function themedMap(themeId, type, face, base, hex, amt){
+  const key = themeId + ':' + type + ':' + face;
+  if(!TEX_THEMED[key]) TEX_THEMED[key] = recolorTexture(base, hex, amt);
+  return TEX_THEMED[key];
+}
+function skinMat(type, themeId, hex, amt){
+  const m = MATS[type];
+  if(!m) return;
+  const arr = Array.isArray(m) ? m : [m];
+  arr.forEach((mm, i)=>{
+    if(!mm) return;
+    const key = type + ':' + i;
+    if(!MAT_BASEMAP[key]) MAT_BASEMAP[key] = mm.map;
+    const base = MAT_BASEMAP[key];
+    if(!base || !base.image) return;
+    mm.map = (hex === null) ? base : themedMap(themeId, type, i, base, hex, amt);
+    mm.needsUpdate = true;
+  });
+}
+function applyTheme(id, quiet){
+  const th = themeById(id);
+  if(!VISIT) state.theme = th.id;
+  for(const t of TINT_TYPES)
+    skinMat(t, th.id, (th.mats && th.mats[t] !== undefined) ? th.mats[t] : null, th.amt || 0.8);
+  DayNight.apply();
+  if(!quiet){
+    saveSoon();
+    if(islandOpen){ renderThemes(); $('#islandcode').value = islandCode(); }
+    showHint(th.icon + ' ' + th.name + '으로 바꿨어요!', 2200);
+    Sound.quest();
+  }
+}
+function renderThemes(){
+  const box = $('#themegrid');
+  if(!box) return;
+  box.innerHTML = '';
+  const now = state.theme || 'basic';
+  THEMES.forEach(th=>{
+    const el = document.createElement('div');
+    el.className = 'decor' + (th.id === now ? ' on' : '');
+    el.innerHTML = '<div class="cic">' + th.icon + '</div><div class="cnm">' + th.name + '</div>';
+    el.addEventListener('click', ()=>{ applyTheme(th.id); });
+    box.appendChild(el);
+  });
+}
+
+/* ---- 🎯 2. 방문자 미션 : 주인이 보물 3개를 묻고, 친구가 찾는다 ---- */
+function huntSpots(){ return (state.hunt && state.hunt.spots) || []; }
+function huntReady(){ return huntSpots().length === 3; }
+
+function huntBury(){
+  if(VISIT) return;
+  const list = huntSpots().slice();
+  if(list.length >= 3){
+    islandMsg('🎁 보물 3개가 이미 다 숨겨져 있어요. 다시 숨기려면 ♻️ 다시 를 눌러 주세요.');
+    Sound.deny();
+    return;
+  }
+  list.push([Math.floor(player.x), Math.floor(player.y), Math.floor(player.z)]);
+  state.hunt = {spots:list, hint:(state.hunt && state.hunt.hint) || ''};
+  saveSoon();
+  Particles.burst(player.x, player.y + .6, player.z, 0xffd93d, 22, 5);
+  Sound.coin();
+  closeIsland();
+  showHint(list.length < 3
+    ? '🎁 ' + list.length + '번째 보물을 여기 묻었어요! 다른 곳으로 가서 🏝️ 를 다시 열어 주세요'
+    : '🎁 보물 3개 완성! 이제 섬 코드를 친구에게 보내면 보물찾기가 시작돼요', 3600);
+}
+function huntReset(){
+  state.hunt = {spots:[], hint:(state.hunt && state.hunt.hint) || ''};
+  saveSoon();
+  renderHunt();
+  $('#islandcode').value = islandCode();
+  islandMsg('♻️ 보물을 모두 치웠어요. 처음부터 다시 숨겨 주세요.');
+  Sound.click();
+}
+function huntSaveHint(){
+  const v = ($('#hunthint').value || '').trim().slice(0, 20);
+  state.hunt = {spots:huntSpots(), hint:v};
+  saveSoon();
+  renderHunt();
+  $('#islandcode').value = islandCode();
+  islandMsg(v ? '✅ 힌트를 적었어요: 「' + v + '」' : '힌트를 지웠어요.');
+  Sound.click();
+}
+function renderHunt(){
+  const el = $('#huntstate');
+  if(el){
+    const n = huntSpots().length;
+    el.textContent = n === 0
+      ? '아직 숨긴 보물이 없어요. 숨기고 싶은 자리에 서서 🎁 를 눌러요.'
+      : (n < 3 ? '🎁 ' + n + '개 숨겼어요. ' + (3-n) + '개 더!' : '🎁 3개 다 숨겼어요! 친구가 찾으러 올 거예요');
+  }
+  const hi = $('#hunthint');
+  if(hi) hi.value = (state.hunt && state.hunt.hint) || '';
+  const bd = $('#huntboard');
+  if(bd){
+    const log = state.huntLog || [];
+    bd.textContent = log.length
+      ? log.map((r,i)=>['🥇','🥈','🥉'][i] + ' ' + r.n + ' ' + r.s + '초').join('   ')
+      : '아직 기록이 없어요.';
+  }
+}
+/* 친구가 보내온 기록 코드 (BWH1) 를 받는다 */
+function enterHuntCode(){
+  const raw = ($('#huntcode').value || '').trim();
+  const m = unpackCode('BWH1', raw);
+  if(!m || !m.s){
+    islandMsg('😢 기록 코드를 못 읽었어요. BWH1: 로 시작하는 코드 전체를 붙여넣어 주세요.');
+    Sound.deny();
+    return;
+  }
+  const rec = {n:String(m.n || '친구').slice(0,12), s:Math.max(1, Math.round(+m.s || 0))};
+  const log = (state.huntLog || []).concat([rec]).sort((a,b)=>a.s - b.s).slice(0, 3);
+  state.huntLog = log;
+  $('#huntcode').value = '';
+  saveSoon();
+  renderHunt();
+  islandMsg('🏆 ' + rec.n + ' 님이 ' + rec.s + '초 만에 다 찾았대요!');
+  Sound.fanfare();
+}
+
+const Hunt = (function(){
+  let spots = [], found = [], t0 = 0, live = false, over = false, blink = 0;
+  function count(){ return found.filter(Boolean).length; }
+  function draw(near){
+    const el = $('#hunttext');
+    if(!el) return;
+    let hot = '';
+    if(near < 4)       hot = '🔥 앗 뜨거워!';
+    else if(near < 9)  hot = '🙂 따뜻해';
+    else if(near < 18) hot = '😐 미지근';
+    else               hot = '🧊 차가워';
+    el.textContent = '🎯 보물 ' + count() + '/3   ' + hot + '   ⏱ ' + secs() + '초';
+  }
+  function secs(){ return live ? Math.round((performance.now() - t0)/1000) : 0; }
+  function start(){
+    const h = VISIT && VISIT.hunt;
+    if(!h || !Array.isArray(h.s) || h.s.length !== 3) return;
+    spots = h.s.map(a=>({x:+a[0], y:+a[1], z:+a[2]}));
+    found = [false, false, false];
+    t0 = performance.now(); live = true; over = false;
+    document.body.classList.add('hunting');
+    showBanner('🎯 보물찾기!', (h.h ? '힌트: ' + escapeHtml(String(h.h).slice(0,20)) : '이 섬에 보물 3개가 숨어 있어요'));
+    draw(99);
+  }
+  function finish(){
+    live = false; over = true;
+    const took = Math.max(1, Math.round((performance.now() - t0)/1000));
+    document.body.classList.remove('hunting');
+    Sound.fanfare();
+    Particles.burst(player.x, player.y + 1, player.z, 0xffd93d, 40, 8);
+    const code = packCode('BWH1', {n:state.nick || '친구', i:(VISIT && VISIT.name) || '', s:took});
+    $('#hdtime').textContent = took + '초';
+    $('#hdcode').value = code;
+    $('#huntdone').style.display = 'flex';
+    if(document.pointerLockElement) document.exitPointerLock();
+  }
+  function update(dt){
+    if(!live) return;
+    let near = 999;
+    for(let i=0;i<spots.length;i++){
+      const s = spots[i];
+      const d = Math.hypot(player.x - (s.x + .5), player.y - s.y, player.z - (s.z + .5));
+      if(found[i]) continue;
+      if(d < 1.9){
+        found[i] = true;
+        Sound.star();
+        Particles.burst(s.x + .5, s.y + .8, s.z + .5, 0xffd93d, 26, 6);
+        popText('🎁 보물 ' + count() + '/3 발견!', '#ffd93d');
+        if(count() >= 3){ finish(); return; }
+      }
+      if(d < near) near = d;
+    }
+    blink += dt;
+    if(blink > 0.25){ blink = 0; draw(near); }
+  }
+  return {start, update, running(){ return live; }, over(){ return over; }};
+})();
+
+/* ---- 🎵 3. 도도 오르골 : 8칸짜리 내 노래를 섬에 세운다 ---- */
+const NOTE_HZ   = [0, 262, 294, 330, 349, 392, 440, 494, 523];
+const NOTE_NAME = ['', '도', '레', '미', '파', '솔', '라', '시', '높은도'];
+const TUNE_LEN = 8;
+let tuneDraft = null;                       // 창을 열었을 때 고치는 중인 노래
+
+function tuneOf(){ return VISIT ? (VISIT.tune || null) : (state.tune || null); }
+function tuneAtOf(){ return VISIT ? (VISIT.tuneAt || null) : (state.tuneAt || null); }
+function tuneEmpty(t){ return !t || !t.some(v=>v > 0); }
+
+function openTune(){
+  if(VISIT){
+    showHint('🚢 지금은 친구 섬을 구경하는 중이에요', 2400);
+    Sound.deny();
+    return;
+  }
+  tuneDraft = (state.tune && state.tune.length === TUNE_LEN) ? state.tune.slice()
+            : [1, 3, 5, 3, 6, 5, 3, 1];     // 처음엔 예쁜 기본 노래가 들어 있다
+  $('#tune').style.display = 'flex';
+  if(document.pointerLockElement) document.exitPointerLock();
+  renderTune();
+  $('#tunemsg').textContent = tuneAtOf() ? '' : '만들고 나면 내가 보고 있는 쪽에 오르골이 세워져요.';
+  Sound.shop();
+}
+function closeTune(){ $('#tune').style.display = 'none'; }
+function renderTune(){
+  const box = $('#tunegrid');
+  if(!box) return;
+  box.innerHTML = '';
+  for(let n=8;n>=1;n--){
+    const lab = document.createElement('div');
+    lab.className = 'tlab';
+    lab.textContent = NOTE_NAME[n];
+    box.appendChild(lab);
+    for(let s=0;s<TUNE_LEN;s++){
+      const el = document.createElement('div');
+      el.className = 'tcell' + (tuneDraft[s] === n ? ' on' : '');
+      el.addEventListener('click', ()=>{
+        tuneDraft[s] = (tuneDraft[s] === n) ? 0 : n;
+        if(tuneDraft[s]) Sound.note(NOTE_HZ[n], .18);
+        renderTune();
+      });
+      box.appendChild(el);
+    }
+  }
+}
+function tunePlay(list, gap){
+  const t = list || tuneDraft;
+  if(!t) return;
+  t.forEach((n, i)=>{
+    if(!n) return;
+    setTimeout(()=>Sound.note(NOTE_HZ[n], .26), i * (gap || 260));
+  });
+}
+function tuneRandom(){
+  const ok = [1,3,5,6,8];                   // 아무렇게나 골라도 듣기 좋은 음만 쓴다
+  tuneDraft = [];
+  for(let i=0;i<TUNE_LEN;i++)
+    tuneDraft.push(Math.random() < 0.18 ? 0 : ok[(Math.random()*ok.length)|0]);
+  renderTune();
+  tunePlay();
+}
+/* 오르골을 실제 블록으로 세운다 — 되감기(⏪)로 통째로 지울 수 있다 */
+function tuneBuild(){
+  if(VISIT) return;
+  if(tuneEmpty(tuneDraft)){
+    $('#tunemsg').textContent = '😢 아직 음이 하나도 없어요. 칸을 눌러 노래를 만들어 주세요.';
+    Sound.deny();
+    return;
+  }
+  const sp = decorSpot(3);
+  if(!sp){
+    $('#tunemsg').textContent = '🏝️ 여기는 좁아요. 넓은 곳을 보고 다시 눌러 주세요.';
+    Sound.deny();
+    return;
+  }
+  const {x0, gy, z0} = sp;
+  Undo.begin();
+  for(let x=0;x<3;x++) for(let z=0;z<3;z++) put(x0+x, gy, z0+z, PLANK);
+  put(x0+1, gy+1, z0+1, GOLD);
+  put(x0+1, gy+2, z0+1, RAINBOW);
+  Undo.end('🎵 도도 오르골');
+  state.tune = tuneDraft.slice();
+  state.tuneAt = [x0+1, gy+1, z0+1];
+  saveSoon();
+  Lamps.scanAll();
+  closeTune();
+  closeIsland();
+  Particles.burst(x0+1.5, gy+2.5, z0+1.5, 0xff7ddb, 30, 6);
+  tunePlay(state.tune);
+  showHint('🎵 오르골 완성! 가까이 가면 내 노래가 흘러요', 3200);
+  addExp(15);
+  checkBadges();
+}
+
+const Orgel = (function(){
+  let step = 0, wait = 0, playing = false;
+  function update(dt){
+    const t = tuneOf(), at = tuneAtOf();
+    if(tuneEmpty(t) || !at){ playing = false; return; }
+    const d = Math.hypot(player.x - (at[0] + .5), player.z - (at[2] + .5));
+    if(d > 8){ playing = false; step = 0; wait = 0; return; }
+    if(!playing){ playing = true; step = 0; wait = 0; }
+    wait -= dt;
+    if(wait > 0) return;
+    if(step >= TUNE_LEN){ step = 0; wait = 1.1; return; }   // 한 바퀴 돌면 잠깐 쉰다
+    const n = t[step] | 0;
+    if(n > 0){
+      Sound.note(NOTE_HZ[n], .26, .22);
+      if(Math.random() < .5)
+        Particles.burst(at[0] + .5, at[1] + 2.2, at[2] + .5, 0xff7ddb, 4, 2);
+    }
+    step++;
+    wait = 0.3;
+  }
+  return {update};
+})();
+
+/* ---- 📷 4. 사진 → 블록 벽화 ----
+   사진 원본은 저장하지도, 섬 코드에 담지도 않는다.
+   16칸짜리 블록 그림으로 줄여서 그 "블록"만 섬에 남는다.       */
+const MURAL_PALETTE = [
+  {t:PATH_S,  c:0xd5dae0}, {t:SAND,   c:0xf0dfa8}, {t:GOLD,  c:0xffc82e},
+  {t:PATH_B,  c:0xc87137}, {t:PLANK,  c:0xd7a96b}, {t:WOOD,  c:0x9c6b3f},
+  {t:DIRT,    c:0x96653f}, {t:STONE,  c:0x9aa0a8}, {t:GRASS, c:0x63c64d},
+  {t:LEAF,    c:0x4fbf52}, {t:ICE,    c:0xa8e4ff}, {t:RAINBOW, c:0xff7ddb},
+];
+const MURAL_N = 16;
+function nearestBlock(r, g, b){
+  let best = MURAL_PALETTE[0], bd = 1e9;
+  for(const p of MURAL_PALETTE){
+    const pr = (p.c>>16)&255, pg = (p.c>>8)&255, pb = p.c&255;
+    const d = (r-pr)*(r-pr)*0.9 + (g-pg)*(g-pg)*1.2 + (b-pb)*(b-pb)*0.7;
+    if(d < bd){ bd = d; best = p; }
+  }
+  return best.t;
+}
+function pickMuralPhoto(){
+  if(VISIT){
+    showHint('🚢 지금은 친구 섬을 구경하는 중이에요', 2400);
+    Sound.deny();
+    return;
+  }
+  const inp = $('#muralfile');
+  if(inp){ inp.value = ''; inp.click(); }
+}
+function muralFromFile(file){
+  if(!file) return;
+  const url = URL.createObjectURL(file);
+  const img = new Image();
+  img.onload = ()=>{
+    let cells = null;
+    try{
+      const c = document.createElement('canvas');
+      c.width = MURAL_N; c.height = MURAL_N;
+      const g = c.getContext('2d');
+      // 가운데를 정사각형으로 잘라서 16x16 으로 확 줄인다 (여기서 얼굴은 알아볼 수 없게 된다)
+      const side = Math.min(img.width, img.height);
+      g.drawImage(img, (img.width - side)/2, (img.height - side)/2, side, side, 0, 0, MURAL_N, MURAL_N);
+      cells = g.getImageData(0, 0, MURAL_N, MURAL_N).data;
+    }catch(e){ cells = null; }
+    URL.revokeObjectURL(url);                 // 원본은 여기서 바로 버린다
+    if(!cells){
+      showHint('😢 이 사진은 읽지 못했어요. 다른 사진으로 해 볼까요?', 3000);
+      Sound.deny();
+      return;
+    }
+    buildMural(cells);
+  };
+  img.onerror = ()=>{
+    URL.revokeObjectURL(url);
+    showHint('😢 이 사진은 읽지 못했어요. 다른 사진으로 해 볼까요?', 3000);
+    Sound.deny();
+  };
+  img.src = url;
+}
+function buildMural(px){
+  /* 밝기를 쭉 펴 준다 — 블록에는 새까만 색이 없어서 그냥 쓰면 밋밋하다 */
+  let lo = 255, hi = 0;
+  for(let i=0;i<MURAL_N*MURAL_N;i++){
+    const l = (px[i*4]*0.3 + px[i*4+1]*0.59 + px[i*4+2]*0.11);
+    if(l < lo) lo = l;
+    if(l > hi) hi = l;
+  }
+  const span = Math.max(24, hi - lo);
+
+  /* 내가 보는 쪽 벽 한 장 — 가로는 오른쪽, 세로는 위로 */
+  const fx = -Math.sin(player.yaw), fz = -Math.cos(player.yaw);
+  let nx, nz, rx, rz;
+  if(Math.abs(fx) >= Math.abs(fz)){ nx = fx >= 0 ? 1 : -1; nz = 0; rx = 0; rz = nx; }
+  else                            { nz = fz >= 0 ? 1 : -1; nx = 0; rz = 0; rx = -nz; }
+  const bx = Math.round(player.x) + nx*5, bz = Math.round(player.z) + nz*5;
+  const gy = surfaceHeight(bx + .5, bz + .5, player.y + 5);
+  const half = MURAL_N >> 1;
+
+  for(let c=0;c<MURAL_N;c++){
+    const x = bx + rx*(c - half), z = bz + rz*(c - half);
+    if(x < 1 || z < 1 || x >= W-1 || z >= D-1 || gy + MURAL_N >= H){
+      showHint('🖼 여기는 좁아요. 넓은 곳을 보고 다시 눌러 주세요', 3000);
+      Sound.deny();
+      return;
+    }
+  }
+
+  Undo.begin();
+  for(let r=0;r<MURAL_N;r++){
+    for(let c=0;c<MURAL_N;c++){
+      const i = (r*MURAL_N + c)*4;
+      const st = v => clamp(Math.round((v - lo) * 255 / span), 0, 255);
+      const t = nearestBlock(st(px[i]), st(px[i+1]), st(px[i+2]));
+      const x = bx + rx*(c - half), z = bz + rz*(c - half);
+      put(x, gy + (MURAL_N - 1 - r), z, t);
+    }
+  }
+  Undo.end('🖼 사진 벽화');
+  Lamps.scanAll();
+  closeIsland();
+  Particles.burst(bx + .5, gy + 8, bz + .5, 0xbeebff, 30, 7);
+  Sound.quest();
+  showHint('🖼 블록 벽화 완성! 사진은 저장하지 않았어요. 마음에 안 들면 ⏪', 3600);
+  state.decor = (state.decor|0) + 1;
+  addExp(20);
+  checkQuests();
+  checkBadges();
+  saveSoon();
+}
+
+/* ---- 🎨 5. 도도 꾸미기 : 깃털색 · 부리색 · 모자 ---- */
+const LOOK_BODY = [0x8fd9cf, 0xff9ec4, 0xffd166, 0x9be564, 0x7cc4ff,
+                   0xc39bff, 0xff8a5c, 0xfdf6ef, 0x7d8aa8, 0xf6a4d6];
+const LOOK_LEGS = [0xf3a03d, 0xff6f61, 0xffd93d, 0x8a5a2b, 0x5bbf5f,
+                   0x7c6df0, 0xd5dae0, 0x2f2530];
+const LOOK_HATS = [
+  {id:'auto',   icon:'✨', name:'옷 따라'},
+  {id:'none',   icon:'🪶', name:'깃털 그대로'},
+  {id:'cap',    icon:'🧢', name:'야구모자',    color:0xe63946, tall:false},
+  {id:'silk',   icon:'🎩', name:'멋쟁이 모자', color:0x3b3350, tall:true},
+  {id:'crown',  icon:'👑', name:'왕관',        color:0xffd93d, tall:true},
+  {id:'party',  icon:'🎉', name:'고깔',        color:0xff7ddb, tall:true},
+  {id:'flower', icon:'🌸', name:'꽃',          color:0xff9ec4, tall:false},
+  {id:'leaf',   icon:'🍀', name:'새싹',        color:0x5bbf5f, tall:false},
+];
+function lookOf(){
+  const l = state.look || {};
+  return {body:(l.body == null ? null : l.body|0),
+          legs:(l.legs == null ? null : l.legs|0),
+          hat:l.hat || 'auto'};
+}
+/* 색을 조금 어둡게 (부리 끝처럼 같은 색의 진한 부분) */
+function darker(hex, k){
+  const r = Math.round(((hex>>16)&255) * k), g = Math.round(((hex>>8)&255) * k), b = Math.round((hex&255) * k);
+  return (r<<16) | (g<<8) | b;
+}
+function makeHat(def){
+  const h = new THREE.Group();
+  const brim = boxMesh(.70,.13,.70, def.color); brim.position.y = 1.60;
+  h.add(brim);
+  if(def.tall){
+    const top = boxMesh(.46,.40,.46, def.color); top.position.y = 1.86; h.add(top);
+    const ball = boxMesh(.18,.18,.18, 0xffffff); ball.position.y = 2.13; h.add(ball);
+  } else {
+    const top = boxMesh(.58,.20,.58, def.color); top.position.y = 1.78; h.add(top);
+  }
+  return h;
+}
+/* applySkin 이 옷을 입힌 "다음" 에 불린다 — 내가 고른 색·모자가 옷보다 세다 */
+function applyLook(){
+  const ud = avatar.userData, lk = lookOf();
+  if(lk.body != null){
+    ud.body.material.color.setHex(lk.body);
+    ud.tail.material.color.setHex(lk.body);
+    ud.hair.children.forEach(f=>f.material.color.setHex(lk.body));
+  }
+  if(lk.legs != null){
+    ud.pLegL.children.forEach(m=>m.material.color.setHex(lk.legs));
+    ud.pLegR.children.forEach(m=>m.material.color.setHex(lk.legs));
+    ud.beak.material.color.setHex(lk.legs);
+    ud.beakTip.material.color.setHex(darker(lk.legs, 0.72));
+  }
+  if(lk.hat !== 'auto'){
+    if(ud.hatMesh){ avatar.remove(ud.hatMesh); ud.hatMesh = null; }
+    const def = LOOK_HATS.find(h=>h.id === lk.hat);
+    if(def && def.color){
+      const h = makeHat(def);
+      avatar.add(h);
+      ud.hatMesh = h;
+      ud.hair.visible = false;
+    } else {
+      ud.hair.visible = true;                 // '깃털 그대로'
+    }
+  }
+}
+let lookOpen = false;
+function openLook(){
+  lookOpen = true;
+  $('#look').style.display = 'flex';
+  if(document.pointerLockElement) document.exitPointerLock();
+  renderLook();
+  Sound.shop();
+}
+function closeLook(){ lookOpen = false; $('#look').style.display = 'none'; }
+function setLook(k, v){
+  state.look = Object.assign({}, state.look || {}, {[k]:v});
+  applySkin(state.skin);
+  renderLook();
+  saveSoon();
+  Sound.click();
+}
+function resetLook(){
+  state.look = {};
+  applySkin(state.skin);
+  renderLook();
+  saveSoon();
+  Sound.click();
+}
+function swatchRow(id, colors, key, now){
+  const box = $(id);
+  if(!box) return;
+  box.innerHTML = '';
+  colors.forEach(c=>{
+    const el = document.createElement('div');
+    el.className = 'sw' + (now === c ? ' on' : '');
+    el.style.background = '#' + c.toString(16).padStart(6,'0');
+    el.addEventListener('click', ()=>setLook(key, c));
+    box.appendChild(el);
+  });
+}
+function renderLook(){
+  const lk = lookOf();
+  swatchRow('#swbody', LOOK_BODY, 'body', lk.body);
+  swatchRow('#swlegs', LOOK_LEGS, 'legs', lk.legs);
+  const box = $('#hatgrid');
+  if(box){
+    box.innerHTML = '';
+    LOOK_HATS.forEach(h=>{
+      const el = document.createElement('div');
+      el.className = 'decor' + (lk.hat === h.id ? ' on' : '');
+      el.innerHTML = '<div class="cic">' + h.icon + '</div><div class="cnm">' + h.name + '</div>';
+      el.addEventListener('click', ()=>setLook('hat', h.id));
+      box.appendChild(el);
+    });
+  }
+  paintLookFace();
+}
+/* 창 안에서 보는 작은 미리보기 — 지금 고른 색이 바로 보인다 */
+function paintLookFace(){
+  const c = $('#lookface');
+  if(!c) return;
+  const g = c.getContext('2d');
+  const lk = lookOf(), sk = skinById(state.skin);
+  const body = lk.body != null ? lk.body : sk.body;
+  const legs = lk.legs != null ? lk.legs : sk.legs;
+  const hx = n => '#' + n.toString(16).padStart(6,'0');
+  g.clearRect(0,0,c.width,c.height);
+  g.fillStyle = '#eef6ff'; g.fillRect(0,0,c.width,c.height);
+  g.fillStyle = hx(legs);  g.fillRect(44,116,12,20); g.fillRect(74,116,12,20);
+  g.fillRect(38,134,26,9); g.fillRect(68,134,26,9);
+  g.fillStyle = hx(body);  g.fillRect(28,56,74,64);
+  g.fillStyle = '#fdf6ef'; g.fillRect(48,74,34,40);
+  g.fillStyle = hx(sk.skin); g.fillRect(40,24,50,38);
+  g.fillStyle = '#2f2530'; g.fillRect(52,36,8,10); g.fillRect(70,36,8,10);
+  g.fillStyle = '#ffffff'; g.fillRect(54,38,3,3); g.fillRect(72,38,3,3);
+  g.fillStyle = lk.legs != null ? hx(lk.legs) : '#ffc043';
+  g.fillRect(56,50,18,12);
+  const hat = LOOK_HATS.find(h=>h.id === lk.hat);
+  if(lk.hat === 'auto' && sk.hat){ drawHat(g, sk.hat.color, sk.hat.tall); }
+  else if(hat && hat.color){ drawHat(g, hat.color, hat.tall); }
+  else { g.fillStyle = hx(body); g.fillRect(56,10,6,14); g.fillRect(64,6,6,18); g.fillRect(72,10,6,14); }
+}
+function drawHat(g, color, tall){
+  const hx = n => '#' + n.toString(16).padStart(6,'0');
+  g.fillStyle = hx(color);
+  g.fillRect(34,16,62,10);
+  if(tall){ g.fillRect(50,0,30,18); g.fillStyle = '#ffffff'; g.fillRect(59,-2,12,8); }
+  else { g.fillRect(44,6,42,12); }
 }
 
 /* ═══════════════════════════════════════════════════
@@ -5825,6 +6590,7 @@ setupTouch();
 buildHelp();
 DayNight.build();
 DayNight.apply();
+applyTheme((VISIT ? VISIT.theme : state.theme) || 'basic', true);
 Lamps.scanAll();
 Blueprint.restore();
 $('#btnTime').textContent = {auto:'🌗', day:'☀️', night:'🌙'}[state.timeMode || 'auto'];
@@ -5836,7 +6602,7 @@ function guard(fn){
     if($('#daily').style.display === 'flex' || $('#nick').style.display === 'flex') return;
     if(Shorts.running()) Shorts.stop();
     closeCraft(); closePlans(); closeFriends(); closeIdeas(); closeShorts(); closeBag();
-    closeIsland(); closeDodo();
+    closeIsland(); closeDodo(); closeLook(); closeTune();
     $('#badges').style.display='none'; $('#share').style.display='none';
     $('#shortresult').style.display='none'; $('#bragbox').style.display='none';
     $('#recbox').style.display='none';
@@ -5851,6 +6617,34 @@ $('#islandclose').addEventListener('click', closeIsland);
 $('#island').addEventListener('click', e=>{ if(e.target.id === 'island') closeIsland(); });
 $('#islandsave').addEventListener('click', saveIslandName);
 $('#islandname').addEventListener('keydown', e=>{ if(e.code==='Enter') saveIslandName(); });
+/* 🏝️ 내 섬 2탄 — 테마 · 도도 꾸미기 · 오르골 · 사진 벽화 · 보물찾기 */
+$('#lookbtn').addEventListener('click', ()=>{ closeIsland(); openLook(); });
+$('#tunebtn').addEventListener('click', ()=>{ closeIsland(); openTune(); });
+$('#muralbtn').addEventListener('click', pickMuralPhoto);
+$('#muralfile').addEventListener('change', e=>{
+  const f = e.target.files && e.target.files[0];
+  e.target.value = '';
+  if(f) muralFromFile(f);
+});
+$('#huntbury').addEventListener('click', huntBury);
+$('#huntreset').addEventListener('click', huntReset);
+$('#hunthintsave').addEventListener('click', huntSaveHint);
+$('#hunthint').addEventListener('keydown', e=>{ if(e.code==='Enter') huntSaveHint(); });
+$('#huntcodego').addEventListener('click', enterHuntCode);
+$('#huntcode').addEventListener('keydown', e=>{ if(e.code==='Enter') enterHuntCode(); });
+
+$('#tuneplay').addEventListener('click', ()=>tunePlay());
+$('#tunerand').addEventListener('click', tuneRandom);
+$('#tunebuild').addEventListener('click', tuneBuild);
+$('#tuneclose').addEventListener('click', closeTune);
+$('#tune').addEventListener('click', e=>{ if(e.target.id === 'tune') closeTune(); });
+
+$('#lookreset').addEventListener('click', resetLook);
+$('#lookclose').addEventListener('click', closeLook);
+$('#look').addEventListener('click', e=>{ if(e.target.id === 'look') closeLook(); });
+
+$('#hdcopy').addEventListener('click', ()=>copyField('hdcode', '📋 기록 코드를 복사했어요! 섬 주인에게 보내 주세요'));
+$('#hdclose').addEventListener('click', ()=>{ $('#huntdone').style.display = 'none'; });
 $('#bragbtn').addEventListener('click', showBrag);
 $('#photobtn').addEventListener('click', ()=>{ closeIsland(); savePhoto(); });
 $('#islandcopy').addEventListener('click', ()=>islandMsg(copyField('islandcode',
@@ -5902,12 +6696,13 @@ addEventListener('keydown', e=>{
   const typing = document.activeElement && document.activeElement.tagName === 'TEXTAREA';
   if(typing) return;
   const anyModal = craftOpen || plansOpen || bagOpen || friendsOpen || ideaOpen || shortsOpen ||
-                   islandOpen || dodoOpen ||
+                   islandOpen || dodoOpen || lookOpen ||
+                   $('#tune').style.display==='flex' || $('#huntdone').style.display==='flex' ||
                    $('#bragbox').style.display==='flex' || $('#recbox').style.display==='flex' ||
                    $('#badges').style.display==='flex' || $('#share').style.display==='flex';
   if(e.code==='Escape' && anyModal){
     closeCraft(); closePlans(); closeBag(); closeFriends(); closeIdeas(); closeShorts();
-    closeIsland(); closeDodo();
+    closeIsland(); closeDodo(); closeLook(); closeTune();
     $('#badges').style.display='none'; $('#share').style.display='none';
     $('#bragbox').style.display='none'; $('#recbox').style.display='none';
     return;
@@ -5920,6 +6715,7 @@ addEventListener('keydown', e=>{
   if(e.code==='KeyV') openBadges();
   if(e.code==='KeyG') openFriends();
   if(e.code==='KeyI') openIsland();
+  if(e.code==='KeyK') lookOpen ? closeLook() : openLook();
   if(e.code==='KeyT') openDodo();
   if(e.code==='KeyR' && e.shiftKey) Rec.toggle();
 });
@@ -5951,6 +6747,8 @@ $('#startbtn').addEventListener('click', ()=>{
                               : '화살표로 둘러보고, Q로 부수고, E로 블록을 놓아요!', 4500); }
     showMouseHintBriefly();
     setTimeout(()=>{ checkDaily(); checkBadges(); }, 600);
+    /* 보물찾기는 진짜로 놀기 시작한 다음에 시계를 켠다 */
+    if(VISIT && VISIT.hunt) setTimeout(()=>Hunt.start(), 1800);
   }
   if(!state.nick) askNick(afterNick);
   else afterNick();
@@ -6072,6 +6870,13 @@ const DO_SKIN = [
   {k:['탐험가','탐험'],            id:'explor'},
   {k:['민트','기본'],              id:'basic'},
 ];
+const DO_THEME = [
+  {k:['노을섬','노을','저녁섬'],            id:'sunset'},
+  {k:['눈섬','눈 섬','겨울섬','하얀섬'],    id:'snow'},
+  {k:['밤바다섬','밤바다','바다섬'],        id:'sea'},
+  {k:['사탕섬','사탕','핑크섬','분홍섬'],   id:'candy'},
+  {k:['기본 섬','기본섬','원래 섬','원래섬'], id:'basic'},
+];
 const DO_BAD = [
   '앗 깃털 다 떨어질 뻔했잖아! 😳 다른 거 시켜 줘~',
   '으악! 도도새는 마음이 약하다고… 🥺 다시 말해 줄래?',
@@ -6105,6 +6910,11 @@ function doGoTo(p, name){
     Sound.bounce();
     showHint('🪶 ' + name + ' 도착!', 1800);
   }, 420);
+}
+function doThemeSet(id){
+  const th = themeById(id);
+  doSay(th.icon + ' ' + th.name + doRo(th.name) + ' 바꿀게! 눈 감았다 떠 봐 ✨');
+  setTimeout(()=>{ closeDodo(); applyTheme(id); }, 380);
 }
 function doBuildDecor(id){
   const d = DECOR.find(x=>x.id===id);
@@ -6222,6 +7032,25 @@ function doBrain(raw){
     const plus = doHas(m[2], '더하기', '플러스', '+');
     return doSay((plus ? a + b : a - b) + '! 나 이래 봬도 블록 세는 건 잘해 🧱');
   }
+
+  /* 섬 테마 — '밤바다섬' 이 밤낮으로 새지 않게 밤낮보다 먼저 본다 */
+  const th = DO_THEME.find(e=>doHas(s, ...e.k));
+  if(th) return doThemeSet(th.id);
+
+  /* 오르골 · 사진 벽화 · 보물 숨기기 */
+  if(doHas(s,'오르골','노래','음악','멜로디'))
+    return doSay('좋아! 여덟 칸짜리 네 노래를 만들어 보자 🎵',
+      [{t:'🎵 오르골 열기', go:()=>{ closeDodo(); openTune(); }}]);
+  if(doHas(s,'벽화','액자','그림 붙','사진으로','사진 올','사진 붙'))
+    return doSay('사진을 블록 그림으로 바꿔서 벽에 붙여 줄게 📷\n사진 원본은 저장 안 하니까 걱정 마!',
+      [{t:'📷 사진 고르기', go:()=>{ closeDodo(); pickMuralPhoto(); }}]);
+  if(doHas(s,'보물','숨겨','숨기','미션','보물찾기'))
+    return doSay('지금 서 있는 자리에 보물을 묻어 줄까? 세 개를 묻으면 친구가 찾으러 와 🎁',
+      [{t:'🎁 여기 묻기', go:()=>{ closeDodo(); huntBury(); }},
+       {t:'🏝️ 내 섬 열기', go:()=>{ closeDodo(); openIsland(); }}]);
+  if(doHas(s,'도도 꾸미','깃털 색','깃털색','모자','옷 색','색 바꿔'))
+    return doSay('네 도도를 꾸며 줄게! 🎨',
+      [{t:'🎨 도도 꾸미기', go:()=>{ closeDodo(); openLook(); }}]);
 
   /* ── 문 1 ── */
 
@@ -6363,7 +7192,12 @@ window.BW = {player, setBlock, getBlock, scene, camera, renderer, voxels, W,H,D,
   BAG_ITEMS, openBag, closeBag,
   DECOR, buildDecor, openIsland, closeIsland, islandName, islandCode, decodeIsland,
   visitIsland, goHome, makeBragCard, savePhoto, paintSign, saveIslandName,
-  isVisiting(){ return !!VISIT; },
+  isVisiting(){ return !!VISIT; }, visitInfo(){ return VISIT; },
+  THEMES, themeById, applyTheme, renderThemes,
+  LOOK_HATS, LOOK_BODY, LOOK_LEGS, openLook, closeLook, setLook, resetLook, applyLook,
+  openTune, closeTune, tuneRandom, tuneBuild, tunePlay, Orgel,
+  Hunt, huntBury, huntReset, huntSaveHint, enterHuntCode, renderHunt,
+  pickMuralPhoto, muralFromFile, MURAL_PALETTE, avatar, doLog, MATS, TINT_TYPES, recolorTexture,
   Rec,
   GAME_VER, randomNick, newUid, packCode, unpackCode, myInviteCode,
   friendCount, giftLevel, FRIEND_GIFTS, enterFriendCode, openFriends, closeFriends,
