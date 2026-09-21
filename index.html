@@ -327,6 +327,14 @@
   }
   #tut .tstep{font-size:12px; opacity:.55; margin-bottom:4px;}
   #tut .tarrow{font-size:34px; animation:tbounce .9s ease-in-out infinite;}
+  /* 건너뛰기 — #tut 은 클릭이 통과되게 해 놔서 이 단추만 다시 켜 준다 */
+  #tutskip{
+    margin-top:9px; border:none; border-radius:14px; cursor:pointer; pointer-events:auto;
+    font-family:inherit; font-weight:900; font-size:14px; color:#4a4266;
+    background:rgba(255,255,255,.92); padding:9px 16px;
+    box-shadow:0 4px 0 rgba(0,0,0,.16);
+  }
+  #tutskip:active{transform:translateY(2px); box-shadow:0 2px 0 rgba(0,0,0,.16);}
   @keyframes tbounce{0%,100%{transform:translateY(0)}50%{transform:translateY(10px)}}
   body.touchmode #tut{bottom:210px;}
 
@@ -350,6 +358,7 @@
   /* 화면이 낮으면 늘어놓을 자리가 없다 — 가방 하나로 접는다 */
   body.compact #tools .tool{display:none;}
   body.compact #tools #btnBag,
+  body.compact #tools #btnStudio,
   body.compact #tools #btnDodo,
   body.compact #tools #btnRec,
   body.compact #tools #btnUndo{display:block;}
@@ -565,8 +574,8 @@
     z-index:24; pointer-events:auto; display:none;
     width:min(620px, 96vw); max-width:min(96vw, calc(100vw - 240px));
   }
-  body.playing #aibar{display:block;}
-  body.playing.dodochat #aibar{display:none;}   /* 큰 창이 떠 있을 땐 숨긴다 */
+  body.ingame #aibar{display:block;}
+  body.ingame.dodochat #aibar{display:none;}   /* 큰 창이 떠 있을 땐 숨긴다 */
   #airow{
     display:flex; align-items:center; gap:8px; padding:7px 9px;
     background:rgba(255,255,255,.94); border-radius:22px;
@@ -603,6 +612,50 @@
     box-shadow:0 4px 0 rgba(0,0,0,.12), 0 10px 22px rgba(0,0,0,.2);
   }
   #aibtns,#aichips{display:none; flex-wrap:wrap; gap:6px; justify-content:center;}
+  /* ── 🪶 도도AI 붙박이 패널 (스튜디오 전용) ──
+     로블록스 스튜디오는 AI Assistant 를 오른쪽에 '늘 떠 있는 창'으로 둔다.
+     창을 열고 닫는 순간 아이는 "AI에게 물어본다"는 생각을 잊어버린다.
+     그래서 여기서는 왼쪽에 붙박이로 두고, 가운데 화면은 절대 가리지 않는다. */
+  #aidock{
+    position:fixed; left:12px; top:76px; bottom:100px; z-index:31; display:none;
+    flex-direction:column; width:min(300px,30vw);
+    background:linear-gradient(#fffdf7,#f1ecff); border-radius:18px; padding:10px;
+    box-shadow:0 5px 0 rgba(0,0,0,.16), 0 12px 26px rgba(0,0,0,.28); pointer-events:auto;
+  }
+  body.studio #aidock{display:flex;}
+  #adhead{display:flex; align-items:center; gap:6px; font-weight:900; font-size:15px;
+          color:#4a4266; margin-bottom:8px; flex:none;}
+  #adhead .sp{flex:1;}
+  #adfold{
+    border:none; background:#e8e2f6; color:#4a4266; border-radius:10px; font-family:inherit;
+    font-weight:900; font-size:13px; cursor:pointer; padding:5px 9px; box-shadow:0 3px 0 rgba(0,0,0,.12);
+  }
+  #adchat{
+    background:#f3eefc; border-radius:14px; padding:10px; margin-bottom:8px;
+    flex:1; min-height:0; overflow-y:auto; display:flex; flex-direction:column; gap:8px;
+  }
+  #adchat .dobub{font-size:14px; padding:7px 11px; max-width:94%;}
+  #adchips{display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px; flex:none;
+           max-height:98px; overflow-y:auto;}
+  #adchips .dochip, #adchat .dochip{font-size:12.5px; padding:6px 9px;}
+  #adrow{display:flex; gap:6px; flex:none;}
+  #adrow .mfield{flex:1; min-width:0; font-size:14px; padding:8px 10px;}
+  #adsend{
+    border:none; border-radius:12px; cursor:pointer; font-family:inherit; font-weight:900;
+    font-size:14px; color:#fff; padding:0 12px; white-space:nowrap;
+    background:linear-gradient(#7ae582,#38b862); box-shadow:0 4px 0 #2a8c4a;
+  }
+  #adsend:active{transform:translateY(2px); box-shadow:0 2px 0 #2a8c4a;}
+  body.adfold #aidock{bottom:auto; width:auto;}
+  body.adfold #adchat, body.adfold #adchips, body.adfold #adrow{display:none;}
+  /* 화면이 좁거나 낮으면 붙박이 대신 원래 창(T)을 쓴다 */
+  @media (max-width:900px){ body.studio #aidock{display:none;} }
+  @media (max-height:560px){ body.studio #aidock{display:none;} }
+  /* 스튜디오에서 붙박이가 떠 있으면 아래 줄은 숨긴다 (둘 다 있으면 헷갈린다).
+     붙박이가 안 뜨는 좁은 화면에서는 아래 줄이 그대로 남는다. */
+  body.studio #aibar{display:none;}
+  @media (max-width:900px){ body.ingame.studio #aibar{display:block;} }
+  @media (max-height:560px){ body.ingame.studio #aibar{display:block;} }
 
   /* ── 아이디어 세 칸 · 명예의 전당 ── */
   .ifield{margin-bottom:9px;}
@@ -692,6 +745,130 @@
     box-shadow:0 5px 0 #d982b4, 0 12px 24px rgba(0,0,0,.26); font-size:15px; max-width:94vw;
   }
   body.hunting #huntbar{display:block;}
+
+  /* ══════ 🛠️ 도도 스튜디오 · 🎮 플레이 ══════ */
+  /* 스튜디오·플레이에서는 섬 전용 화면을 숨긴다 */
+  body.studio #quests, body.playing #quests,
+  body.studio #bpbar,  body.playing #bpbar,
+  body.studio #hud-left, body.playing #hud-left,
+  body.playing #hotbar, body.playing #tools,
+  body.studio #btnTime{display:none !important;}
+
+  /* 위 띠 — 단계 3개 + 해보기 + 나가기 */
+  #stbar{
+    position:fixed; left:50%; top:8px; transform:translateX(-50%); z-index:31;
+    display:none; align-items:center; gap:8px; flex-wrap:wrap; justify-content:center;
+    background:linear-gradient(#fffdf7,#f1ecff); border-radius:18px; padding:8px 12px;
+    box-shadow:0 5px 0 rgba(0,0,0,.16), 0 12px 26px rgba(0,0,0,.28);
+    max-width:96vw; pointer-events:auto;
+  }
+  body.studio #stbar{display:flex;}
+  #stname{font-size:17px; font-weight:900; cursor:pointer; padding:3px 8px; border-radius:10px;}
+  #stname:hover{background:rgba(0,0,0,.06);}
+  #ststeps{display:flex; gap:6px;}
+  .stchip{
+    border:none; font-family:inherit; font-weight:900; font-size:14px; cursor:pointer;
+    border-radius:12px; padding:8px 11px; background:#e8e2f6; color:#4a4266;
+    box-shadow:0 3px 0 rgba(0,0,0,.12);
+  }
+  .stchip.on{background:linear-gradient(#7c6df0,#5b4bd6); color:#fff; box-shadow:0 3px 0 #4335ad;}
+  .stbtn{
+    border:none; font-family:inherit; font-weight:900; font-size:15px; cursor:pointer;
+    border-radius:13px; padding:9px 13px; color:#fff;
+    background:linear-gradient(#7ae582,#38b862); box-shadow:0 4px 0 #2a8c4a;
+  }
+  .stbtn:active{transform:translateY(2px); box-shadow:0 2px 0 #2a8c4a;}
+  .stbtn.gray{background:linear-gradient(#cfc9da,#a9a2b8); box-shadow:0 4px 0 #857d96; color:#3b3350;}
+  .stbtn.blue{background:linear-gradient(#7c6df0,#5b4bd6); box-shadow:0 4px 0 #4335ad;}
+
+  /* 물건 목록 — 로블록스의 "탐색기"를 한 줄로 줄인 것 */
+  #stside{
+    position:fixed; right:12px; top:76px; z-index:30; display:none;
+    flex-direction:column; gap:6px; align-items:flex-end; pointer-events:auto; max-width:40vw;
+  }
+  body.studio #stside{display:flex;}
+  #stlist{display:flex; gap:5px; flex-wrap:wrap; justify-content:flex-end;}
+  .stitem{
+    border:none; font-family:inherit; font-weight:900; font-size:14px; cursor:pointer;
+    background:rgba(255,255,255,.88); border-radius:11px; padding:6px 9px;
+    box-shadow:0 3px 0 rgba(0,0,0,.14); color:#3b3350;
+  }
+  .stitem:active{transform:translateY(2px);}
+  #stwarn{
+    display:none; background:linear-gradient(#ffd9d9,#ffb3b3); color:#8e2438;
+    border-radius:12px; padding:7px 11px; font-size:13px; font-weight:900;
+    box-shadow:0 3px 0 rgba(0,0,0,.14); max-width:100%; line-height:1.4; text-align:right;
+  }
+
+  /* 설정 띠 — 로블록스의 "속성" 창을 한 줄로 */
+  #ststrip{
+    position:fixed; left:50%; bottom:96px; transform:translateX(-50%); z-index:31;
+    display:none; align-items:center; gap:8px; flex-wrap:wrap; justify-content:center;
+    background:rgba(255,253,247,.95); border-radius:16px; padding:8px 12px;
+    box-shadow:0 5px 0 rgba(0,0,0,.16), 0 12px 24px rgba(0,0,0,.26);
+    max-width:94vw; pointer-events:auto;
+  }
+  .stlbl{font-size:14px; font-weight:900; color:#4a4266;}
+  .stinput{
+    border:3px solid #e2dcf0; border-radius:11px; padding:7px 10px; font-family:inherit;
+    font-weight:900; font-size:14px; color:#3b3350; background:#faf8ff; width:180px; max-width:44vw;
+  }
+  .stmini{
+    border:none; font-family:inherit; font-weight:900; font-size:13px; cursor:pointer;
+    border-radius:10px; padding:7px 11px; background:#e8e2f6; color:#4a4266;
+    box-shadow:0 3px 0 rgba(0,0,0,.12);
+  }
+  .stmini.on{background:linear-gradient(#7c6df0,#5b4bd6); color:#fff; box-shadow:0 3px 0 #4335ad;}
+  .stmini.del{background:linear-gradient(#ffb3b3,#f07a7a); color:#5c1220; box-shadow:0 3px 0 #c95a5a;}
+  #sttime, #stlives, #stjump{display:flex; gap:7px; flex-wrap:wrap;}
+
+  /* 이기는 방법 카드 */
+  #stgoals{display:grid; grid-template-columns:repeat(auto-fill,minmax(132px,1fr)); gap:10px;}
+  .goalcard{
+    border-radius:16px; padding:12px 8px; text-align:center; cursor:pointer;
+    background:#f3eefc; box-shadow:0 4px 0 rgba(0,0,0,.12); transition:transform .12s ease;
+  }
+  .goalcard:hover{transform:translateY(-3px);}
+  .goalcard.on{background:linear-gradient(#d9d0ff,#b9a9ff); box-shadow:0 4px 0 #7c6df0;}
+  .goalcard .cic{font-size:30px; line-height:1;}
+  .goalcard .cnm{font-size:15px; margin-top:5px; font-weight:900;}
+  .goalcard .cds{font-size:11px; opacity:.64; margin-top:3px; line-height:1.35;}
+  .decor .cic{font-size:29px; line-height:1;}
+  .decor .cnm{font-size:13px; margin-top:4px; font-weight:900;}
+  .decor .cds{font-size:11px; opacity:.62; margin-top:2px; line-height:1.3;}
+
+  /* 내 게임 목록 */
+  #shground{display:flex; flex-wrap:wrap; gap:7px;}
+  #shlist{display:flex; flex-direction:column; gap:10px;}
+  .gamecard{background:#f3eefc; border-radius:18px; padding:13px 14px; box-shadow:0 4px 0 rgba(0,0,0,.12);}
+  .gtitle{font-size:18px; font-weight:900;}
+  .gsub{font-size:12px; opacity:.62; margin:3px 0 9px;}
+  .grow{display:flex; gap:8px;}
+  .grow .mbtn{width:auto; flex:1; font-size:15px; padding:10px;}
+  #shnew{display:grid; grid-template-columns:repeat(auto-fill,minmax(112px,1fr)); gap:9px;}
+  #shmsg{font-size:14px; margin-top:9px; min-height:19px; line-height:1.45;}
+
+  /* 🎮 플레이 중 점수 띠 */
+  #playbar{
+    position:fixed; left:50%; top:10px; transform:translateX(-50%); z-index:31;
+    display:none; align-items:center; gap:8px; flex-wrap:wrap; justify-content:center;
+    pointer-events:none; max-width:96vw;
+  }
+  body.playing #playbar{display:flex;}
+  #playbar .pv{
+    background:rgba(255,253,247,.93); border-radius:13px; padding:7px 12px;
+    font-size:16px; font-weight:900; color:#3b3350; box-shadow:0 4px 0 rgba(0,0,0,.16);
+  }
+  #playgoal{
+    position:fixed; left:50%; top:56px; transform:translateX(-50%); z-index:30;
+    display:none; background:rgba(25,20,45,.5); color:#fff; border-radius:999px;
+    padding:6px 14px; font-size:14px; font-weight:900; pointer-events:none; max-width:94vw;
+    text-align:center;
+  }
+  body.playing #playgoal{display:block;}
+  #presic{font-size:56px; text-align:center; line-height:1;}
+  #prestitle{font-size:26px; font-weight:900; text-align:center; margin-top:6px;}
+  #presbody{font-size:16px; text-align:center; margin-top:8px; white-space:pre-line; line-height:1.5;}
 
   /* 친구 섬 구경 중 띠 */
   #visitbar{
@@ -803,11 +980,63 @@
     .slot .num{font-size:8px; top:2px; left:4px;}
     #bpbar{max-width:170px;}
   }
+  /* 화면이 낮으면 블록 바가 여러 줄로 불어나 게임 화면을 덮어 버린다.
+     줄바꿈을 끄고 한 줄로 만든 뒤 옆으로 밀어서 보게 한다. */
+  @media (max-height:600px), (max-width:430px){
+    #hotbar{
+      flex-wrap:nowrap; justify-content:flex-start; width:auto;
+      max-width:calc(100vw - 16px); overflow-x:auto; overflow-y:hidden;
+      -webkit-overflow-scrolling:touch; scrollbar-width:none;
+    }
+    #hotbar::-webkit-scrollbar{display:none;}
+    #hotbar .slot{flex:none;}
+    body.fold-bar #hotbar{width:auto; max-width:none; overflow:visible;}
+  }
   @media (max-width:620px) and (orientation:landscape){
     body.touchmode #hotbar{bottom:96px; transform:translateX(-50%) scale(.85);}
     body.touchmode #tut{bottom:246px;}
     #quests{max-height:38vh; overflow:hidden;}
   }
+
+  /* ── 📱 메뉴 접기 ──
+     휴대폰 화면은 손바닥만 한데 칸이 네 개나 떠 있어서 정작 게임이 안 보인다.
+     칸마다 작은 단추를 달아 접었다 폈다 할 수 있게 했다.
+     접은 상태는 기억하니까 다음에 들어와도 그대로다.
+     큰 화면에서는 접을 일이 없으니 단추 자체가 안 나온다. */
+  .foldbtn{
+    border:none; width:24px; height:24px; min-width:24px; border-radius:50%; cursor:pointer;
+    background:rgba(0,0,0,.09); color:#3b3350; font-family:inherit; font-weight:900;
+    font-size:12px; line-height:1; padding:0; display:none; align-items:center;
+    justify-content:center; flex:none; pointer-events:auto;
+  }
+  body.canfold .foldbtn{display:flex;}
+  .foldbtn:active{transform:translateY(2px); background:rgba(0,0,0,.16);}
+
+  /* 🪙 코인 · 레벨 */
+  #coinbox .foldbtn{margin-left:2px;}
+  body.fold-hud #lvlbox{display:none;}
+
+  /* 📋 퀘스트 */
+  #qtitle{display:flex; align-items:center; gap:6px;}
+  #qtitle .sp{flex:1;}
+  body.fold-q #qlist{display:none;}
+  body.fold-q #quests{width:auto; min-width:0;}
+  body.fold-q #qtitle{margin-bottom:0;}
+
+  /* 🧱 블록 바 — 접으면 지금 고른 블록 하나만 남는다 */
+  body.fold-bar #hotbar .slot{display:none;}
+  body.fold-bar #hotbar .slot.sel{display:flex; transform:none;}
+  /* 접기 단추는 줄바꿈에 끼어들면 안 되니 칸 안에 따로 띄운다 */
+  #barfold{
+    position:absolute; right:6px; top:50%; transform:translateY(-50%);
+    background:rgba(0,0,0,.10);
+  }
+  body.canfold #hotbar{padding-right:34px;}
+
+  /* ⚙️ 오른쪽 동그란 단추들 — 접으면 🎒 가방만 남는다 */
+  #tools .foldbtn{width:38px; height:38px; min-width:38px; font-size:15px;}
+  body.fold-tools #tools .tool{display:none;}
+  body.fold-tools #tools #btnBag{display:block;}
 
   /* 🎥 녹화 */
   #recdot{
@@ -840,7 +1069,8 @@
 
 <div id="ui">
   <div id="hud-left">
-    <div class="card" id="coinbox"><div class="coinicon"></div><span id="coins">0</span></div>
+    <div class="card" id="coinbox"><div class="coinicon"></div><span id="coins">0</span>
+      <button class="foldbtn" id="foldHud" title="레벨 칸 접기 / 펴기">▾</button></div>
     <div class="card" id="lvlbox">
       <div id="lvlrow"><span>레벨 <b id="lvl">1</b></span><span id="exptext">0 / 100</span></div>
       <div id="expbar"><div id="expfill"></div></div>
@@ -849,7 +1079,8 @@
   <div class="card" id="hint"></div>
   <div id="pops"></div>
   <div class="card" id="quests">
-    <div id="qtitle">📋 퀘스트</div>
+    <div id="qtitle">📋 퀘스트<span class="sp"></span>
+      <button class="foldbtn" id="foldQ" title="퀘스트 접기 / 펴기">▾</button></div>
     <div id="qlist"></div>
   </div>
   <!-- 🪶 도도AI 프롬프트 — 늘 화면 아래에 붙어 있다 -->
@@ -909,10 +1140,12 @@
   <button class="tool" id="btnUndo"  title="되감기 (Z)">⏪</button>
   <button class="tool" id="btnRec"   title="녹화 시작/멈추기 (Shift+R)">🎥</button>
   <button class="tool" id="btnDodo" title="도도 장로에게 말하기 (T)">🪶</button>
+  <button class="tool" id="btnStudio" title="도도 스튜디오 — 내 게임 만들기">🛠️</button>
   <button class="tool big" id="btnBag" title="도도 가방 (탭)">🎒</button>
   <button class="tool" id="btnTime"  title="밤낮 바꾸기">🌗</button>
   <button class="tool" id="btnSound" title="소리 켜기/끄기">🔊</button>
   <button class="tool" id="btnHelp"  title="조작법">❓</button>
+  <button class="foldbtn" id="foldTools" title="단추 접기 / 펴기">▾</button>
 </div>
 
 <div id="tut"></div>
@@ -920,7 +1153,8 @@
 <div id="help"><div id="helpbox">
   <h2>❓ 도도 조작법</h2>
   <table id="helptable"></table>
-  <button class="bigclose" id="helpclose" style="margin-top:16px">알겠어요!</button>
+  <button class="bigclose" id="helpagain" style="margin-top:14px;background:linear-gradient(#ffcf3f,#ff9f1a);box-shadow:0 5px 0 #c9700a;color:#5c3a00">🔰 튜토리얼 다시 보기</button>
+  <button class="bigclose" id="helpclose" style="margin-top:10px">알겠어요!</button>
 </div></div>
 
 <div class="worldlabel" id="npclabel"></div>
@@ -933,6 +1167,96 @@
   <div id="shopsub">코인으로 도도의 깃털 색과 모자를 바꿀 수 있어요. 한 번 사면 계속 쓸 수 있어요!</div>
   <div id="shopgrid"></div>
   <button class="bigclose" id="shopclose">닫기 · 가게에서 나가기</button>
+</div></div>
+
+
+<!-- 🛠️ 도도 스튜디오 위 띠 -->
+<div id="stbar">
+  <div id="stname" title="누르면 이름을 바꿀 수 있어요">내 게임</div>
+  <div id="ststeps"></div>
+  <button class="stbtn blue" id="stgoal" title="이기는 방법 정하기">🎯 목표</button>
+  <button class="stbtn" id="sttest" title="처음부터 해보기 (P)">▶ 해보기</button>
+  <button class="stbtn gray" id="sthere" title="여기서부터 해보기 (Shift+P)">📍 여기서</button>
+  <button class="stbtn gray" id="stfly" title="날기 켜기/끄기 (V)">🕊️ 날기</button>
+  <button class="stbtn gray" id="stexit" title="스튜디오에서 나가기 (Esc)">🏝️ 나가기</button>
+</div>
+<div id="stside">
+  <div id="stwarn"></div>
+  <div id="stlist"></div>
+</div>
+<div id="ststrip"></div>
+
+<!-- 🪶 도도AI 붙박이 패널 — 스튜디오에서는 늘 여기에 있다 -->
+<div id="aidock">
+  <div id="adhead">🪶 도도AI<span class="sp"></span><button id="adfold" title="접기 / 펴기">➖</button></div>
+  <div id="adchat"></div>
+  <div id="adchips"></div>
+  <div id="adrow">
+    <input class="mfield" id="adinput" placeholder="예) 점프 게임 만들어 줘" maxlength="60" spellcheck="false">
+    <button id="adsend">말하기</button>
+  </div>
+</div>
+
+<!-- 🎯 이기는 방법 -->
+<div class="modal" id="strules"><div class="mbox">
+  <div class="mhead"><h2>🎯 이기는 방법</h2></div>
+  <div class="msub">어떻게 하면 이기는 게임인지 골라 주세요.</div>
+  <div id="stgoals"></div>
+  <div class="mlabel">⏱️ 제한 시간</div>
+  <div id="sttime"></div>
+  <div class="mlabel">❤️ 목숨</div>
+  <div id="stlives"></div>
+  <div class="mlabel">🦘 점프 힘</div>
+  <div id="stjump"></div>
+  <button class="mbtn" id="strulesclose">다 골랐어요!</button>
+</div></div>
+
+<!-- ✏️ 게임 이름 바꾸기 -->
+<div class="modal" id="strename"><div class="mbox" style="width:min(420px,94vw)">
+  <div class="mhead"><h2>✏️ 게임 이름</h2></div>
+  <div class="msub">친구에게 보낼 때 이 이름이 보여요.</div>
+  <input class="mfield" id="stnameinput" maxlength="20" placeholder="예: 용암 점프맵" spellcheck="false">
+  <button class="mbtn green" id="stnameok">정했어요!</button>
+  <button class="mbtn gray" id="stnamecancel">그만두기</button>
+</div></div>
+
+<!-- 🛠️ 스튜디오 문 (섬에서 들어가는 곳) -->
+<div class="modal" id="studiohome"><div class="mbox">
+  <div class="mhead"><h2>🛠️ 도도 스튜디오</h2></div>
+  <div class="msub">내 게임을 만들어서 친구에게 보낼 수 있어요. 친구가 보낸 게임도 여기서 할 수 있어요.</div>
+  <div class="mlabel">내 게임</div>
+  <div id="shlist"></div>
+  <div class="mlabel">➕ 새 게임 만들기 — 어떤 게임을 만들까요?</div>
+  <div id="shnew"></div>
+  <div class="mlabel">🟩 바닥 (안 고르면 게임에 어울리는 걸로 골라 줘요)</div>
+  <div id="shground"></div>
+  <div class="mlabel">👫 친구가 보낸 게임 코드를 넣어요</div>
+  <textarea class="mcode" id="shcode" spellcheck="false" placeholder="BWG1:..."></textarea>
+  <button class="mbtn green" id="shgo">▶ 이 게임 하기</button>
+  <div id="shmsg"></div>
+  <button class="mbtn gray" id="shclose">닫기</button>
+</div></div>
+
+<!-- 🎮 플레이 중 점수 띠 -->
+<div id="playbar">
+  <div class="pv" id="pvtime">⏱️</div>
+  <div class="pv" id="pvcoin">🪙 0</div>
+  <div class="pv" id="pvlife">❤️ 3</div>
+  <div class="pv" id="pvkey" style="display:none">🔑 0</div>
+  <div class="pv" id="pvhigh" style="display:none">🧗 0</div>
+  <div class="pv" id="pvstar" style="display:none">⭐ 0</div>
+  <div class="pv" id="pvfind" style="display:none">🦤 0</div>
+</div>
+<div id="playgoal"></div>
+
+<!-- 🎮 게임 결과 -->
+<div class="modal" id="playres"><div class="mbox" style="width:min(460px,94vw)">
+  <div id="presic">🎉</div>
+  <div id="prestitle"></div>
+  <div id="presbody"></div>
+  <button class="mbtn green" id="presretry">🔄 다시 하기</button>
+  <button class="mbtn" id="presedit" style="display:none">🛠️ 고치러 가기</button>
+  <button class="mbtn gray" id="presexit">🏝️ 섬으로 돌아가기</button>
 </div></div>
 
 <!-- 🔨 제작대 -->
@@ -1288,12 +1612,43 @@ function valueNoise(seed, gw){
 }
 
 /* ═══════════════════════════════════════════════════
+   0.5 🚪 지금 어느 방에 있나 (섬 / 스튜디오 / 플레이)
+   ───────────────────────────────────────────────────
+   도도블록은 방이 셋이다.
+     🏝️ 섬     — 시작 화면. 놀고 꾸미고 자랑한다
+     🛠️ 스튜디오 — 내 게임을 만든다
+     🎮 플레이   — 만든 게임을 규칙대로 한다
+   방을 바꿀 때는 sessionStorage 에 적고 새로 시작한다.
+   친구 섬 구경(VISIT)이 이미 똑같이 동작하고 있어서 같은 방식으로 맞췄다.
+   월드가 통째로 달라지므로 이게 제일 확실하다.
+   ═══════════════════════════════════════════════════ */
+const MODE_KEY = 'dodo_mode';
+let PLAY_MODE = false;             // 놀기 모드일 때만 참 (마법 블록이 통과된다)
+const Mode = {
+  now : 'island',                  // 'island' | 'studio' | 'play'
+  game: null,                      // 스튜디오/플레이 중인 게임 카드
+  from: null,                      // 플레이가 끝나면 돌아갈 곳
+  at  : null                       // "여기서부터 해보기" 자리
+};
+const inStudio = () => Mode.now === 'studio';
+const inPlay   = () => Mode.now === 'play';
+const inIsland = () => Mode.now === 'island';
+
+/* ═══════════════════════════════════════════════════
    1. 블록 종류
    ═══════════════════════════════════════════════════ */
 const AIR=0, GRASS=1, DIRT=2, STONE=3, WOOD=4, LEAF=5, SAND=6, GLASS=7, RAINBOW=8,
       WATER=9, GOLD=10, PATH_B=11, PATH_S=12, PATH_G=13, PLANK=14,
       /* 제작대에서만 만들 수 있는 블록 */
-      TRAMP=15, LAMP=16, ICE=17;
+      TRAMP=15, LAMP=16, ICE=17,
+      /* 🛠️ 스튜디오 전용 "마법 블록" — 게임을 게임으로 만드는 조각들.
+         저장 형식이 31번까지 담을 수 있어서(encodeWorld) 18~27번이 비어 있었다.
+         그냥 블록으로 만들었기 때문에 그리기·저장·되감기·친구에게 보내기가
+         전부 지금 코드 그대로 공짜로 동작한다. */
+      M_START=18, M_GOAL=19, M_COIN=20, M_STAR=21, M_TRAP=22,
+      M_KEY=23, M_DOOR=24, M_SIGN=25, M_CHECK=26,
+      /* 장르를 넓히려고 더한 것들 — 피하기 · 퀴즈 · 숨바꼭질 */
+      M_VANISH=27, M_BLINK=28, M_DODO=29, M_YES=30, M_NO=31;
 
 const BLOCKS = {
   [GRASS]:  {name:'잔디',   icon:'🌱'},
@@ -1313,17 +1668,46 @@ const BLOCKS = {
   [TRAMP]:  {name:'통통',   icon:'🟩'},
   [LAMP]:   {name:'램프',   icon:'💡', glow:true},
   [ICE]:    {name:'얼음',   icon:'🧊', transparent:true},
+  /* 마법 블록 — magic:true 인 것은 스튜디오에서만 꺼낼 수 있다 */
+  [M_START]:{name:'시작점',  icon:'🚩', magic:true, pass:true},
+  [M_GOAL]: {name:'골인',    icon:'🏁', magic:true, pass:true},
+  [M_COIN]: {name:'코인',    icon:'🪙', magic:true, pass:true, glow:true},
+  [M_STAR]: {name:'별',      icon:'⭐', magic:true, pass:true, glow:true},
+  [M_TRAP]: {name:'함정',    icon:'☠️', magic:true, pass:true},
+  [M_KEY]:  {name:'열쇠',    icon:'🔑', magic:true, pass:true, glow:true},
+  [M_DOOR]: {name:'문',      icon:'🚪', magic:true},
+  [M_SIGN]: {name:'표지판',  icon:'💬', magic:true, pass:true},
+  [M_CHECK]:{name:'체크포인트', icon:'🔵', magic:true, pass:true, glow:true},
+  [M_VANISH]:{name:'사라지는 발판', icon:'⏳', magic:true},
+  [M_BLINK]:{name:'깜빡 함정',   icon:'⚡', magic:true, pass:true, glow:true},
+  [M_DODO]: {name:'숨은 도도',   icon:'🦤', magic:true, pass:true},
+  [M_YES]:  {name:'맞음',        icon:'⭕', magic:true, pass:true, glow:true},
+  [M_NO]:   {name:'틀림',        icon:'❌', magic:true, pass:true},
 };
 const BLOCK_COLOR = {
   [GRASS]:0x63c64d, [DIRT]:0x96653f, [STONE]:0x9aa0a8, [WOOD]:0x9c6b3f,
   [LEAF]:0x4fbf52, [SAND]:0xf0dfa8, [GLASS]:0xbeebff, [RAINBOW]:0xff7ddb,
   [WATER]:0x49aee0, [GOLD]:0xffc82e, [PATH_B]:0xc87137, [PATH_S]:0xd5dae0,
   [PATH_G]:0xffd93d, [PLANK]:0xd7a96b,
-  [TRAMP]:0x4fd86a, [LAMP]:0xffe9a0, [ICE]:0xa8e4ff
+  [TRAMP]:0x4fd86a, [LAMP]:0xffe9a0, [ICE]:0xa8e4ff,
+  [M_START]:0x5ad07a, [M_GOAL]:0xf2f2f2, [M_COIN]:0xffc82e, [M_STAR]:0xffe45c,
+  [M_TRAP]:0xd2455c, [M_KEY]:0xffb03a, [M_DOOR]:0xa9722f, [M_SIGN]:0x7fc6ff,
+  [M_CHECK]:0x4aa3ff,
+  [M_VANISH]:0xc9b6ff, [M_BLINK]:0xff9f2e, [M_DODO]:0x8fd9cf, [M_YES]:0x4fd86a, [M_NO]:0xe4574f
 };
-const RENDER_TYPES = [GRASS,DIRT,STONE,WOOD,LEAF,SAND,GLASS,RAINBOW,GOLD,PATH_B,PATH_S,PATH_G,PLANK,TRAMP,LAMP,ICE];
+const RENDER_TYPES = [GRASS,DIRT,STONE,WOOD,LEAF,SAND,GLASS,RAINBOW,GOLD,PATH_B,PATH_S,PATH_G,PLANK,TRAMP,LAMP,ICE,
+  M_START,M_GOAL,M_COIN,M_STAR,M_TRAP,M_KEY,M_DOOR,M_SIGN,M_CHECK,
+  M_VANISH,M_BLINK,M_DODO,M_YES,M_NO];
+/* 마법 블록 가운데 "걸어 들어가서 닿는" 것들 (코인·함정·골인 …) */
+const MAGIC_LIST = [M_START,M_GOAL,M_COIN,M_STAR,M_TRAP,M_KEY,M_DOOR,M_SIGN,M_CHECK,
+                    M_VANISH,M_BLINK,M_DODO,M_YES,M_NO];
+const isMagic = t => t>=M_START && t<=M_NO;
+const PASS_THRU = new Set([M_START,M_GOAL,M_COIN,M_STAR,M_TRAP,M_KEY,M_SIGN,M_CHECK,
+                           M_BLINK,M_DODO,M_YES,M_NO]);
 const isLiquid = t => t===WATER;
-const isSolidType = t => t!==AIR && !isLiquid(t);
+/* 마법 블록은 스튜디오(만들 때)에선 단단하고, 플레이(놀 때)에선 통과된다.
+   그래서 만들 때는 조준해서 놓고 부술 수 있고, 놀 때는 걸어 들어가 먹는다. */
+const isSolidType = t => t!==AIR && !isLiquid(t) && !(PLAY_MODE && PASS_THRU.has(t));
 
 /* ═══════════════════════════════════════════════════
    2. 블록 그림(텍스처)을 코드로 그리기
@@ -1411,6 +1795,26 @@ function iceTex(g,rng){
   g.fillStyle='rgba(255,255,255,.55)'; g.fillRect(3,9,7,1); g.fillRect(9,3,1,7);
 }
 
+/* ---- 마법 블록 그림 — 바탕색 + 글자(이모지) 한 개 ---- */
+function iconTex(base, ch, edge){
+  return (g,rng)=>{
+    g.fillStyle = base; g.fillRect(0,0,TS,TS);
+    if(edge){
+      g.fillStyle = edge;
+      g.fillRect(0,0,TS,1); g.fillRect(0,TS-1,TS,1); g.fillRect(0,0,1,TS); g.fillRect(TS-1,0,1,TS);
+    }
+    g.textAlign='center'; g.textBaseline='middle';
+    g.font = "12px 'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',system-ui,sans-serif";
+    g.fillText(ch, TS/2, TS/2 + 1);
+  };
+}
+function goalTex(g,rng){                       // 🏁 골인 — 체크무늬
+  for(let y=0;y<TS;y+=4) for(let x=0;x<TS;x+=4){
+    g.fillStyle = ((x+y)/4) % 2 ? '#1d1d24' : '#ffffff';
+    g.fillRect(x,y,4,4);
+  }
+}
+
 const TEX = {};
 function buildTextures(){
   TEX[GRASS]   = [grassSide, grassSide, grassTop, flat('#96653f',['#7d5433','#a97a4d']), grassSide, grassSide];
@@ -1429,6 +1833,20 @@ function buildTextures(){
   TEX[TRAMP]   = trampTex;
   TEX[LAMP]    = lampTex;
   TEX[ICE]     = iceTex;
+  TEX[M_START] = iconTex('#5ad07a','🚩','#3aa758');
+  TEX[M_GOAL]  = goalTex;
+  TEX[M_COIN]  = iconTex('#ffc82e','🪙','#e0a200');
+  TEX[M_STAR]  = iconTex('#ffe45c','⭐','#e0bb1e');
+  TEX[M_TRAP]  = iconTex('#d2455c','☠️','#8e2438');
+  TEX[M_KEY]   = iconTex('#ffb03a','🔑','#d48414');
+  TEX[M_DOOR]  = iconTex('#a9722f','🚪','#7b4f1c');
+  TEX[M_SIGN]  = iconTex('#7fc6ff','💬','#3f92d6');
+  TEX[M_CHECK] = iconTex('#4aa3ff','🔵','#2a76c8');
+  TEX[M_VANISH]= iconTex('#c9b6ff','⏳','#9179e0');
+  TEX[M_BLINK] = iconTex('#ff9f2e','⚡','#d06f00');
+  TEX[M_DODO]  = iconTex('#8fd9cf','🦤','#4fa89b');
+  TEX[M_YES]   = iconTex('#4fd86a','⭕','#2a9c46');
+  TEX[M_NO]    = iconTex('#e4574f','❌','#a32c26');
 }
 
 const MATS = {};
@@ -1927,8 +2345,51 @@ function moveAxis(axis, d){
 }
 
 const GRAV = -30, JUMP_V = 10.2, SPEED = 6.4, AIR_CTRL = 0.55;
+let JUMP_MUL = 1;          // 게임마다 점프 힘을 1~3 단계로 바꿀 수 있다
+let FLYING = false;        // 스튜디오에서 날고 있는 중인가
+
+/* 🛠️ 날기 — 로블록스 스튜디오와 같은 키로 맞췄다.
+   W A S D 로 움직이고 Q 아래 / E 위, Shift 를 누르면 빨라진다.
+   나중에 아이가 진짜 로블록스 스튜디오를 열었을 때 손이 그대로 움직이라고. */
+function flyMove(dt){
+  const f = input.forward(), s = input.strafe();
+  const fast = (keys['ShiftLeft'] || keys['ShiftRight']) ? 2.4 : 1;
+  const sp = 9 * fast;
+  let vx = 0, vz = 0;
+  if(f || s){
+    const len = Math.hypot(f, s);
+    const fx = -Math.sin(player.yaw), fz = -Math.cos(player.yaw);
+    const rx =  Math.cos(player.yaw), rz = -Math.sin(player.yaw);
+    vx = (fx*f + rx*s)/len * sp;
+    vz = (fz*f + rz*s)/len * sp;
+  }
+  let vy = 0;
+  if(keys['KeyE'] || jumpBuffer > 0) vy += sp;
+  if(keys['KeyQ']) vy -= sp;
+  player.vx = vx; player.vy = vy; player.vz = vz;
+  player.onGround = false;
+  player.inWater = false;
+  moveAxis('x', vx*dt);
+  moveAxis('z', vz*dt);
+  moveAxis('y', vy*dt);
+  player.y = clamp(player.y, 0.2, H - PH - 0.2);
+  player.walkPhase += dt * 6;
+
+  /* 도도새가 처음으로 난다 — 날개를 활짝 펴고 파닥거린다 */
+  avatar.position.set(player.x, player.y, player.z);
+  avatar.scale.set(1, 1, 1);
+  const sp2 = Math.hypot(vx, vz);
+  if(sp2 > 0.4) avatar.rotation.y = lerp2angle(avatar.rotation.y, Math.atan2(vx, vz), dt*12);
+  const ud = avatar.userData;
+  const flap = Math.sin(performance.now()*0.028)*0.30;
+  ud.pArmL.rotation.x = -0.25;  ud.pArmR.rotation.x = -0.25;
+  ud.pArmL.rotation.z =  1.05 + flap;  ud.pArmR.rotation.z = -1.05 - flap;
+  ud.pLegL.rotation.x = 0.30;   ud.pLegR.rotation.x = 0.30;
+  player.squash = 0; player.jumpAnim = 0;
+}
 
 function updatePlayer(dt){
+  if(FLYING){ flyMove(dt); return; }
   const f = input.forward(), s = input.strafe();
   let ax=0, az=0;
   if(f||s){
@@ -1952,7 +2413,7 @@ function updatePlayer(dt){
   player.inWater = getBlock(hx, Math.floor(player.y+0.4), hz)===WATER;
 
   if(input.jumpWanted() && (player.onGround || player.inWater)){
-    player.vy = player.inWater ? JUMP_V*0.62 : JUMP_V;
+    player.vy = player.inWater ? JUMP_V*0.62 : JUMP_V*JUMP_MUL;
     player.onGround = false;
     player.rocketLeft = hasUnlock('로켓 점프') ? 1 : 0;
     player.jumpAnim = JUMP_ANIM;
@@ -2058,12 +2519,21 @@ function bounceBack(){
    8. 카메라 (3인칭, 마우스로 둘러보기)
    ═══════════════════════════════════════════════════ */
 const camState = {dist:6.2, curDist:6.2};
+const CAM_SIDE = 0.14;      // 카메라를 오른쪽으로 민 정도 (거리에 비례, 화면에서 늘 같은 만큼)
 function updateCamera(dt){
-  const hx = player.x, hy = player.y + 1.5, hz = player.z;
   const cp = Math.cos(player.pitch), sp = Math.sin(player.pitch);
   const dirX =  Math.sin(player.yaw)*cp;
   const dirY = -sp;
   const dirZ =  Math.cos(player.yaw)*cp;
+
+  /* 어깨 너머 시점 — 도도가 화면 한가운데 조준점을 딱 가리면
+     블록이 어디에 생기는지 안 보인다. 그래서 카메라를 오른쪽으로 살짝 민다.
+     (마인크래프트·로블록스도 3인칭에서는 이렇게 한다.)
+     민 만큼을 거리에 비례시켜서, 가까이 당겨도 도도가 화면에서 밀려나지 않게 한다. */
+  const side = camState.curDist * CAM_SIDE;
+  const rx =  Math.cos(player.yaw), rz = -Math.sin(player.yaw);
+  const px = player.x, pz = player.z;
+  const hx = px + rx*side, hy = player.y + 1.5, hz = pz + rz*side;
 
   // 벽에 카메라가 박히지 않게 거리 줄이기
   let want = camState.dist;
@@ -2077,8 +2547,8 @@ function updateCamera(dt){
   camera.lookAt(hx, hy, hz);
 
   const sd = DayNight.dir;
-  sun.position.set(hx + sd.x*46, player.y + Math.max(6, sd.y*52), hz + sd.z*46);
-  sun.target.position.set(hx, player.y, hz);
+  sun.position.set(px + sd.x*46, player.y + Math.max(6, sd.y*52), pz + sd.z*46);
+  sun.target.position.set(px, player.y, pz);
   sun.target.updateMatrixWorld();
 }
 
@@ -2111,7 +2581,9 @@ function panelOpen(){
   const el = document.activeElement;
   if(el && (el.tagName==='TEXTAREA' || el.tagName==='INPUT')) return true;
   return shopOpen || craftOpen || plansOpen || friendsOpen || ideaOpen || shortsOpen || bagOpen ||
-         islandOpen || dodoOpen ||
+         islandOpen || dodoOpen || rulesOpen || studioHomeOpen ||
+         $('#playres').style.display==='flex' ||
+         $('#strename').style.display==='flex' ||
          $('#bragbox').style.display==='flex' || $('#recbox').style.display==='flex' ||
          $('#badges').style.display==='flex' ||
          $('#share').style.display==='flex' ||
@@ -2374,6 +2846,16 @@ function applyEdits(){
   worldDirty = true;
 }
 function recordEdit(x,y,z,t){
+  if(inStudio()){                   // 스튜디오에선 게임 카드에 적는다
+    const k = x+','+y+','+z;
+    /* 원래 바닥과 똑같아진 칸은 아예 지운다 — 안 그러면 게임 코드가 쓸데없이 길어져서
+       카톡으로 못 보낼 만큼 커진다 */
+    if(baseVox && baseVox[IDX(x,y,z)] === t) delete Mode.game.edits[k];
+    else Mode.game.edits[k] = t;
+    if(!isMagic(t)) delete Mode.game.opt[k];
+    return;
+  }
+  if(inPlay()) return;              // 놀 때는 아무것도 안 적는다
   if(VISIT) return;                 // 친구 섬 구경 중엔 내 섬 기록을 건드리지 않는다
   state.edits[x+','+y+','+z] = t;
   saveSoon();
@@ -2418,15 +2900,41 @@ const HOTBAR = [GRASS, DIRT, STONE, WOOD, LEAF, SAND, GLASS, RAINBOW];
 const UNLOCK_LEVEL = {[GLASS]:2, [RAINBOW]:3};
 let selectedSlot = 0;
 
-function blockUnlocked(t){ return (UNLOCK_LEVEL[t] || 1) <= state.level; }
+function blockUnlocked(t){ if(!inIsland()) return true; return (UNLOCK_LEVEL[t] || 1) <= state.level; }
 
 const SLOT_KEY = ['1','2','3','4','5','6','7','8','9','0','-'];
+/* ── 📱 메뉴 접기 ──
+   사헌 님 요청: "모바일에서 볼 때 메뉴들 접었다 폈다 할 수 있게 해 줘."
+   칸을 아예 없애면 안 된다(아이가 못 찾는다). 접으면 제목이나 고른 블록
+   하나는 남겨서 어디 있었는지 알 수 있게 한다. */
+const FOLD_KEY = 'dodo_fold';
+const fold = {hud:0, q:0, bar:0, tools:0};
+function applyFold(){
+  for(const k in fold) document.body.classList.toggle('fold-' + k, !!fold[k]);
+  const mark = (id, on)=>{ const el = $(id); if(el) el.textContent = on ? '▸' : '▾'; };
+  mark('#foldHud', fold.hud); mark('#foldQ', fold.q);
+  mark('#barfold', fold.bar); mark('#foldTools', fold.tools);
+  if(typeof layoutUI === 'function') layoutUI();
+}
+function toggleFold(k){
+  fold[k] = fold[k] ? 0 : 1;
+  applyFold();
+  try{ localStorage.setItem(FOLD_KEY, JSON.stringify(fold)); }catch(e){}
+  if(typeof Sound !== 'undefined') Sound.click();
+}
+function loadFold(){
+  let d = null;
+  try{ d = JSON.parse(localStorage.getItem(FOLD_KEY) || 'null'); }catch(e){}
+  if(d) for(const k in fold) fold[k] = d[k] ? 1 : 0;
+  applyFold();
+}
+
 function buildHotbar(){
   const bar = $('#hotbar');
   const HB = hotbarList();
   bar.innerHTML = '';
   HB.forEach((t,i)=>{
-    const made = isCrafted(t);
+    const made = inIsland() && isCrafted(t);
     const n = made ? Bag.count(t) : -1;
     const ok = blockUnlocked(t) && (!made || n > 0);
     const el = document.createElement('div');
@@ -2440,6 +2948,14 @@ function buildHotbar(){
     el.addEventListener('click', (e)=>{ e.stopPropagation(); selectSlot(i); });
     bar.appendChild(el);
   });
+  /* 접기 단추는 블록 바를 새로 그릴 때마다 다시 달아 준다 */
+  const fb = document.createElement('button');
+  fb.className = 'foldbtn';
+  fb.id = 'barfold';
+  fb.textContent = fold.bar ? '▸' : '▾';
+  fb.title = '블록 바 접기 / 펴기';
+  fb.addEventListener('click', (e)=>{ e.stopPropagation(); toggleFold('bar'); });
+  bar.appendChild(fb);
   if(typeof layoutUI === 'function') layoutUI();
 }
 function selectSlot(i){
@@ -2529,6 +3045,9 @@ const Particles = (function(){
    10.8 블록 조준 (복셀 레이캐스트) + 설치 / 파괴
    ═══════════════════════════════════════════════════ */
 const REACH = 6.2;
+/* 🛠️ 스튜디오에서는 날아다니며 짓기 때문에 훨씬 멀리까지 조준할 수 있어야 한다.
+   (로블록스 스튜디오도 화면 아무 데나 눌러서 놓는다) */
+const reachNow = () => inStudio() ? 26 : REACH;
 const _dir = new THREE.Vector3();
 
 function raycastVoxel(ox,oy,oz, dx,dy,dz, maxDist){
@@ -2542,7 +3061,8 @@ function raycastVoxel(ox,oy,oz, dx,dy,dz, maxDist){
   let tmz = dz!==0 ? ((dz>0 ? z+1-oz : oz-z) * tdz) : Infinity;
   let nx=0, ny=0, nz=0, t=0;
 
-  for(let i=0;i<160;i++){
+  const STEPS = maxDist > 12 ? 420 : 160;
+  for(let i=0;i<STEPS;i++){
     if(y>=0 && y<H && isSolidType(getBlock(x,y,z))) return {x,y,z, nx,ny,nz};
     if(tmx < tmy && tmx < tmz){ t=tmx; if(t>maxDist) break; x+=sx; tmx+=tdx; nx=-sx; ny=0; nz=0; }
     else if(tmy < tmz){       t=tmy; if(t>maxDist) break; y+=sy; tmy+=tdy; nx=0; ny=-sy; nz=0; }
@@ -2618,10 +3138,10 @@ function aimOrigin(){
     const z = camera.position.z + _dir.z*d;
     if(!solidAt(Math.floor(x), Math.floor(y), Math.floor(z)))
       return {x:x + _dir.x*0.06, y:y + _dir.y*0.06, z:z + _dir.z*0.06,
-              dist:(limit - d) + REACH};
+              dist:(limit - d) + reachNow()};
   }
   /* 카메라부터 머리까지 전부 막혔으면 머리에서 쏜다 */
-  return {x:player.x, y:player.y + 1.5, z:player.z, dist:REACH};
+  return {x:player.x, y:player.y + 1.5, z:player.z, dist:reachNow()};
 }
 
 function updateAim(){
@@ -2663,6 +3183,7 @@ function updateAim(){
 }
 
 function breakBlock(){
+  if(inPlay()) return false;        // 놀 때는 남의 게임을 못 고친다
   if(!aimed) return false;
   const {x,y,z} = aimed;
   if(y <= 0){ showHint('🪨 섬의 바닥은 부술 수 없어요', 1500); Sound.deny(); return false; }
@@ -2678,6 +3199,13 @@ function breakBlock(){
   }
   Particles.burst(x+.5, y+.5, z+.5, BLOCK_COLOR[t] || 0xffffff, 16);
   Sound.breakBlock();
+  if(inStudio()){
+    if(t === LAMP) Lamps.remove(x,y,z);
+    Undo.push(x,y,z,t,AIR,null);
+    Studio.hideStrip();
+    Studio.dirty();
+    return true;
+  }
   state.broken++;
   // 부순 블록은 재료 주머니로 (제작대에서 쓴다)
   let delta = null;
@@ -2692,6 +3220,7 @@ function breakBlock(){
   return true;
 }
 function placeBlock(){
+  if(inPlay()) return false;
   if(!aimed) return false;
   const HB = hotbarList();
   const t = HB[Math.min(selectedSlot, HB.length-1)];
@@ -2714,8 +3243,9 @@ function placeBlock(){
     player.y = y + 1; player.vy = 0;
     Particles.burst(x+.5, y+.5, z+.5, BLOCK_COLOR[t] || 0xffffff, 10, 3);
     Sound.placeBlock();
-    state.placed++;
+    if(inIsland()) state.placed++;
     afterPlace(x,y,z,t);
+    if(!inIsland()) return true;
     tut.placed = true; tutAdvance();
     if(t === RAINBOW) state.rainbowPlaced++;
     addExp(2);
@@ -2726,8 +3256,9 @@ function placeBlock(){
   recordEdit(x,y,z,t);
   Particles.burst(x+.5, y+.5, z+.5, BLOCK_COLOR[t] || 0xffffff, 10, 3);
   Sound.placeBlock();
-  state.placed++;
+  if(inIsland()) state.placed++;
   afterPlace(x,y,z,t);
+  if(!inIsland()) return true;
   tut.placed = true; tutAdvance();
   if(t === RAINBOW) state.rainbowPlaced++;
   addExp(2);
@@ -2737,6 +3268,14 @@ function placeBlock(){
 
 /* 블록을 놓은 뒤 공통으로 할 일 — 주머니 · 램프 · 청사진 · 되감기 */
 function afterPlace(x,y,z,t){
+  if(inStudio()){
+    if(t === LAMP) Lamps.add(x,y,z);
+    Undo.push(x,y,z,AIR,t,null);
+    Studio.strip(x,y,z,t);          // 로블록스의 "속성" 창 자리 — 방금 놓은 것만
+    Studio.checkReach(x,y,z);       // 그레이박스 원칙: 못 닿는 자리는 바로 알려 준다
+    Studio.dirty();
+    return;
+  }
   let delta = null;
   if(isCrafted(t)){ Bag.add(t, -1); delta = {}; delta[t] = -1; buildHotbar(); }
   if(t === LAMP){
@@ -2760,9 +3299,12 @@ canvas.addEventListener('mousedown', e=>{
   if(e.button===2) { if(placeBlock()) actCooldown = 0.22; }
 });
 addEventListener('mouseup', e=>{ mouseDown[e.button] = false; });
+/* 마우스 휠은 화면 당기기·밀기(줌).
+   블록 고르기는 1~8 숫자키와 아래 블록 바로 한다. */
+const CAM_MIN = 1.8, CAM_MAX = 13;
 addEventListener('wheel', e=>{
-  if(!started || !locked) return;
-  selectSlot(selectedSlot + (e.deltaY>0 ? 1 : -1));
+  if(!started || panelOpen()) return;
+  camState.dist = clamp(camState.dist + (e.deltaY > 0 ? 0.7 : -0.7), CAM_MIN, CAM_MAX);
 }, {passive:true});
 addEventListener('keydown', e=>{
   if(e.code==='Escape'){
@@ -2780,8 +3322,8 @@ addEventListener('keydown', e=>{
 function updateActions(dt){
   actCooldown -= dt;
   if(actCooldown > 0 || panelOpen()) return;
-  const wantBreak = keys['KeyQ'] || keys['KeyF'] || touch.breaking || (locked && mouseDown[0]);
-  const wantPlace = keys['KeyE'] || keys['KeyR'] || touch.placing  || (locked && mouseDown[2]);
+  const wantBreak = (!FLYING && keys['KeyQ']) || keys['KeyF'] || touch.breaking || (locked && mouseDown[0]);
+  const wantPlace = (!FLYING && keys['KeyE']) || keys['KeyR'] || touch.placing  || (locked && mouseDown[2]);
   if(wantBreak && breakBlock()) actCooldown = 0.22;
   else if(wantPlace && placeBlock()) actCooldown = 0.22;
 }
@@ -3875,7 +4417,10 @@ const TUT_STEPS = [
 
 function tutStart(){
   tut.on = true; tut.step = 0;
+  tut.moved = 0; tut.looked = 0;
+  tut.jumped = false; tut.broke = false; tut.placed = false; tut.coin = false;
   tut.lastX = player.x; tut.lastZ = player.z;
+  _lastYaw = player.yaw;          // 안 그러면 '둘러보기' 가 시작하자마자 통과된다
   tutRender();
 }
 function tutRender(){
@@ -3894,7 +4439,21 @@ function tutRender(){
   box.innerHTML = '<div class="tcard">' +
     '<div class="tstep">' + (tut.step+1) + ' / ' + TUT_STEPS.length + '</div>' +
     (touchMode ? st.mo : st.pc) +
-    '<div class="tarrow">' + st.arrow + '</div></div>';
+    '<div class="tarrow">' + st.arrow + '</div></div>' +
+    '<button id="tutskip">건너뛰기 ⏭️</button>';
+  /* 화면을 새로 그릴 때마다 단추도 새로 생기니 여기서 연결한다 */
+  const sk = $('#tutskip');
+  if(sk) sk.addEventListener('click', (e)=>{ e.stopPropagation(); tutSkip(); });
+}
+/* 이미 할 줄 아는 아이는 여섯 걸음을 다 밟을 이유가 없다.
+   대신 되돌릴 길을 남긴다 — ❓ 조작법에서 다시 볼 수 있다. */
+function tutSkip(){
+  tut.on = false;
+  $('#tut').style.display = 'none';
+  state.tutorialDone = 1;
+  saveSoon();
+  Sound.click();
+  showHint('⏭️ 건너뛰었어요! 다시 보고 싶으면 ❓ 를 눌러요', 3200);
 }
 function tutAdvance(){
   if(!tut.on) return;
@@ -3949,6 +4508,46 @@ function setSoundOn(on){
    10.21 도움말 창
    ═══════════════════════════════════════════════════ */
 function buildHelp(){
+  /* 🛠️ 스튜디오는 조작이 달라서 표를 통째로 바꾼다 */
+  if(inStudio()){
+    const st = [
+      ['W A S D','움직이기'],
+      ['E / Q','날면서 위 / 아래로'],
+      ['Shift','빠르게 움직이기'],
+      ['← ↑ ↓ →','둘러보기'],
+      ['V','🕊️ 날기 켜기 / 끄기'],
+      ['R  또는 오른쪽 클릭','블록 놓기'],
+      ['F  또는 왼쪽 클릭','블록 부수기'],
+      ['1 ~ 9','블록 고르기'],
+      ['Tab','단계 넘기기 (1 판 짓기 → 2 규칙 → 3 꾸미기)'],
+      ['G  또는 🎯','이기는 방법 정하기 (목표 · 시간 · 목숨 · 점프 힘)'],
+      ['P','▶ 처음부터 해보기'],
+      ['Shift + P','📍 여기서부터 해보기'],
+      ['Z','실수한 블록 되돌리기 (80번까지)'],
+      ['T  또는 깃털 단추','도도AI — "점프 게임 만들어 줘" 처럼 말하면 만들어 줘요'],
+      ['오른쪽 위 목록','🚩 🏁 🪙 … 누르면 그 자리로 날아가요'],
+      ['Esc  또는 🏝️','스튜디오에서 나가기 (저절로 저장돼요)'],
+    ];
+    $('#helptable').innerHTML = st.map(r=>'<tr><td>'+r[0]+'</td><td>'+r[1]+'</td></tr>').join('');
+    return;
+  }
+  if(inPlay()){
+    const pl = touchMode
+      ? [['왼쪽 동그라미','움직이기'],['화면 문지르기','둘러보기'],['⬆️ 점프','폴짝 뛰기']]
+      : [['W A S D','움직이기'],['← ↑ ↓ →','둘러보기'],['스페이스','점프']];
+    const more = [
+      ['🚩 시작점','여기서 시작해요'],
+      ['🏁 골인','닿으면 이겨요'],
+      ['🪙 코인','먹으면 점수 (조금 뒤 다시 생겨요)'],
+      ['⭐ 별','큰 점수'],
+      ['☠️ 함정','닿으면 목숨이 줄고 처음으로 돌아가요'],
+      ['🔑 열쇠 · 🚪 문','열쇠를 먹고 문 옆에 가면 열려요'],
+      ['🔵 체크포인트','죽으면 여기서 다시 시작해요'],
+      ['🟩 통통 발판','밟으면 높이 튀어요'],
+    ];
+    $('#helptable').innerHTML = pl.concat(more).map(r=>'<tr><td>'+r[0]+'</td><td>'+r[1]+'</td></tr>').join('');
+    return;
+  }
   const rows = touchMode ? [
     ['왼쪽 동그라미','움직이기'],
     ['화면 문지르기','둘러보기'],
@@ -3962,6 +4561,7 @@ function buildHelp(){
     ['깃털 단추','도도 장로 — 말하면 만들어 줘요'],
     ['🎒 단추','도도 가방 — 내 섬 · 청사진 · 15초도전 · 친구 · 아이디어 · 제작대'],
     ['🎒 → 🏝️','내 섬 — 꾸미기 · 섬 이름 · 자랑 카드 · 섬 코드'],
+    ['🎒 → 🛠️','도도 스튜디오 — 내 게임 만들기 · 친구 게임 하기'],
     ['🌗 단추','낮 / 밤 고정하기'],
   ] : [
     ['W A S D','움직이기'],
@@ -3980,10 +4580,12 @@ function buildHelp(){
     ['K','🎨 도도 꾸미기 — 깃털색 · 부리색 · 모자'],
     ['👀','화면 한가운데 조준점이 가리키는 칸에 쌓고 부숴요. 노란 테두리가 새 블록이 생길 자리예요'],
     ['Enter','🪶 화면 아래 도도AI 칸으로 바로 가기 — 하고 싶은 말을 쓰면 도도가 해 줘요'],
+    ['휠','마우스 휠을 굴리면 화면이 가까워지고 멀어져요'],
     ['Shift + R  또는 🎥','녹화 시작 / 멈추기 (쇼츠 모양 세로 영상)'],
     ['B','청사진 건축학교'],
     ['V','내 배지'],
     ['G','친구 초대'],
+    ['🎒 → 🛠️','도도 스튜디오 — 내 게임 만들기 · 친구 게임 하기'],
     ['🌗 단추','낮 / 밤 고정하기'],
   ];
   $('#helptable').innerHTML = rows.map(r=>'<tr><td>'+r[0]+'</td><td>'+r[1]+'</td></tr>').join('');
@@ -4164,6 +4766,7 @@ function closeCraft(){ craftOpen = false; $('#craft').style.display = 'none'; }
 
 /* 하단 블록 바 = 기본 8칸 + (한 번이라도 만들어 본) 제작 블록 */
 function hotbarList(){
+  if(inStudio()) return Studio.bar();      // 단계(판 짓기 / 규칙 / 꾸미기)에 따라 다르다
   return HOTBAR.concat(CRAFTED.filter(t=>state.seen[t]));
 }
 
@@ -4793,14 +5396,18 @@ function checkDaily(){
    친구가 붙여넣으면 똑같은 건축물이 친구 게임에 생긴다.
    ═══════════════════════════════════════════════════ */
 const B64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
-function encodeWorld(){
-  const keys = Object.keys(state.edits);
+function encodeWorld(){ return encodeEdits(state.edits); }
+/* 한 칸을 3바이트(24비트)에 담는다.
+   BW1 = x6 y6 z6 t5 (블록 31종까지) — 예전 코드
+   BW2 = x6 y6 z6 t6 (블록 63종까지) — 지금 쓰는 것. 마법 블록이 늘어서 자리를 넓혔다. */
+function encodeEdits(edits){
+  const keys = Object.keys(edits);
   const bytes = [];
   for(const k of keys){
     const a = k.split(',');
-    const x = +a[0]|0, y = +a[1]|0, z = +a[2]|0, t = state.edits[k]|0;
-    if(x<0||x>=W||y<0||y>=H||z<0||z>=D||t<0||t>31) continue;
-    const v = (x<<17) | (y<<11) | (z<<5) | t;
+    const x = +a[0]|0, y = +a[1]|0, z = +a[2]|0, t = edits[k]|0;
+    if(x<0||x>=W||y<0||y>=H||z<0||z>=D||t<0||t>63) continue;
+    const v = (x<<18) | (y<<12) | (z<<6) | t;
     bytes.push((v>>16)&255, (v>>8)&255, v&255);
   }
   let out = '';
@@ -4808,11 +5415,12 @@ function encodeWorld(){
     const b0 = bytes[i], b1 = bytes[i+1], b2 = bytes[i+2];
     out += B64[b0>>2] + B64[((b0&3)<<4)|(b1>>4)] + B64[((b1&15)<<2)|(b2>>6)] + B64[b2&63];
   }
-  return 'BW1:' + out;
+  return 'BW2:' + out;
 }
 function decodeWorld(code){
   code = (code||'').trim().replace(/\s+/g, '');
-  if(code.indexOf('BW1:') !== 0) return null;
+  const wide = code.indexOf('BW2:') === 0;                 // 블록 63종까지
+  if(!wide && code.indexOf('BW1:') !== 0) return null;     // 예전 코드도 그대로 읽는다
   const body = code.slice(4);
   if(body.length % 4 !== 0) return null;
   const edits = {};
@@ -4822,7 +5430,10 @@ function decodeWorld(code){
     if(c0<0||c1<0||c2<0||c3<0) return null;
     const b0 = (c0<<2)|(c1>>4), b1 = ((c1&15)<<4)|(c2>>2), b2 = ((c2&3)<<6)|c3;
     const v = (b0<<16)|(b1<<8)|b2;
-    const x = (v>>17)&63, y = (v>>11)&63, z = (v>>5)&63, t = v&31;
+    const x = wide ? (v>>18)&63 : (v>>17)&63;
+    const y = wide ? (v>>12)&63 : (v>>11)&63;
+    const z = wide ? (v>>6)&63  : (v>>5)&63;
+    const t = wide ? (v&63)     : (v&31);
     if(x>=W||y>=H||z>=D) return null;
     edits[x+','+y+','+z] = t;
   }
@@ -5384,6 +5995,7 @@ const BAG_ITEMS = [
   {icon:'🎬', name:'15초 도전',      desc:'영상으로 찍어 자랑하기', go:()=>openShorts()},
   {icon:'👫', name:'친구',           desc:'초대 코드 주고받기',     go:()=>openFriends()},
   {icon:'💬', name:'아이디어',       desc:'넣고 싶은 걸 말해요',    go:()=>openIdeas()},
+  {icon:'🛠️', name:'도도 스튜디오',  desc:'내 게임 만들기 · 친구 게임 하기', go:()=>openStudioHome()},
   {icon:'🏅', name:'내 배지',        desc:'모은 배지 구경하기',     go:()=>openBadges()},
   {icon:'📤', name:'월드 나누기',    desc:'내 건축물을 친구에게',   go:()=>openShare()},
   {icon:'🔨', name:'제작대',         desc:'부순 재료로 특별 블록',  go:()=>openCraft()},
@@ -6001,6 +6613,1035 @@ const Rec = (function(){
 })();
 
 
+
+/* ═══════════════════════════════════════════════════
+   20. 🎴 게임 카드 — 게임 하나를 글자 뭉치 한 덩어리로
+   ───────────────────────────────────────────────────
+   도도블록을 "게임"에서 "게임을 담는 그릇"으로 바꾸는 핵심.
+   게임 하나에 들어 있는 것이 전부 이 덩어리 안에 있다.
+
+     {v, id, title, author, ground, edits, opt, rules}
+
+   그래서 나머지가 전부 단순해진다.
+     스튜디오 = 이 덩어리를 고치는 일
+     플레이   = 이 덩어리를 읽고 돌리는 일
+     나누기   = 이 덩어리를 글자로 눌러 담는 일
+     도도AI   = 이 덩어리를 말로 고쳐 주는 일
+
+   마법 블록(🚩🏁🪙…)을 따로 된 목록이 아니라 그냥 블록 번호(18~26)로
+   만들었기 때문에, edits 하나에 지형도 마법 블록도 같이 들어간다.
+   저장·되감기·친구에게 보내기 코드를 한 줄도 새로 안 짜도 된다.
+   ═══════════════════════════════════════════════════ */
+const GAMES_KEY = 'dodo_games';
+const GAME_MAX  = 5;                 // 브라우저 저장 공간을 생각해서 5개까지
+
+const GROUNDS = [
+  {id:'flat',   icon:'🟩', name:'평평한 판', desc:'제일 만들기 쉬워요'},
+  {id:'island', icon:'🏝️', name:'작은 섬',   desc:'언덕과 나무가 있어요'},
+  {id:'sky',    icon:'☁️', name:'허공',      desc:'발판 하나에서 시작해요'},
+];
+const GOALS = [
+  {id:'reach',   icon:'🏁', name:'골인까지 가기', tip:'🏁 골인에 닿으면 이겨요'},
+  {id:'collect', icon:'🪙', name:'다 모으기',     tip:'🪙 코인을 다 먹으면 이겨요'},
+  {id:'high',    icon:'🧗', name:'제일 높이',     tip:'시간 안에 제일 높이 올라가요'},
+  {id:'survive', icon:'⏱️', name:'버티기',        tip:'시간이 끝날 때까지 살아남아요'},
+  {id:'quiz',    icon:'❓', name:'퀴즈 다 맞히기', tip:'⭕ 를 다 밟으면 이겨요 (❌ 를 밟으면 틀려요)'},
+  {id:'seek',    icon:'🦤', name:'숨은 도도 찾기', tip:'🦤 숨은 도도를 다 찾으면 이겨요'},
+];
+const goalDef = id => GOALS.find(g=>g.id===id) || GOALS[0];
+
+/* ── 🎭 게임 장르 ──
+   "블록 쌓기 말고 다른 게임도 만들고 싶으면?" 에 대한 답이다.
+   장르를 고르면 세 가지가 한꺼번에 바뀐다:
+     ① 2 규칙 단계의 블록 바 (그 장르에 필요한 마법 블록만 나온다)
+     ② 이기는 방법의 기본값
+     ③ 도도AI 가 깔아 주는 기본 판(템플릿)
+   장르는 '꾸러미'일 뿐이라, 언제든 다른 블록을 꺼내 섞어도 된다. */
+const KINDS = [
+  {id:'obby',     icon:'🧗', name:'점프맵',      desc:'발판을 뛰어서 골인까지',
+   ground:'flat',   goal:'reach',   tmpl:'tmplObby',
+   bar:[M_START, M_GOAL, M_COIN, M_TRAP, M_CHECK, TRAMP, M_VANISH, M_SIGN, M_STAR]},
+  {id:'treasure', icon:'💎', name:'보물찾기',    desc:'숨긴 코인을 다 모으기',
+   ground:'island', goal:'collect', tmpl:'tmplTreasure',
+   bar:[M_START, M_GOAL, M_COIN, M_STAR, M_KEY, M_DOOR, M_SIGN, M_CHECK, M_TRAP]},
+  {id:'maze',     icon:'🌀', name:'미로·방탈출', desc:'열쇠를 찾아 문을 열고 나가기',
+   ground:'flat',   goal:'reach',   tmpl:'tmplMaze',
+   bar:[M_START, M_GOAL, M_KEY, M_DOOR, M_SIGN, M_CHECK, M_COIN, M_TRAP, M_STAR]},
+  {id:'dodge',    icon:'⚡', name:'피하기',      desc:'깜빡이는 함정을 피해 버티기',
+   ground:'flat',   goal:'survive', tmpl:'tmplDodge',
+   bar:[M_START, M_GOAL, M_BLINK, M_VANISH, M_TRAP, M_CHECK, M_COIN, M_SIGN, M_STAR]},
+  {id:'race',     icon:'🏃', name:'달리기 시합', desc:'정해진 시간 안에 결승선까지',
+   ground:'flat',   goal:'reach',   tmpl:'tmplRace',
+   bar:[M_START, M_GOAL, M_CHECK, TRAMP, M_COIN, M_TRAP, M_VANISH, M_SIGN, M_STAR]},
+  {id:'quiz',     icon:'❓', name:'퀴즈',        desc:'문제를 읽고 ⭕ ❌ 중에 밟기',
+   ground:'flat',   goal:'quiz',    tmpl:'tmplQuiz',
+   bar:[M_START, M_GOAL, M_SIGN, M_YES, M_NO, M_CHECK, M_COIN, M_STAR, M_TRAP]},
+  {id:'seek',     icon:'🦤', name:'숨바꼭질',    desc:'숨은 도도를 다 찾아내기',
+   ground:'island', goal:'seek',    tmpl:'tmplSeek',
+   bar:[M_START, M_GOAL, M_DODO, M_SIGN, M_KEY, M_DOOR, M_CHECK, M_COIN, M_STAR]},
+  {id:'free',     icon:'🎨', name:'자유롭게',    desc:'내 마음대로 — 다 꺼내 써요',
+   ground:'flat',   goal:'reach',   tmpl:'',
+   bar:[M_START, M_GOAL, M_COIN, M_STAR, M_TRAP, M_KEY, M_DOOR, M_SIGN, M_CHECK]},
+];
+const kindDef = id => KINDS.find(k=>k.id===id) || KINDS[KINDS.length-1];
+
+function newGameId(){
+  const C = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let s = 'G';
+  for(let i=0;i<5;i++) s += C[(Math.random()*C.length)|0];
+  return s;
+}
+function newGame(title, ground, kind){
+  const k = kindDef(kind || 'free');
+  return {
+    v:1, id:newGameId(), title:title || '내 게임', author:state.nick || '', made:dayKey(new Date()),
+    kind:k.id, ground:ground || k.ground,
+    edits:{}, opt:{},
+    rules:{goal:k.goal, time:60, lives:3, jump:1, need:0}
+  };
+}
+/* 어디서 왔든 모양이 온전한 게임 카드로 만들어 준다 */
+function fixGame(g){
+  if(!g || typeof g !== 'object') return null;
+  g.v = 1;
+  g.id = g.id || newGameId();
+  g.title = String(g.title || '내 게임').slice(0, 20);
+  g.author = String(g.author || '').slice(0, 14);
+  g.ground = GROUNDS.some(x=>x.id===g.ground) ? g.ground : 'flat';
+  g.kind = KINDS.some(x=>x.id===g.kind) ? g.kind : 'free';
+  g.edits = g.edits || {};
+  g.opt   = g.opt   || {};
+  const r = g.rules || {};
+  g.rules = {
+    goal : GOALS.some(x=>x.id===r.goal) ? r.goal : 'reach',
+    time : clamp(r.time|0, 0, 600),
+    lives: clamp(r.lives|0, 0, 9),
+    jump : clamp(r.jump|0 || 1, 1, 3),
+    need : Math.max(0, r.need|0)
+  };
+  return g;
+}
+
+const Games = {
+  all(){
+    let a = null;
+    try{ a = JSON.parse(localStorage.getItem(GAMES_KEY)); }catch(e){}
+    return Array.isArray(a) ? a.map(fixGame).filter(Boolean) : [];
+  },
+  save(list){
+    try{ localStorage.setItem(GAMES_KEY, JSON.stringify(list.slice(0, GAME_MAX))); return true; }
+    catch(e){ return false; }
+  },
+  put(g){
+    const a = this.all().filter(x => x.id !== g.id);
+    a.unshift(g);
+    return this.save(a);
+  },
+  get(id){ return this.all().find(g => g.id === id) || null; },
+  del(id){ this.save(this.all().filter(g => g.id !== id)); }
+};
+
+/* ---- 게임 카드 ↔ 글자 코드 (친구에게 보내는 것) ----
+   섬 코드(BWS1)와 똑같은 틀이다. 규칙과 설정만 더 담는다. */
+function gameCode(g){
+  return packCode('BWG1', {
+    t:g.title, a:g.author, g:g.ground, k:g.kind, r:g.rules, o:g.opt, w:encodeEdits(g.edits)
+  });
+}
+function readGameCode(code){
+  const m = unpackCode('BWG1', code);
+  if(!m || !m.w) return null;
+  const e = decodeWorld(m.w);
+  if(!e) return null;
+  return fixGame({
+    id:newGameId(), title:m.t, author:m.a, made:dayKey(new Date()),
+    ground:m.g, kind:m.k, edits:e, opt:m.o, rules:m.r
+  });
+}
+
+/* ---- 게임 안에서 마법 블록 찾기 ---- */
+function magicIn(g, t){
+  const out = [];
+  if(!g) return out;
+  for(const k in g.edits){
+    if((g.edits[k]|0) === t){
+      const a = k.split(',');
+      out.push({x:+a[0], y:+a[1], z:+a[2], k:k});
+    }
+  }
+  return out;
+}
+function magicCount(g, t){ return magicIn(g, t).length; }
+
+/* ---- 방 바꾸기 ---- */
+function modeGo(mode, game, opt){
+  opt = opt || {};
+  try{
+    sessionStorage.setItem(MODE_KEY, JSON.stringify({
+      mode:mode, game:game, from:opt.from || null, at:opt.at || null
+    }));
+  }catch(e){
+    showHint('😢 저장 공간이 모자라서 못 갔어요', 2600);
+    Sound.deny();
+    return false;
+  }
+  saveNow();
+  location.reload();
+  return true;
+}
+function modeBoot(){
+  let d = null;
+  try{ d = JSON.parse(sessionStorage.getItem(MODE_KEY) || 'null'); }catch(e){}
+  if(!d || !d.game){ Mode.now = 'island'; PLAY_MODE = false; return; }
+  const g = fixGame(d.game);
+  if(!g){ Mode.now = 'island'; PLAY_MODE = false; return; }
+  Mode.now  = (d.mode === 'play') ? 'play' : 'studio';
+  Mode.game = g;
+  Mode.from = d.from || null;
+  Mode.at   = d.at || null;
+  PLAY_MODE = inPlay();
+}
+function modeExitToIsland(){
+  try{ sessionStorage.removeItem(MODE_KEY); }catch(e){}
+  location.reload();
+}
+
+/* ---- 게임용 바닥 만들기 (섬 지형 대신) ---- */
+const GAME_GY = 12;                  // 게임 바닥 높이
+let baseVox = null;                  // 게임을 만들기 전의 바닥 (달라진 칸만 저장하려고)
+function generateGameGround(kind){
+  if(kind === 'island'){ generateWorld(); return; }
+  if(kind === 'sky'){
+    for(let x=30;x<=34;x++) for(let z=30;z<=34;z++){
+      setBlock(x, GAME_GY, z, PLANK, true);
+      heightMap[z*W+x] = GAME_GY + 1;
+    }
+    SPAWN.x = 32.5; SPAWN.z = 32.5; SPAWN.y = GAME_GY + 1.2;
+    worldDirty = true;
+    return;
+  }
+  for(let x=0;x<W;x++) for(let z=0;z<D;z++){
+    setBlock(x, GAME_GY-3, z, STONE, true);
+    setBlock(x, GAME_GY-2, z, DIRT,  true);
+    setBlock(x, GAME_GY-1, z, DIRT,  true);
+    setBlock(x, GAME_GY,   z, GRASS, true);
+    heightMap[z*W+x] = GAME_GY + 1;
+  }
+  SPAWN.x = 32.5; SPAWN.z = 32.5; SPAWN.y = GAME_GY + 1.2;
+  worldDirty = true;
+}
+/* 게임 카드에 담긴 블록을 월드에 놓는다 */
+function applyGameEdits(){
+  const g = Mode.game;
+  if(!g) return;
+  for(const k in g.edits){
+    const a = k.split(',');
+    setBlock(+a[0], +a[1], +a[2], g.edits[k]|0, true);
+  }
+  const st = magicIn(g, M_START)[0];
+  if(st){ SPAWN.x = st.x + 0.5; SPAWN.z = st.z + 0.5; SPAWN.y = st.y; }
+  worldDirty = true;
+}
+
+/* ═══════════════════════════════════════════════════
+   21. 🎮 플레이 모드 — 게임 카드를 규칙대로 돌린다
+   ───────────────────────────────────────────────────
+   로블록스 core 커리큘럼 2장에서 가져온 두 가지:
+     ① 먹은 코인은 없애지 않고 10초 뒤 되살린다
+        → 혼자서도 여러 번 돌면서 연습할 수 있다
+     ② 죽으면 모은 것이 0이 된다
+        → 그래야 "조심해서 가자"가 생긴다
+   ═══════════════════════════════════════════════════ */
+const Play = (function(){
+  const COIN_BACK  = 10;             // 먹은 코인이 되살아나기까지 (초)
+  const VAN_WAIT   = 0.55;           // ⏳ 발판이 밟힌 뒤 버티는 시간
+  const VAN_BACK   = 3;              // ⏳ 발판이 다시 돌아오기까지
+  const BLINK_ON   = 1.5;            // ⚡ 함정이 켜져 있는 시간 (꺼져 있는 시간도 같다)
+  const BLINK_MAX  = 80;             // 너무 많으면 화면이 버벅여서 여기까지만
+  let on = false, over = false;
+  let t0 = 0, left = 0, elapsed = 0;
+  let coins = 0, stars = 0, keyCnt = 0, lives = 3, high = 0, needCoins = 0;
+  let found = 0, right = 0, needFind = 0, needRight = 0;
+  const gone = {};                   // 먹어서 잠깐 사라진 자리 → 되살아날 시각
+  const vanQ = {};                   // ⏳ 밟혀서 곧 사라질 발판 → 사라질 시각
+  let blinks = [], blinkOn = null;   // ⚡ 깜빡 함정 자리 목록
+  let cp = null;                     // 체크포인트
+  let signAt = 0, lastSign = '';
+
+  function rules(){ return (Mode.game && Mode.game.rules) || {goal:'reach', time:60, lives:3, jump:1, need:0}; }
+
+  function start(){
+    const r = rules();
+    on = true; over = false;
+    t0 = performance.now()/1000; elapsed = 0;
+    left = r.time > 0 ? r.time : 0;
+    coins = 0; stars = 0; keyCnt = 0; high = 0; found = 0; right = 0;
+    lives = r.lives > 0 ? r.lives : 0;
+    JUMP_MUL = [1, 1, 1.18, 1.36][clamp(r.jump|0, 1, 3)];
+    needCoins = r.need > 0 ? r.need : magicCount(Mode.game, M_COIN);
+    needFind  = magicCount(Mode.game, M_DODO);
+    needRight = 0;
+    for(const t of [M_YES, M_NO]) for(const m of magicIn(Mode.game, t)){
+      if(padRight(m.x, m.y, m.z, t)) needRight++;
+    }
+    for(const k in gone) delete gone[k];
+    for(const k in vanQ) delete vanQ[k];
+    blinks = magicIn(Mode.game, M_BLINK).slice(0, BLINK_MAX);
+    blinkOn = null;
+    cp = null;
+    document.body.classList.add('playing');
+    $('#playgoal').textContent = goalDef(r.goal).icon + ' ' + goalDef(r.goal).tip;
+    hud();
+    showHint(goalDef(r.goal).icon + ' ' + goalDef(r.goal).tip, 3200);
+  }
+
+  function secsLeft(){ return Math.max(0, Math.ceil(left)); }
+
+  function hud(){
+    const r = rules();
+    $('#pvtime').textContent  = r.time > 0 ? ('⏱️ ' + secsLeft()) : ('⏱️ ' + Math.floor(elapsed) + '초');
+    $('#pvcoin').textContent  = '🪙 ' + coins + (r.goal === 'collect' ? ' / ' + needCoins : '');
+    $('#pvlife').textContent  = r.lives > 0 ? ('❤️ ' + lives) : '❤️ ∞';
+    $('#pvkey').style.display = keyCnt > 0 ? 'block' : 'none';
+    $('#pvkey').textContent   = '🔑 ' + keyCnt;
+    $('#pvhigh').style.display = r.goal === 'high' ? 'block' : 'none';
+    $('#pvhigh').textContent  = '🧗 ' + high;
+    $('#pvstar').style.display = stars > 0 ? 'block' : 'none';
+    $('#pvstar').textContent  = '⭐ ' + stars;
+    /* 🦤 숨바꼭질 · ❓ 퀴즈는 "몇 개 남았나" 가 제일 중요한 숫자다 */
+    const find = $('#pvfind');
+    if(r.goal === 'seek' && needFind){
+      find.style.display = 'block'; find.textContent = '🦤 ' + found + ' / ' + needFind;
+    } else if(r.goal === 'quiz' && needRight){
+      find.style.display = 'block'; find.textContent = '⭕ ' + right + ' / ' + needRight;
+    } else find.style.display = 'none';
+  }
+
+  /* 몸이 닿아 있는 마법 블록들 */
+  function touchingMagic(){
+    const out = [];
+    const x0 = Math.floor(player.x - PW), x1 = Math.floor(player.x + PW);
+    const y0 = Math.floor(player.y + 0.06), y1 = Math.floor(player.y + PH - 0.06);
+    const z0 = Math.floor(player.z - PW), z1 = Math.floor(player.z + PW);
+    for(let x=x0;x<=x1;x++) for(let y=y0;y<=y1;y++) for(let z=z0;z<=z1;z++){
+      const t = getBlock(x,y,z);
+      if(isMagic(t)) out.push({x:x, y:y, z:z, t:t});
+    }
+    return out;
+  }
+  function eat(x,y,z,t){
+    setBlock(x,y,z,AIR);
+    markDirtyAround(x,z);
+    gone[x+','+y+','+z] = {t:t, at:elapsed + COIN_BACK};
+  }
+  function optOf(x,y,z){
+    const g = Mode.game;
+    return (g && g.opt && g.opt[x+','+y+','+z]) || null;
+  }
+  /* ⭕ / ❌ 발판이 정답인가 — 따로 정해 두지 않았으면 ⭕ 가 정답이다 */
+  function padRight(x,y,z,t){
+    const o = optOf(x,y,z);
+    if(o && o.r !== undefined) return (o.r|0) === 1;
+    return t === M_YES;
+  }
+
+  /* 열쇠를 들고 문 옆에 가면 문이 열린다 */
+  function tryDoors(){
+    if(keyCnt <= 0) return;
+    const px = Math.floor(player.x), pz = Math.floor(player.z);
+    const py = Math.floor(player.y);
+    const around = [[1,0],[-1,0],[0,1],[0,-1],[0,0]];
+    for(const d of around) for(let dy=0; dy<=1; dy++){
+      const x = px+d[0], y = py+dy, z = pz+d[1];
+      if(getBlock(x,y,z) !== M_DOOR) continue;
+      /* 붙어 있는 문 칸을 통째로 연다 — 아이가 문을 2칸으로 세우는 일이 많다 */
+      const q = [[x,y,z]], seen = {};
+      let n = 0;
+      while(q.length && n < 40){
+        const c = q.pop();
+        const k = c.join(',');
+        if(seen[k]) continue;
+        seen[k] = 1;
+        if(getBlock(c[0],c[1],c[2]) !== M_DOOR) continue;
+        setBlock(c[0],c[1],c[2],AIR); markDirtyAround(c[0],c[2]); n++;
+        Particles.burst(c[0]+.5, c[1]+.5, c[2]+.5, 0xffb03a, 10, 3);
+        q.push([c[0]+1,c[1],c[2]],[c[0]-1,c[1],c[2]],[c[0],c[1]+1,c[2]],
+               [c[0],c[1]-1,c[2]],[c[0],c[1],c[2]+1],[c[0],c[1],c[2]-1]);
+      }
+      keyCnt--;
+      Sound.fanfare();
+      showHint('🔑 열쇠로 문을 열었어요!', 1800);
+      hud();
+      return;
+    }
+  }
+
+  function die(why){
+    const r = rules();
+    if(r.lives > 0){
+      lives--;
+      if(lives <= 0){ finish(false, why || '목숨을 다 썼어요'); return; }
+    }
+    /* 로블록스처럼 죽으면 모은 것이 0이 된다 — 그래야 조심해서 가게 된다 */
+    coins = 0;
+    for(const k in gone){ const g = gone[k]; g.at = 0; }
+    const at = cp || {x:SPAWN.x - 0.5, y:SPAWN.y, z:SPAWN.z - 0.5};
+    player.x = at.x + (cp ? 0.5 : 0.5);
+    player.z = at.z + (cp ? 0.5 : 0.5);
+    player.y = at.y + 0.2;
+    player.vx = player.vy = player.vz = 0;
+    Sound.deny();
+    Particles.burst(player.x, player.y+0.8, player.z, 0xd2455c, 22, 5);
+    showHint('☠️ 앗! ' + (r.lives > 0 ? '목숨 ' + lives + '개 남았어요 · ' : '') + '모은 코인은 0이 됐어요', 2400);
+    hud();
+  }
+
+  function finish(won, why){
+    if(over) return;
+    over = true; on = false;
+    FLYING = false;
+    const r = rules();
+    const score = r.goal === 'high' ? high : coins;
+    $('#presic').textContent   = won ? '🎉' : '😢';
+    $('#prestitle').textContent = won ? '이겼어요!' : '아쉬워요!';
+    let body = '';
+    if(won){
+      if(r.goal === 'reach')   body = '⏱️ ' + elapsed.toFixed(1) + '초 만에 골인!';
+      if(r.goal === 'collect') body = '🪙 코인 ' + coins + '개를 다 모았어요! (' + elapsed.toFixed(1) + '초)';
+      if(r.goal === 'high')    body = '🧗 ' + high + '칸까지 올라갔어요!';
+      if(r.goal === 'survive') body = '⏱️ ' + r.time + '초를 버텼어요!';
+      if(r.goal === 'quiz')    body = '❓ 문제 ' + right + '개를 다 맞혔어요! (' + elapsed.toFixed(1) + '초)';
+      if(r.goal === 'seek')    body = '🦤 숨은 도도 ' + found + '마리를 다 찾았어요! (' + elapsed.toFixed(1) + '초)';
+    } else {
+      body = why || '다시 해 볼까요?';
+    }
+    if(stars > 0) body += '\n⭐ 별 ' + stars + '개';
+    $('#presbody').textContent = body;
+    $('#presedit').style.display = (Mode.from === 'studio') ? 'block' : 'none';
+    $('#playres').style.display = 'flex';
+    if(document.pointerLockElement) document.exitPointerLock();
+    won ? Sound.fanfare() : Sound.deny();
+    if(won && inPlay()){
+      state.exp = state.exp;                 // 남의 게임을 깨도 내 진행도는 건드리지 않는다
+    }
+  }
+
+  function tick(dt){
+    if(!on || over) return;
+    const r = rules();
+    elapsed += dt;
+    if(r.time > 0){
+      left -= dt;
+      if(left <= 0){
+        if(r.goal === 'survive' || r.goal === 'high') finish(true);
+        else finish(false, '시간이 다 됐어요');
+        return;
+      }
+    }
+    const h = Math.max(0, Math.round(player.y - GAME_GY));
+    if(h > high) high = h;
+
+    /* 되살아날 때가 된 코인·발판 되돌리기 */
+    for(const k in gone){
+      const it = gone[k];
+      if(it.t !== M_COIN && it.t !== M_VANISH){ continue; }
+      if(elapsed >= it.at){
+        const a = k.split(',');
+        setBlock(+a[0], +a[1], +a[2], it.t);
+        markDirtyAround(+a[0], +a[2]);
+        delete gone[k];
+      }
+    }
+
+    /* ⏳ 사라지는 발판 — 밟은 순간부터 재기 시작한다.
+       "밟으면 바로 사라진다" 로 하면 아이가 절대 못 건너서 재미가 없다. */
+    if(player.onGround){
+      const fy = Math.floor(player.y - 0.12);
+      for(let ox=-1; ox<=1; ox+=2) for(let oz=-1; oz<=1; oz+=2){
+        const fx = Math.floor(player.x + ox*PW*0.9), fz = Math.floor(player.z + oz*PW*0.9);
+        if(getBlock(fx, fy, fz) !== M_VANISH) continue;
+        const k = fx+','+fy+','+fz;
+        if(vanQ[k] === undefined){
+          vanQ[k] = elapsed + VAN_WAIT;
+          Particles.burst(fx+.5, fy+1.05, fz+.5, 0xc9b6ff, 8, 2.2);
+        }
+      }
+    }
+    for(const k in vanQ){
+      if(elapsed < vanQ[k]) continue;
+      const a = k.split(','), x = +a[0], y = +a[1], z = +a[2];
+      delete vanQ[k];
+      if(getBlock(x,y,z) !== M_VANISH) continue;
+      setBlock(x,y,z,AIR); markDirtyAround(x,z);
+      gone[k] = {t:M_VANISH, at:elapsed + VAN_BACK};
+      Sound.breakBlock();
+      Particles.burst(x+.5, y+.5, z+.5, 0xc9b6ff, 14, 3.4);
+    }
+
+    /* ⚡ 깜빡 함정 — 전부 같은 박자로 켜졌다 꺼진다. 박자가 같아야 아이가 읽을 수 있다. */
+    if(blinks.length){
+      const nowOn = (Math.floor(elapsed / BLINK_ON) % 2) === 0;
+      if(nowOn !== blinkOn){
+        blinkOn = nowOn;
+        for(const b of blinks){
+          setBlock(b.x, b.y, b.z, nowOn ? M_BLINK : AIR);
+          markDirtyAround(b.x, b.z);
+        }
+      }
+    }
+
+    for(const m of touchingMagic()){
+      if(m.t === M_COIN){
+        const o = optOf(m.x,m.y,m.z);
+        const worth = (o && o.v) ? (o.v|0) : 1;
+        coins += worth;
+        eat(m.x,m.y,m.z,M_COIN);
+        Sound.coin();
+        Particles.burst(m.x+.5, m.y+.5, m.z+.5, 0xffc82e, 14, 3.5);
+        if(r.goal === 'collect' && coins >= needCoins && magicCount(Mode.game, M_GOAL) === 0){
+          finish(true); return;
+        }
+        hud();
+      } else if(m.t === M_STAR){
+        stars++;
+        setBlock(m.x,m.y,m.z,AIR); markDirtyAround(m.x,m.z);
+        Sound.fanfare();
+        Particles.burst(m.x+.5, m.y+.5, m.z+.5, 0xffe45c, 22, 5);
+        hud();
+      } else if(m.t === M_KEY){
+        keyCnt++;
+        setBlock(m.x,m.y,m.z,AIR); markDirtyAround(m.x,m.z);
+        Sound.click();
+        showHint('🔑 열쇠를 얻었어요! 🚪 문 옆에 가 보세요', 2200);
+        hud();
+      } else if(m.t === M_TRAP){
+        die('함정에 닿았어요');
+        return;
+      } else if(m.t === M_BLINK){
+        die('⚡ 깜빡 함정에 닿았어요');
+        return;
+      } else if(m.t === M_DODO){
+        found++;
+        setBlock(m.x,m.y,m.z,AIR); markDirtyAround(m.x,m.z);
+        Sound.fanfare();
+        Particles.burst(m.x+.5, m.y+.5, m.z+.5, 0x8fd9cf, 18, 4);
+        showHint('🦤 도도를 찾았어요! ' + found + (needFind ? ' / ' + needFind : ''), 1900);
+        hud();
+        if(r.goal === 'seek' && needFind && found >= needFind &&
+           magicCount(Mode.game, M_GOAL) === 0){ finish(true); return; }
+      } else if(m.t === M_YES || m.t === M_NO){
+        const o = optOf(m.x,m.y,m.z);
+        const word = (o && o.s) ? o.s : '';
+        if(padRight(m.x, m.y, m.z, m.t)){
+          right++;
+          setBlock(m.x,m.y,m.z,AIR); markDirtyAround(m.x,m.z);
+          Sound.coin();
+          Particles.burst(m.x+.5, m.y+.5, m.z+.5, 0x4fd86a, 18, 4);
+          showHint('🎉 맞았어요! ' + (word ? word + ' · ' : '') +
+                   right + (needRight ? ' / ' + needRight : ''), 2000);
+          hud();
+          if(r.goal === 'quiz' && needRight && right >= needRight &&
+             magicCount(Mode.game, M_GOAL) === 0){ finish(true); return; }
+        } else {
+          die(word ? ('😢 ' + word) : '😢 틀렸어요!');
+          return;
+        }
+      } else if(m.t === M_CHECK){
+        const same = cp && cp.x === m.x && cp.y === m.y && cp.z === m.z;
+        if(!same){
+          cp = {x:m.x, y:m.y, z:m.z};
+          Sound.click();
+          showHint('🔵 여기서 다시 시작해요!', 1700);
+        }
+      } else if(m.t === M_SIGN){
+        const o = optOf(m.x,m.y,m.z);
+        const txt = (o && o.s) ? o.s : '안녕!';
+        if(txt !== lastSign || elapsed - signAt > 4){
+          lastSign = txt; signAt = elapsed;
+          showHint('💬 ' + txt, 2600);
+        }
+      } else if(m.t === M_GOAL){
+        if(r.goal === 'collect' && coins < needCoins){
+          showHint('🪙 코인이 ' + (needCoins - coins) + '개 더 있어야 해요!', 1800);
+        } else if(r.goal === 'quiz' && right < needRight){
+          showHint('❓ 문제가 ' + (needRight - right) + '개 남았어요!', 1800);
+        } else if(r.goal === 'seek' && found < needFind){
+          showHint('🦤 도도가 ' + (needFind - found) + '마리 더 숨어 있어요!', 1800);
+        } else if(r.goal === 'high' || r.goal === 'survive'){
+          finish(true); return;
+        } else {
+          finish(true); return;
+        }
+      }
+    }
+    tryDoors();
+    if(player.y < -6) die('아래로 떨어졌어요');
+    hud();
+  }
+
+  function retry(){
+    $('#playres').style.display = 'none';
+    const at = magicIn(Mode.game, M_START)[0];
+    player.x = at ? at.x + 0.5 : SPAWN.x;
+    player.z = at ? at.z + 0.5 : SPAWN.z;
+    player.y = (at ? at.y : SPAWN.y) + 0.2;
+    player.vx = player.vy = player.vz = 0;
+    /* 먹었던 것들을 전부 되돌린다 */
+    for(const k in vanQ) delete vanQ[k];
+    const g = Mode.game;
+    for(const k in g.edits){
+      const t = g.edits[k]|0;
+      if(!isMagic(t)) continue;
+      const a = k.split(',');
+      if(getBlock(+a[0],+a[1],+a[2]) !== t){ setBlock(+a[0],+a[1],+a[2],t); markDirtyAround(+a[0],+a[2]); }
+    }
+    start();
+  }
+
+  return {start, tick, retry, isOn(){ return on; }, isOver(){ return over; },
+          finish, lives(){ return lives; },
+          score(){ return {coins:coins, stars:stars, time:elapsed, high:high,
+                           found:found, right:right, needFind:needFind, needRight:needRight}; }};
+})();
+
+/* ═══════════════════════════════════════════════════
+   22. 🛠️ 도도 스튜디오 — 아이가 게임을 만드는 방
+   ───────────────────────────────────────────────────
+   로블록스 core 커리큘럼의 순서를 그대로 따랐다.
+     1 판 짓기(그레이박스) → 2 규칙 → 3 꾸미기
+   단계를 고르면 아래 블록 바가 통째로 바뀐다.
+   로블록스 스튜디오에서 탭을 고르면 도구 모음이 바뀌는 것과 같다.
+
+   그레이박스 장에서 제일 강조하는 원칙도 가져왔다 —
+   "고치기 쉬울 때 레이아웃 문제를 먼저 찾아라."
+   그래서 닿을 수 없는 자리에 발판을 놓으면 바로 알려 준다.
+   ═══════════════════════════════════════════════════ */
+const Studio = (function(){
+  const STEPS = [
+    {icon:'🧱', name:'판 짓기', tip:'블록을 쌓아 놀 곳을 만들어요'},
+    {icon:'🎯', name:'규칙',    tip:'마법 블록을 놓고 이기는 방법을 정해요'},
+    {icon:'🌷', name:'꾸미기',  tip:'예쁘게 꾸며요'},
+  ];
+  const BARS = [
+    [GRASS, STONE, WOOD, PLANK, GLASS, RAINBOW, SAND, ICE, TRAMP],
+    null,                          // 2 규칙 단계는 장르가 정한다 (KINDS[].bar)
+    [LEAF, LAMP, GOLD, PATH_B, PATH_S, PATH_G, RAINBOW, GLASS, WATER],
+  ];
+  let step = 0;
+  let pick = null;                 // 방금 놓은 마법 블록 {x,y,z,t}
+  let nudgeAt = -99, nudged = {};  // 도도AI 가 먼저 말 거는 간격
+
+  /* 마법 블록은 14종인데 칸은 9개다. 장르가 그 중 쓸 것만 꺼내 준다.
+     아이가 "이게 다 뭐지" 하고 얼어붙는 것을 막는 게 목적이다. */
+  function bar(){
+    if(step !== 1) return BARS[step];
+    const g = game();
+    return kindDef(g && g.kind).bar;
+  }
+  function game(){ return Mode.game; }
+
+  function save(){
+    if(!inStudio() || !game()) return;
+    Games.put(game());
+  }
+  function dirty(){ save(); list(); nudge('edit'); }
+
+  /* ── 위 띠: 단계 3개 + 해보기 + 나가기 ── */
+  function head(){
+    const g = game(); if(!g) return;
+    $('#stname').textContent = g.title;
+    const row = $('#ststeps');
+    row.innerHTML = '';
+    STEPS.forEach((s,i)=>{
+      const el = document.createElement('button');
+      el.className = 'stchip' + (i===step ? ' on' : '');
+      el.textContent = (i+1) + ' ' + s.icon + ' ' + s.name;
+      el.addEventListener('click', ()=>setStep(i));
+      row.appendChild(el);
+    });
+    $('#stgoal').textContent = '🎯 ' + goalDef(g.rules.goal).name;
+    $('#stname').textContent = kindDef(g.kind).icon + ' ' + g.title;
+  }
+  function setStep(i){
+    step = clamp(i, 0, 2);
+    selectedSlot = 0;
+    buildHotbar();
+    head();
+    showHint((step+1) + ' ' + STEPS[step].icon + ' ' + STEPS[step].name + ' — ' + STEPS[step].tip, 2600);
+    Sound.click();
+  }
+
+  /* ── 물건 목록 — "골인을 어디 놨더라?" 를 잡아 준다 ── */
+  function list(){
+    const g = game(); if(!g) return;
+    const box = $('#stlist');
+    box.innerHTML = '';
+    let any = false;
+    for(const t of MAGIC_LIST){
+      const found = magicIn(g, t);
+      if(!found.length) continue;
+      any = true;
+      const el = document.createElement('button');
+      el.className = 'stitem';
+      el.textContent = BLOCKS[t].icon + ' ' + found.length;
+      el.title = BLOCKS[t].name + ' ' + found.length + '개 — 누르면 그 자리로 가요';
+      el.addEventListener('click', ()=>goTo(found[0]));
+      box.appendChild(el);
+    }
+    /* 빠진 것 알려 주기 */
+    const miss = [];
+    if(!magicCount(g, M_START)) miss.push('🚩 시작점');
+    if(g.rules.goal === 'reach' && !magicCount(g, M_GOAL)) miss.push('🏁 골인');
+    if(g.rules.goal === 'collect' && !magicCount(g, M_COIN)) miss.push('🪙 코인');
+    if(g.rules.goal === 'quiz' && !magicCount(g, M_YES))    miss.push('⭕ 맞음');
+    if(g.rules.goal === 'seek' && !magicCount(g, M_DODO))   miss.push('🦤 숨은 도도');
+    if(g.rules.goal === 'survive' && !g.rules.time)         miss.push('⏱️ 버틸 시간');
+    const warn = $('#stwarn');
+    warn.style.display = miss.length ? 'block' : 'none';
+    warn.textContent = miss.length ? ('아직 없어요 — ' + miss.join(' · ')) : '';
+    if(!any && !miss.length) box.innerHTML = '';
+  }
+  function goTo(p){
+    player.x = p.x + 0.5; player.z = p.z + 0.5;
+    player.y = p.y + 1.2;
+    player.vx = player.vy = player.vz = 0;
+    Particles.burst(p.x+.5, p.y+.5, p.z+.5, 0x9fd8ff, 16, 4);
+    Sound.bounce();
+  }
+
+  /* ── 설정 띠 — 로블록스의 "속성" 창을 한 줄로 줄인 것 ──
+     방금 놓은 것만 다루니까 아이가 헤매지 않는다. */
+  function strip(x,y,z,t){
+    if(!inStudio()) return;
+    pick = {x:x, y:y, z:z, t:t};
+    const el = $('#ststrip');
+    if(!isMagic(t)){ el.style.display = 'none'; return; }
+    const g = game();
+    const k = x+','+y+','+z;
+    const o = g.opt[k] || {};
+    let html = '<span class="stlbl">' + BLOCKS[t].icon + ' ' + BLOCKS[t].name + '을(를) 놨어요</span>';
+    if(t === M_SIGN || t === M_YES || t === M_NO){
+      html += '<input id="stsign" class="stinput" maxlength="24" placeholder="' +
+              (t === M_SIGN ? '여기서 점프!' : '밟으면 나올 말') + '" value="' +
+              escapeHtml(o.s || '') + '">';
+    }
+    if(t === M_YES || t === M_NO){
+      /* 발판 그림(⭕/❌)과 정답은 따로다. 그래야 "X 가 정답인 문제" 도 낼 수 있다. */
+      const cur = (o.r === undefined) ? (t === M_YES ? 1 : 0) : (o.r|0);
+      html += '<span class="stlbl">이 발판은</span>' +
+              '<button class="stmini' + (cur ? ' on' : '') + '" data-r="1">✅ 정답</button>' +
+              '<button class="stmini' + (cur ? '' : ' on') + '" data-r="0">🚫 오답</button>';
+    }
+    if(t === M_COIN){
+      html += '<span class="stlbl">점수</span>';
+      [1,2,5].forEach(v=>{
+        html += '<button class="stmini' + (((o.v|0)||1)===v ? ' on' : '') + '" data-v="' + v + '">' + v + '</button>';
+      });
+    }
+    html += '<button class="stmini del" id="stdel">🗑️ 지우기</button>';
+    el.innerHTML = html;
+    el.style.display = 'flex';
+    const sign = $('#stsign');
+    if(sign){
+      sign.addEventListener('input', ()=>{
+        const gg = game();
+        gg.opt[k] = Object.assign({}, gg.opt[k], {s:sign.value.slice(0,24)});
+        save();
+      });
+    }
+    el.querySelectorAll('.stmini[data-r]').forEach(b=>{
+      b.addEventListener('click', ()=>{
+        const gg = game();
+        gg.opt[k] = Object.assign({}, gg.opt[k], {r:+b.dataset.r});
+        Sound.click();
+        strip(x,y,z,t);
+        save();
+      });
+    });
+    el.querySelectorAll('.stmini[data-v]').forEach(b=>{
+      b.addEventListener('click', ()=>{
+        const gg = game();
+        gg.opt[k] = Object.assign({}, gg.opt[k], {v:+b.dataset.v});
+        Sound.click();
+        strip(x,y,z,t);
+      });
+    });
+    const del = $('#stdel');
+    if(del) del.addEventListener('click', ()=>{
+      setBlock(x,y,z,AIR); markDirtyAround(x,z);
+      recordEdit(x,y,z,AIR);
+      delete game().opt[k];
+      el.style.display = 'none';
+      Sound.breakBlock();
+      dirty();
+    });
+  }
+  function hideStrip(){ const el = $('#ststrip'); if(el) el.style.display = 'none'; }
+
+  /* ── 닿을 수 있나 봐 주기 (그레이박스 원칙) ──
+     측정해 둔 점프 거리: 같은 높이 4.27칸, 한 칸 위 3.41칸 (10.9절 주석).
+     너무 먼 자리에 발판을 놓으면 아이가 직접 뛰어 보기 전에 알려 준다. */
+  function reach(dy){
+    if(dy <= 0) return 4.2 + Math.min(4, -dy) * 0.55;
+    if(dy === 1) return 3.4;
+    if(dy === 2) return 2.1;
+    return -1;
+  }
+  function checkReach(x,y,z){
+    if(step !== 0) return;
+    if(getBlock(x, y+1, z) !== AIR) return;         // 그 위에 설 수 없으면 볼 것 없다
+    let ok = false;
+    for(let ox=-7; ox<=7 && !ok; ox++) for(let oz=-7; oz<=7 && !ok; oz++){
+      if(ox===0 && oz===0) continue;
+      const px = x+ox, pz = z+oz;
+      if(px<0||px>=W||pz<0||pz>=D) continue;
+      for(let py=Math.max(0,y-8); py<=Math.min(H-2, y+3); py++){
+        if(!solidAt(px,py,pz) || solidAt(px,py+1,pz)) continue;
+        const r = reach(y - py);
+        if(r < 0) continue;
+        if(Math.hypot(ox,oz) <= r){ ok = true; break; }
+      }
+    }
+    if(!ok){
+      Particles.burst(x+.5, y+1.2, z+.5, 0xff5d5d, 16, 3.4);
+      showHint('🤔 여기는 뛰어서 못 닿아요! 가까이에 발판을 하나 더 놓아 주세요', 2600);
+    }
+  }
+
+  /* ── 해보기 ── */
+  function test(here){
+    const g = game(); if(!g) return;
+    if(!magicCount(g, M_START) && !here){
+      showHint('🚩 먼저 시작점을 놓아 주세요! (2 규칙 단계에서 꺼낼 수 있어요)', 2800);
+      Sound.deny();
+      setStep(1);
+      return;
+    }
+    save();
+    FLYING = false;
+    modeGo('play', g, {from:'studio', at: here ? {x:player.x, y:player.y, z:player.z} : null});
+  }
+  function exit(){
+    save();
+    modeExitToIsland();
+  }
+  function rename(){
+    const g = game(); if(!g) return;
+    const v = ($('#stnameinput').value || '').trim().slice(0, 20);
+    if(v){ g.title = v; save(); head(); showHint('✏️ 이름을 "' + v + '"(으)로 바꿨어요', 2000); }
+    $('#strename').style.display = 'none';
+  }
+
+  /* ── 이기는 방법 창 ── */
+  function openRules(){
+    const g = game(); if(!g) return;
+    rulesOpen = true;
+    $('#strules').style.display = 'flex';
+    if(document.pointerLockElement) document.exitPointerLock();
+    const box = $('#stgoals');
+    box.innerHTML = '';
+    GOALS.forEach(go=>{
+      const el = document.createElement('div');
+      el.className = 'goalcard' + (g.rules.goal === go.id ? ' on' : '');
+      el.innerHTML = '<div class="cic">' + go.icon + '</div><div class="cnm">' + go.name +
+                     '</div><div class="cds">' + go.tip + '</div>';
+      el.addEventListener('click', ()=>{ g.rules.goal = go.id; Sound.click(); save(); openRules(); head(); list(); });
+      box.appendChild(el);
+    });
+    knob('#sttime', [0,30,60,120,180], g.rules.time, v=>{ g.rules.time = v; },
+         v => v ? (v + '초') : '없음');
+    knob('#stlives', [0,1,3,5], g.rules.lives, v=>{ g.rules.lives = v; },
+         v => v ? (v + '개') : '무한');
+    knob('#stjump', [1,2,3], g.rules.jump, v=>{ g.rules.jump = v; },
+         v => ['','보통','높이','아주 높이'][v]);
+    Sound.shop();
+  }
+  function knob(sel, vals, cur, set, label){
+    const box = $(sel);
+    box.innerHTML = '';
+    vals.forEach(v=>{
+      const b = document.createElement('button');
+      b.className = 'stmini' + (cur === v ? ' on' : '');
+      b.textContent = label(v);
+      b.addEventListener('click', ()=>{ set(v); Sound.click(); save(); openRules(); head(); list(); });
+      box.appendChild(b);
+    });
+  }
+  function closeRules(){ rulesOpen = false; $('#strules').style.display = 'none'; }
+
+  /* ── 도도AI 가 먼저 말 걸기 ──
+     아이는 AI 에게 "뭘 물어봐야 하는지" 를 모른다. 그래서 AI 가 먼저 말한다.
+     같은 말을 두 번 하지 않고, 25초에 한 번을 넘지 않는다 (잔소리가 되면 끈다). */
+  function nudge(why){
+    if(!inStudio() || !doVisible()) return;
+    const g = game(); if(!g) return;
+    const now = performance.now()/1000;
+    let key = null, msg = null, btns = null;
+    const k = kindDef(g.kind);
+    if(!Object.keys(g.edits).length && k.tmpl){
+      key = 'tmpl';
+      msg = k.icon + ' ' + k.name + stEul(k.name) + ' 고르셨네!\n기본 판을 하나 깔아 줄까? 그 위에서 고치면 훨씬 쉬워 😎';
+      btns = [{t:'응, 깔아 줘', go:()=>{ doPush('me','기본 판 깔아 줘'); runTemplate(g.kind); }},
+              {t:'아니, 내가 만들래', go:()=>doSay('좋아! 1 🧱 판 짓기 에서 블록을 쌓아 봐.\n막히면 나한테 말해 줘 🦤', doSuggest())}];
+    } else if(!magicCount(g, M_START)){
+      key = 'start';
+      msg = '🚩 시작점이 아직 없어! 여기서 시작하겠다는 자리에 놔 줘야 해.';
+      btns = [{t:'🚩 시작점 놔 줘'}];
+    } else if(g.rules.goal === 'reach' && !magicCount(g, M_GOAL)){
+      key = 'goal';
+      msg = '🏁 골인이 없으면 게임이 안 끝나! 맨 끝에 놓아 줄까?';
+      btns = [{t:'🏁 골인 놔 줘'}];
+    } else if(g.rules.goal === 'quiz' && !magicCount(g, M_YES)){
+      key = 'yes';
+      msg = '❓ 퀴즈에는 ⭕ 가 있어야 해. 표지판에 문제를 쓰고 그 앞에 ⭕ 와 ❌ 를 놔 봐!';
+    } else if(g.rules.goal === 'seek' && !magicCount(g, M_DODO)){
+      key = 'dodo';
+      msg = '🦤 숨은 도도를 아직 안 숨겼어! 나무 뒤나 집 안에 숨겨 봐.';
+    } else if(!nudged.ready){
+      key = 'ready';
+      msg = '이제 게임이 돌아가! ▶ 해보기 를 눌러서 직접 해 봐 🎮\n어려우면 "더 쉽게 해 줘" 라고 말하면 돼.';
+      btns = [{t:'▶ 해볼래'}];
+    }
+    if(!key || nudged[key]) return;
+    if(now - nudgeAt < 25) return;
+    nudged[key] = 1; nudgeAt = now;
+    doSay(msg, btns);
+  }
+
+  function enter(){
+    document.body.classList.add('studio');
+    step = 0;
+    selectedSlot = 0;
+    buildHotbar();
+    head();
+    list();
+    hideStrip();
+    FLYING = true;
+    setAiDock(dockWide());
+    showHint('🛠️ 도도 스튜디오! 날아다니며 만들어요 · E 위 · Q 아래 · V 날기 끄기', 4200);
+    setTimeout(()=>nudge('enter'), 1200);
+  }
+
+  return {enter, setStep, step(){ return step; }, bar, save, dirty, list, head,
+          strip, hideStrip, checkReach, test, exit, rename, openRules, closeRules,
+          goTo, nudge, lastPick(){ return pick; }};
+})();
+let rulesOpen = false;
+
+/* ═══════════════════════════════════════════════════
+   22.5 🏠 스튜디오 문 — 섬에서 스튜디오로 들어가는 곳
+   ═══════════════════════════════════════════════════ */
+let studioHomeOpen = false;
+let shGround = null;                 // 아이가 바닥을 직접 고르면 여기 담긴다
+function openStudioHome(){
+  studioHomeOpen = true;
+  $('#studiohome').style.display = 'flex';
+  if(document.pointerLockElement) document.exitPointerLock();
+  renderStudioHome();
+  $('#shmsg').textContent = '';
+  $('#shcode').value = '';
+  Sound.shop();
+}
+function closeStudioHome(){ studioHomeOpen = false; $('#studiohome').style.display = 'none'; }
+
+function renderStudioHome(){
+  const box = $('#shlist');
+  const games = Games.all();
+  box.innerHTML = '';
+  if(!games.length){
+    box.innerHTML = '<div class="msub" style="margin:4px 0 0">아직 만든 게임이 없어요. 아래에서 새로 만들어 보세요!</div>';
+  }
+  games.forEach(g=>{
+    const el = document.createElement('div');
+    el.className = 'gamecard';
+    el.innerHTML =
+      '<div class="gtitle">' + kindDef(g.kind).icon + ' ' + escapeHtml(g.title) + '</div>' +
+      '<div class="gsub">' + kindDef(g.kind).name + ' · ' +
+        goalDef(g.rules.goal).icon + ' ' + goalDef(g.rules.goal).name +
+        ' · 블록 ' + Object.keys(g.edits).length + '칸</div>' +
+      '<div class="grow">' +
+        '<button class="mbtn green gplay" style="margin-top:0">▶ 하기</button>' +
+        '<button class="mbtn gedit" style="margin-top:0">🛠️ 고치기</button>' +
+        '<button class="mbtn gray gshare" style="margin-top:0">📤 보내기</button>' +
+        '<button class="mbtn gray grbx" style="margin-top:0" title="로블록스 스튜디오에서 열 수 있는 파일로 저장해요">🟥 로블록스로</button>' +
+      '</div>';
+    el.querySelector('.gplay').addEventListener('click', ()=>modeGo('play', g, {from:'island'}));
+    el.querySelector('.gedit').addEventListener('click', ()=>modeGo('studio', g));
+    el.querySelector('.gshare').addEventListener('click', ()=>{
+      $('#shcode').value = gameCode(g);
+      $('#shmsg').style.color = '#6b6480';
+      $('#shmsg').textContent = '아래 코드를 복사해서 카톡으로 보내면 친구가 이 게임을 할 수 있어요.';
+      const t = $('#shcode');
+      t.select(); t.setSelectionRange(0, 999999);
+      let ok = false;
+      try{ ok = document.execCommand('copy'); }catch(e){}
+      if(!ok && navigator.clipboard){ navigator.clipboard.writeText(t.value); ok = true; }
+      if(ok){
+        $('#shmsg').style.color = '#38b862';
+        $('#shmsg').textContent = '✅ 게임 코드를 복사했어요! 카톡으로 친구에게 보내 주세요.';
+      }
+      Sound.click();
+    });
+    el.querySelector('.grbx').addEventListener('click', ()=>{
+      const r = exportRbxlx(g);
+      $('#shmsg').style.color = r.ok ? '#38b862' : '#c0392b';
+      $('#shmsg').textContent = r.msg;
+      r.ok ? Sound.fanfare() : Sound.deny();
+    });
+    box.appendChild(el);
+  });
+  /* 새로 만들기 — 장르 8종을 먼저 고른다.
+     "블록 쌓기 말고 다른 게임" 은 여기서 갈린다. */
+  const nb = $('#shnew');
+  nb.innerHTML = '';
+  KINDS.forEach(k=>{
+    const el = document.createElement('div');
+    el.className = 'decor';
+    el.innerHTML = '<div class="cic">' + k.icon + '</div><div class="cnm">' + k.name +
+                   '</div><div class="cds">' + k.desc + '</div>';
+    el.addEventListener('click', ()=>{
+      if(Games.all().length >= GAME_MAX){
+        $('#shmsg').style.color = '#c0392b';
+        $('#shmsg').textContent = '게임은 ' + GAME_MAX + '개까지 만들 수 있어요. 하나를 지우고 만들어 주세요.';
+        Sound.deny();
+        return;
+      }
+      const g = newGame(k.name + ' ' + (Games.all().length + 1), shGround || k.ground, k.id);
+      Games.put(g);
+      modeGo('studio', g);
+    });
+    nb.appendChild(el);
+  });
+  /* 바닥은 안 골라도 된다 — 장르가 알아서 고른다 */
+  const gb = $('#shground');
+  gb.innerHTML = '';
+  GROUNDS.forEach(gr=>{
+    const b = document.createElement('button');
+    b.className = 'stmini' + (shGround === gr.id ? ' on' : '');
+    b.textContent = gr.icon + ' ' + gr.name;
+    b.addEventListener('click', ()=>{
+      shGround = (shGround === gr.id) ? null : gr.id;
+      Sound.click();
+      renderStudioHome();
+    });
+    gb.appendChild(b);
+  });
+}
+function studioHomeLoad(){
+  const code = $('#shcode').value;
+  const g = readGameCode(code);
+  if(!g){
+    $('#shmsg').style.color = '#c0392b';
+    $('#shmsg').textContent = '😢 코드가 이상해요. BWG1: 로 시작하는 게임 코드를 통째로 붙여넣어 주세요.';
+    Sound.deny();
+    return;
+  }
+  $('#shmsg').style.color = '#38b862';
+  $('#shmsg').textContent = '✅ "' + g.title + '" 을(를) 받았어요! 시작할게요…';
+  Sound.fanfare();
+  setTimeout(()=>modeGo('play', g, {from:'island'}), 600);
+}
+
 /* ═══════════════════════════════════════════════════
    12. 메인 루프
    ═══════════════════════════════════════════════════ */
@@ -6023,12 +7664,18 @@ function layoutUI(){
   const tools = $('#tools'), quests = $('#quests'), hotbar = $('#hotbar'), hint = $('#hint');
   if(!tools) return;
   document.body.classList.toggle('compact', innerHeight < 540);
+  /* 좁거나 낮은 화면(휴대폰)에서만 접기 단추를 보여 준다 */
+  document.body.classList.toggle('canfold',
+    document.body.classList.contains('touchmode') ||
+    innerWidth <= 820 || innerHeight <= 600);
 
   document.body.classList.remove('rowtools');
   tools.style.top = ''; tools.style.transform = '';
 
   const qb = quests ? quests.getBoundingClientRect().bottom : 0;
-  const hbTop = hotbar ? hotbar.getBoundingClientRect().top : innerHeight;
+  const hbr = hotbar ? hotbar.getBoundingClientRect() : null;
+  /* 스튜디오·플레이에선 블록 바가 숨는다 — 그럴 땐 화면 아래를 기준으로 잡는다 */
+  const hbTop = (hbr && hbr.height > 0) ? hbr.top : innerHeight - 16;
   const th = tools.getBoundingClientRect().height;
 
   /* 🪶 도도AI 줄은 블록 바 바로 위 — 대답 말풍선이 블록 바를 가리지 않게 */
@@ -6053,27 +7700,41 @@ function layoutUI(){
   }
 
   if(hint) hint.style.bottom = Math.round(innerHeight - barTop + 12) + 'px';
+  if(hint) hint.style.bottom = Math.round(innerHeight - hbTop + 12) + 'px';
+
+  /* 화면이 좁아지면 붙박이 패널 대신 원래 창(T)으로 돌아간다 */
+  if(started && inStudio()){
+    const want = dockWide();
+    if(want !== aiDock) setAiDock(want);
+  }
 }
 
 function stepGame(dt){
   updateLook(dt);
   updatePlayer(dt);
   updateCamera(dt);
-  updateAim();
-  updateActions(dt);
-  updateObby(dt);
-  Collect.update(dt);
-  updateCombo();
-  updatePets(dt);
-  updateGold(dt);
-  updateLabels(dt);
+  if(inIsland()){
+    updateAim();
+    updateActions(dt);
+    updateObby(dt);
+    Collect.update(dt);
+    updateCombo();
+    updatePets(dt);
+    updateGold(dt);
+    updateLabels(dt);
+    Shorts.update();
+    Orgel.update(dt);
+    Hunt.update(dt);
+    tutCheckMove();
+  } else if(inStudio()){
+    updateAim();
+    updateActions(dt);
+  } else {
+    Play.tick(dt);
+  }
   updateAmbient(dt);
   DayNight.update(dt);
   Lamps.update();
-  Shorts.update();
-  Orgel.update(dt);
-  Hunt.update(dt);
-  tutCheckMove();
 }
 
 function frame(t){
@@ -6723,29 +8384,45 @@ function drawHat(g, color, tall){
 buildTextures();
 buildMaterials();
 loadSave();
-generateWorld();
-buildShopHouse();
-buildObbies();
-loadVisit();                 // 친구 섬 구경 중인지 먼저 확인
-applyEdits();
-buildSign();
-if(VISIT){
-  document.body.classList.add('visiting');
-  $('#visittext').textContent = '🚢 ' + (VISIT.name || '친구의 섬') + ' 구경 중이에요 (여기서 지은 건 저장되지 않아요)';
+modeBoot();                  // 🚪 어느 방으로 들어왔는지 제일 먼저 본다 (섬 / 스튜디오 / 플레이)
+if(inIsland()){
+  generateWorld();
+  buildShopHouse();
+  buildObbies();
+  loadVisit();               // 친구 섬 구경 중인지 먼저 확인
+  applyEdits();
+  buildSign();
+  if(VISIT){
+    document.body.classList.add('visiting');
+    $('#visittext').textContent = '🚢 ' + (VISIT.name || '친구의 섬') + ' 구경 중이에요 (여기서 지은 건 저장되지 않아요)';
+  }
+} else {
+  generateGameGround(Mode.game.ground);   // 게임은 섬이 아니라 게임 바닥에서 시작한다
+  baseVox = voxels.slice();               // 바닥을 기억해 둔다 (달라진 칸만 게임 카드에 담으려고)
+  applyGameEdits();
 }
 resize();
 rebuildAll();
 buildHotbar();
 updateHud();
-Collect.build();
-refillQuests();
-npcGroup = buildNPC();
+if(inIsland()){
+  Collect.build();
+  refillQuests();
+  npcGroup = buildNPC();
+}
 applySkin(state.skin);
 $('#shopclose').addEventListener('click', leaveShop);
 $('#helpclose').addEventListener('click', ()=>{ $('#help').style.display='none'; });
 // 어두운 바깥쪽을 눌러도 나가기
 $('#shop').addEventListener('click', e=>{ if(e.target.id === 'shop') leaveShop(); });
 $('#help').addEventListener('click', e=>{ if(e.target.id === 'help') $('#help').style.display='none'; });
+if(!inIsland()){
+  $('#start h1').textContent = inStudio() ? '🛠️ 도도 스튜디오' : '🎮 ' + Mode.game.title;
+  $('#start .sub').textContent = inStudio()
+    ? '날아다니며 내 게임을 만들어요'
+    : (Mode.game.author ? (Mode.game.author + ' 이(가) 만든 게임') : '게임을 시작해요');
+  $('#startbtn').textContent = inStudio() ? '🛠️ 만들러 가기' : '▶ 게임 시작!';
+}
 goldEvent.at = performance.now()/1000 - 45;   // 처음엔 15초쯤 뒤에 등장
 setupTouch();
 buildHelp();
@@ -6840,7 +8517,12 @@ $('#copythanks').addEventListener('click', ()=>friendMsg(copyField('thankscode',
   '✅ 고마워 코드를 복사했어요! 초대해 준 친구에게 보내 주세요.'), true));
 $('#changenick').addEventListener('click', ()=>askNick(()=>renderFriends()));
 $('#ideago').addEventListener('click', sendIdea);
+$('#foldHud').addEventListener('click', ()=>toggleFold('hud'));
+$('#foldQ').addEventListener('click', ()=>toggleFold('q'));
+$('#foldTools').addEventListener('click', ()=>toggleFold('tools'));
+loadFold();
 $('#btnDodo').addEventListener('click', guard(openDodo));
+$('#btnStudio').addEventListener('click', guard(openStudioHome));
 /* 🪶 화면 아래 프롬프트 줄 */
 $('#aisend').addEventListener('click', ()=>{ aiSend(); aiFocus(); });
 $('#aimore').addEventListener('click', guard(openDodo));
@@ -6868,6 +8550,17 @@ $('#dosend').addEventListener('click', doSend);
 $('#doclose').addEventListener('click', closeDodo);
 $('#dodoai').addEventListener('click', e=>{ if(e.target.id === 'dodoai') closeDodo(); });
 $('#doinput').addEventListener('keydown', e=>{ if(e.code==='Enter') doSend(); });
+$('#adsend').addEventListener('click', doSend);
+$('#adinput').addEventListener('keydown', e=>{
+  if(e.code==='Enter'){ doSend(); return; }
+  /* 글을 쓰는 중에 Esc 를 누르면 스튜디오가 꺼지면 안 된다 */
+  if(e.code==='Escape'){ e.stopPropagation(); e.target.blur(); }
+});
+$('#adfold').addEventListener('click', ()=>{
+  const f = document.body.classList.toggle('adfold');
+  $('#adfold').textContent = f ? '➕' : '➖';
+  Sound.click();
+});
 $('#ideawhere').addEventListener('keydown', e=>{ if(e.code==='Enter') $('#ideawhy').focus(); });
 $('#ideawhy').addEventListener('keydown', e=>{ if(e.code==='Enter') sendIdea(); });
 $('#ideainput').addEventListener('keydown', e=>{ if(e.code==='Enter') sendIdea(); });
@@ -6877,9 +8570,11 @@ $('#nickinput').addEventListener('keydown', e=>{ if(e.code==='Enter') saveNick()
 if(!state.uid) state.uid = newUid();
 addEventListener('keydown', e=>{
   if(!started) return;
+  /* 붙박이 패널은 창 안이 아니라 화면 위에 그냥 있어서,
+     글을 쓰는 동안 V(날기)·P(해보기) 같은 단축키가 먹으면 안 된다. */
   const ae = document.activeElement;
   const typing = ae && (ae.tagName === 'TEXTAREA' || ae.tagName === 'INPUT');
-  if(typing) return;
+  if(typing && e.code !== 'Escape') return;
   const anyModal = craftOpen || plansOpen || bagOpen || friendsOpen || ideaOpen || shortsOpen ||
                    islandOpen || dodoOpen || lookOpen ||
                    $('#tune').style.display==='flex' || $('#huntdone').style.display==='flex' ||
@@ -6892,9 +8587,26 @@ addEventListener('keydown', e=>{
     $('#bragbox').style.display='none'; $('#recbox').style.display='none';
     return;
   }
-  if(e.code==='Tab'){ e.preventDefault(); if(!anyModal) guard(openBag)(); return; }
+  if(e.code==='Tab'){
+    e.preventDefault();
+    if(inStudio()){ Studio.setStep((Studio.step()+1) % 3); return; }   // 스튜디오에선 단계 넘기기
+    if(!anyModal) guard(openBag)();
+    return;
+  }
   if(anyModal || shopOpen) return;
   if(e.code==='Enter'){ e.preventDefault(); aiFocus(); return; }
+  /* 🛠️ 스튜디오 · 🎮 플레이 전용 키 — 섬 전용 키와 겹치지 않게 여기서 갈린다 */
+  if(!inIsland()){
+    if(inStudio()){
+      if(e.code==='KeyZ') Undo.undo();
+      if(e.code==='KeyP'){ e.preventDefault(); Studio.test(e.shiftKey); }
+      if(e.code==='KeyV') toggleFly();
+      if(e.code==='KeyG') Studio.openRules();
+      if(e.code==='KeyT') openDodo();
+      if(e.code==='Escape') Studio.exit();
+    }
+    return;
+  }
   if(e.code==='KeyZ') Undo.undo();
   if(e.code==='KeyC') craftOpen ? closeCraft() : openCraft();
   if(e.code==='KeyB') plansOpen ? closePlans() : openPlans();
@@ -6909,6 +8621,12 @@ checkBadges();
 setSoundOn(state.soundOn !== 0);
 $('#btnSound').addEventListener('click', ()=>{ setSoundOn(!Sound.isEnabled()); Sound.resume(); Sound.click(); });
 $('#btnHelp').addEventListener('click', ()=>{ buildHelp(); $('#help').style.display='flex'; });
+$('#helpagain').addEventListener('click', ()=>{
+  $('#help').style.display = 'none';
+  if(!inIsland()){ showHint('🏝️ 튜토리얼은 내 섬에서 볼 수 있어요', 2400); Sound.deny(); return; }
+  tutStart();
+  Sound.click();
+});
 QUALITY.mode = state.quality || 'auto';
 applyQuality(QUALITY.mode === 'low' ? 'low' : 'high');
 /* 화질은 🎒 가방 안에서 바꾼다 (화면 단추를 줄이느라 뺐다) */
@@ -6918,17 +8636,28 @@ if(IS_TOUCH){
                       '<span>⬆️ = 점프</span><span>⛏️ = 부수기</span><span>🧱 = 놓기</span>';
 }
 player.x=SPAWN.x; player.y=SPAWN.y+1; player.z=SPAWN.z;
-if(SPAWN_LOAD){ player.x=SPAWN_LOAD.x; player.y=SPAWN_LOAD.y+0.5; player.z=SPAWN_LOAD.z; }
+if(inIsland()){
+  /* 섬에서는 지난번에 있던 자리에서 이어서 한다 */
+  if(SPAWN_LOAD){ player.x=SPAWN_LOAD.x; player.y=SPAWN_LOAD.y+0.5; player.z=SPAWN_LOAD.z; }
+} else if(inStudio()){
+  player.y = SPAWN.y + 1.5;           // 스튜디오는 땅 위에 살짝 떠서 시작한다
+  player.pitch = -0.45;               // 짓는 자리가 보이도록 조금 내려다본다
+} else if(Mode.at){
+  /* 📍 "여기서부터 해보기" — 로블록스 스튜디오의 "여기서 테스트"와 같다 */
+  player.x = Mode.at.x; player.y = Mode.at.y + 0.2; player.z = Mode.at.z;
+}
 addEventListener('beforeunload', saveNow);
 requestAnimationFrame(frame);
 
 $('#startbtn').addEventListener('click', ()=>{
   $('#start').style.display='none';
   started = true;
-  document.body.classList.add('playing');     // 🪶 아래 프롬프트 줄은 놀기 시작하면 나온다
+  document.body.classList.add('ingame');      // 🪶 아래 프롬프트 줄은 놀기 시작하면 나온다
   layoutUI();                                 // 줄이 생겼으니 자리를 다시 잡는다
   Sound.resume();
   canvas.focus && canvas.focus();
+  if(inStudio()){ Studio.enter(); return; }
+  if(inPlay()){ Play.start(); return; }
   function afterNick(){
     if(!state.tutorialDone) tutStart();
     else { showHint(touchMode ? '블록섬에 온 걸 환영해요! 막히면 ❓ 를 눌러요'
@@ -6941,6 +8670,45 @@ $('#startbtn').addEventListener('click', ()=>{
   if(!state.nick) askNick(afterNick);
   else afterNick();
 });
+
+
+/* ═══════════════════════════════════════════════════
+   22.9 🛠️ 스튜디오 · 🎮 플레이 단추와 키 연결
+   ═══════════════════════════════════════════════════ */
+$('#sttest').addEventListener('click', ()=>Studio.test(false));
+$('#sthere').addEventListener('click', ()=>Studio.test(true));
+$('#stexit').addEventListener('click', ()=>Studio.exit());
+$('#stgoal').addEventListener('click', ()=>Studio.openRules());
+$('#strulesclose').addEventListener('click', ()=>Studio.closeRules());
+$('#strules').addEventListener('click', e=>{ if(e.target.id==='strules') Studio.closeRules(); });
+$('#stfly').addEventListener('click', ()=>toggleFly());
+$('#stname').addEventListener('click', ()=>{
+  if(!Mode.game) return;
+  $('#stnameinput').value = Mode.game.title;
+  $('#strename').style.display = 'flex';
+  if(document.pointerLockElement) document.exitPointerLock();
+  setTimeout(()=>$('#stnameinput').focus(), 60);
+});
+$('#stnameok').addEventListener('click', ()=>Studio.rename());
+$('#stnamecancel').addEventListener('click', ()=>{ $('#strename').style.display='none'; });
+$('#stnameinput').addEventListener('keydown', e=>{ if(e.code==='Enter') Studio.rename(); });
+
+$('#presretry').addEventListener('click', ()=>Play.retry());
+$('#presedit').addEventListener('click', ()=>modeGo('studio', Mode.game));
+$('#presexit').addEventListener('click', ()=>modeExitToIsland());
+
+$('#shclose').addEventListener('click', closeStudioHome);
+$('#studiohome').addEventListener('click', e=>{ if(e.target.id==='studiohome') closeStudioHome(); });
+$('#shgo').addEventListener('click', studioHomeLoad);
+
+function toggleFly(){
+  if(!inStudio()) return;
+  FLYING = !FLYING;
+  $('#stfly').textContent = FLYING ? '🕊️ 날기' : '🚶 걷기';
+  showHint(FLYING ? '🕊️ 날기 켜짐 — E 위 · Q 아래 · Shift 빠르게' : '🚶 걷기 — 이제 Q 부수기 · E 놓기', 2400);
+  Sound.click();
+}
+
 
 /* ═══════════════════════════════════════════════════
    10.33 도도AI 🪶 — 말하는 깃털 (도도 장로에게 말 걸기)
@@ -6958,6 +8726,15 @@ $('#startbtn').addEventListener('click', ()=>{
    ═══════════════════════════════════════════════════ */
 let dodoOpen = false;
 const doLog = [];                       // 창을 닫았다 열어도 대화가 남아 있게
+
+/* 🪶 붙박이 패널 — 스튜디오에서는 대화가 창이 아니라 옆칸에서 벌어진다.
+   말풍선·예시 단추·입력칸을 그릴 곳만 바뀔 뿐, 뇌(doBrain)는 하나다. */
+let aiDock = false;
+const doChatEl  = () => aiDock ? $('#adchat')  : $('#dochat');
+const doChipsEl = () => aiDock ? $('#adchips') : $('#dochips');
+const doInputEl = () => aiDock ? $('#adinput') : $('#doinput');
+const doVisible = () => dodoOpen || aiDock;
+function doFocus(){ const el = doInputEl(); if(el) el.focus(); }
 
 /* 오타와 온갖 어미를 견뎌야 한다 ("만들어줘", "만드러 줄래", "바꿔조") */
 function doNorm(s){
@@ -6982,7 +8759,7 @@ const doPick = a => a[(Math.random()*a.length)|0];
 
 /* ── 말풍선 ── */
 function doDraw1(cls, text){
-  const box = $('#dochat'); if(!box) return;
+  const box = doChatEl(); if(!box) return;
   const el = document.createElement('div');
   el.className = 'dobub ' + cls;
   el.textContent = text;                 // 아이가 쓴 글이라 textContent 로만 넣는다
@@ -6992,18 +8769,18 @@ function doDraw1(cls, text){
 function doPush(cls, text){
   doLog.push({cls, text});
   if(doLog.length > 40) doLog.shift();
-  if(dodoOpen) doDraw1(cls, text);
+  if(doVisible()) doDraw1(cls, text);
 }
 function doDrawAll(){
-  const box = $('#dochat'); if(!box) return;
+  const box = doChatEl(); if(!box) return;
   box.innerHTML = '';
   doLog.forEach(l => doDraw1(l.cls, l.text));
   box.scrollTop = box.scrollHeight;
 }
 /* 되묻기 단추 — 누르면 아이가 그 말을 한 것처럼 처리한다 */
 function doBtns(list){
-  if(!dodoOpen || !list || !list.length) return;
-  const box = $('#dochat');
+  if(!doVisible() || !list || !list.length) return;
+  const box = doChatEl();
   const row = document.createElement('div');
   row.className = 'dobtns';
   list.forEach(b=>{
@@ -7159,6 +8936,7 @@ function doRecommend(){
    빈칸만 주면 아이는 아무것도 못 친다. 상태에 맞는 예시를 띄워서
    아이 말이 알아듣는 쪽으로 모이게 한다. 맨 끝 하나는 항상 고정이다. */
 function doSuggest(){
+  if(inStudio()) return doStudioSuggest();
   const out = [];
   const d = doPick(DECOR);
   out.push({t:d.icon + ' ' + d.name + ' 만들어 줘', say:d.name + ' 만들어 줘'});
@@ -7168,7 +8946,7 @@ function doSuggest(){
   else if(!DayNight.isNight())       out.push({t:'🌙 밤으로 바꿔 줘', say:'밤으로 바꿔 줘'});
   out.push({t:'💡 내가 하고 싶은 말 하기', cls:'idea', go:()=>{
     doSay('뭐든지 말해 봐! 🦤\n내가 못 하는 거면 만드는 사람한테 보내 줄게 📮');
-    const el = $('#doinput'); if(el) el.focus();
+    doFocus();
   }});
   return out;
 }
@@ -7208,6 +8986,9 @@ function doBrain(raw){
   /* 싸움·무기 — 명예의 전당에 올라가면 안 되니 아이디어로도 안 보낸다 */
   if(doHas(s,'총','칼로','죽이','때리','폭탄','전쟁','무기','싸우'))
     return doSay('블록섬에는 싸우는 게 없어 🕊\n대신 뭘 만들까?', doSuggest());
+
+  /* 🛠️ 스튜디오에서는 만들기 말을 먼저 본다. 못 알아들으면 아래 원래 도도AI 가 받는다 */
+  if(inStudio() && doStudioBrain(s)) return;
 
   /* 말 걸기 */
   const g = DO_GREET.find(e=>doHas(s, ...e.k));
@@ -7326,7 +9107,7 @@ function doBrain(raw){
 
 /* ── 창 ── */
 function doChips(){
-  const box = $('#dochips'); if(!box) return;
+  const box = doChipsEl(); if(!box) return;
   box.innerHTML = '';
   doSuggest().forEach(b=>{
     const el = document.createElement('button');
@@ -7343,30 +9124,763 @@ function doAsk(raw){
   const t = String(raw||'').trim().slice(0, 60);
   if(!t) return;
   doPush('me', t);
-  const el = $('#doinput'); if(el) el.value = '';
+  const el = doInputEl(); if(el) el.value = '';
   doBrain(t);
   doChips();                              // 상태가 바뀌었으니 예시도 새로 고른다
 }
-function doSend(){ doAsk($('#doinput').value); }
+function doSend(){ const el = doInputEl(); if(el) doAsk(el.value); }
+function doHello(){
+  if(doLog.length) return;
+  doSay(inStudio()
+    ? '여기가 도도 스튜디오야! 🛠️\n말만 하면 내가 만들어 줄게.\n"점프 게임 만들어 줘" 처럼 말해 봐!'
+    : '안녕! 난 도도 장로야 🦤\n이 깃털로 어디서든 날 부를 수 있어.\n하고 싶은 말을 그냥 써 봐!');
+}
 function openDodo(){
+  /* 붙박이가 켜져 있으면 창을 또 띄우지 않는다 — 이미 옆에 떠 있으니까 */
+  if(aiDock){
+    document.body.classList.remove('adfold');
+    /* 마우스가 화면에 붙잡혀 있으면 글자를 칠 수 없다 */
+    if(document.pointerLockElement) document.exitPointerLock();
+    doFocus();
+    Sound.click();
+    return;
+  }
   dodoOpen = true;
   document.body.classList.add('dodochat');
   aiHideAns();
   $('#dodoai').style.display = 'flex';
   if(document.pointerLockElement) document.exitPointerLock();
   doDrawAll();
-  if(!doLog.length)
-    doSay('안녕! 난 도도 장로야 🦤\n이 깃털로 어디서든 날 부를 수 있어.\n하고 싶은 말을 그냥 써 봐!');
+  doHello();
   doChips();
   Sound.shop();
-  setTimeout(()=>{ const el = $('#doinput'); if(el) el.focus(); }, 60);
+  setTimeout(doFocus, 60);
 }
 function closeDodo(){
   dodoOpen = false;
   document.body.classList.remove('dodochat');
   $('#dodoai').style.display = 'none';
+  if(aiDock){ doDrawAll(); doChips(); }      // 붙박이 쪽으로 대화를 옮겨 그린다
+}
+/* 붙박이를 켜고 끄기 — 스튜디오에 들어올 때 화면이 넓으면 켠다 */
+function setAiDock(on){
+  aiDock = !!on;
+  if(aiDock){
+    closeDodo();
+    document.body.classList.remove('adfold');
+    doHello();
+    doDrawAll();
+    doChips();
+  }
+}
+function dockWide(){
+  return inStudio() && innerWidth > 900 && innerHeight > 560;
 }
 
+
+/* ═══════════════════════════════════════════════════
+   23. 🪶 도도AI 스튜디오 — "말하면 만들어 주는" 부분
+   ───────────────────────────────────────────────────
+   문 세 개(해 준다 / 되묻는다 / 아이디어로 보낸다) 원칙은 그대로다.
+   스튜디오에서는 알아듣는 말 표만 바뀐다.
+
+   로블록스 빌딩 수업도 5장 중 3장이 "AI Assistant로 코드 쓰기" 다.
+   다른 점은 로블록스는 아이에게 코드를 보여 주고, 우리는 마법 블록과
+   말로 간다는 것. 초등학생에게는 이쪽이 맞다.
+   ═══════════════════════════════════════════════════ */
+
+/* 게임 카드와 월드에 같이 적는다 (되감기 Z 도 같이 동작한다) */
+function stSet(x,y,z,t){
+  if(!inside(x,y,z)) return;
+  const before = getBlock(x,y,z);
+  if(before === t) return;
+  setBlock(x,y,z,t);
+  markDirtyAround(x,z);
+  recordEdit(x,y,z,t);
+  Undo.push(x,y,z,before,t,null);
+}
+/* 받침을 보고 "을/를" 을 고른다 */
+function stEul(w){
+  const t = String(w||'').trim();
+  const c = t.charCodeAt(t.length-1);
+  if(!(c >= 0xac00 && c <= 0xd7a3)) return '을(를)';
+  return ((c - 0xac00) % 28) ? '을' : '를';
+}
+/* 플레이어가 보는 쪽, 땅 위의 한 칸 */
+function stFront(dist){
+  const fx = -Math.sin(player.yaw), fz = -Math.cos(player.yaw);
+  const x = Math.round(player.x + fx*dist);
+  const z = Math.round(player.z + fz*dist);
+  if(!inside(x,0,z)) return null;
+  const y = Math.round(surfaceHeight(x+0.5, z+0.5, H-4));
+  return {x:x, y:Math.min(y, H-3), z:z};
+}
+
+/* ── 마법 블록 하나 놓기 ── */
+function stPutMagic(t){
+  const at = stFront(3) || stFront(2);
+  if(!at) return doSay('음… 거기엔 못 놓겠어. 조금 안쪽을 보고 다시 말해 줄래? 🤔');
+  Undo.begin();
+  stSet(at.x, at.y, at.z, t);
+  Undo.end(BLOCKS[t].name);
+  Studio.dirty();
+  doSay(BLOCKS[t].icon + ' ' + BLOCKS[t].name + stEul(BLOCKS[t].name) + ' 앞에 놨어!\n마음에 안 들면 Z 를 누르면 지워져 ⏪');
+}
+
+/* ── 발판 깔기 — 뛰어서 닿는 거리로만 놓는다 ── */
+function stLayPlats(n){
+  n = clamp(n|0 || 8, 2, 24);
+  const fx = -Math.sin(player.yaw), fz = -Math.cos(player.yaw);
+  let x = player.x, z = player.z;
+  let y = Math.round(surfaceHeight(player.x, player.z, player.y+2));
+  Undo.begin();
+  let made = 0;
+  for(let i=0;i<n;i++){
+    /* 10.9절에서 측정한 값 그대로: 같은 높이 4.27칸, 한 칸 위 3.41칸.
+       동 코스와 같은 간격(4.0 / 3.4)을 쓰면 초등학생도 넘을 수 있다. */
+    const up = (i % 2 === 1);
+    const gap = up ? 3.4 : 4.0;
+    x += fx*gap; z += fz*gap;
+    if(up) y += 1;
+    const cx = Math.round(x), cz = Math.round(z);
+    if(!inside(cx, y, cz) || y >= H-3) break;
+    for(let dx=-1;dx<=1;dx++) for(let dz=-1;dz<=1;dz++)
+      stSet(cx+dx, y, cz+dz, PLANK);
+    made++;
+  }
+  Undo.end('발판 ' + made + '개');
+  Studio.dirty();
+  if(!made) return doSay('앗, 여기서는 발판을 깔 자리가 없어 😅 조금 가운데로 가서 다시 말해 줘!');
+  doSay('🪜 발판 ' + made + '개를 깔았어!\n뛰어서 닿는 거리로만 놨으니까 안심해 😎\n맨 끝에 🏁 골인을 놓으면 게임이 완성돼!');
+}
+
+/* ══ 템플릿 3종 — 빈 화면은 아이를 얼어붙게 만든다 ══ */
+/* 새 템플릿을 만들기 전에 처음 바닥으로 되돌린다 (빈 칸이 아니라 "원래대로") */
+function stClearAll(){
+  const g = Mode.game;
+  Undo.begin();
+  for(const k in Object.assign({}, g.edits)){
+    const a = k.split(','), x = +a[0], y = +a[1], z = +a[2];
+    stSet(x, y, z, baseVox ? baseVox[IDX(x,y,z)] : AIR);
+  }
+  g.opt = {};
+}
+function tmplObby(){
+  const g = Mode.game;
+  stClearAll();
+  const gy = GAME_GY + 1;
+  let x = 32, zf = 46, y = gy;
+  stSet(x, y, Math.round(zf), M_START);
+  for(let i=0;i<12;i++){
+    const up = (i % 2 === 1);
+    zf -= up ? 3.4 : 4.0;                      // 동 코스와 같은 간격 — 넘을 수 있는 거리다
+    if(up) y += 1;
+    const z = Math.round(zf);
+    for(let dx=-1;dx<=1;dx++) for(let dz=-1;dz<=1;dz++) stSet(x+dx, y-1, z+dz, PLANK);
+    if(i === 3 || i === 7) stSet(x, y, z, M_COIN);
+    if(i === 5) stSet(x, y-1, z, TRAMP);
+    if(i === 11) stSet(x, y, z, M_GOAL);
+  }
+  Undo.end('점프맵');
+  g.rules = {goal:'reach', time:60, lives:3, jump:1, need:0};
+  Studio.dirty(); Studio.head();
+  doSay('🧗 점프맵을 만들었어!\n발판 12개 · 🪙 코인 2개 · 🟩 통통 발판 1개 · 🏁 골인까지 놨어.\n▶ 해보기 를 눌러 보고, 어려우면 "더 쉽게 해 줘" 라고 말해 줘!');
+}
+function tmplTreasure(){
+  const g = Mode.game;
+  stClearAll();
+  const gy = GAME_GY + 1;
+  const rng = makeRng((Date.now() & 0xffff) + 7);
+  stSet(32, gy, 32, M_START);
+  let put = 0;
+  for(let i=0;i<40 && put<10;i++){
+    const a = rng()*Math.PI*2, r = 6 + rng()*16;
+    const x = Math.round(32 + Math.cos(a)*r), z = Math.round(32 + Math.sin(a)*r);
+    if(!inside(x, gy, z)) continue;
+    const top = Math.round(surfaceHeight(x+0.5, z+0.5, H-4));
+    if(top < 2 || top >= H-4) continue;
+    if(getBlock(x, top-1, z) === AIR){       // 허공이면 작은 발판을 만들어 준다
+      for(let dx=-1;dx<=1;dx++) for(let dz=-1;dz<=1;dz++) stSet(x+dx, top-1, z+dz, PLANK);
+    }
+    stSet(x, top, z, M_COIN);
+    put++;
+  }
+  stSet(32, gy+3, 32, M_STAR);
+  Undo.end('보물찾기');
+  g.rules = {goal:'collect', time:90, lives:0, jump:1, need:0};
+  Studio.dirty(); Studio.head();
+  doSay('💎 보물찾기를 만들었어!\n🪙 코인 ' + put + '개를 섬 곳곳에 숨겼어. 다 모으면 이겨 🎉\n▶ 해보기 를 눌러 봐!');
+}
+function tmplMaze(){
+  const g = Mode.game;
+  stClearAll();
+  const N = 9, SZ = 2*N + 1;                 // 19칸짜리 미로
+  const ox = 32 - (SZ>>1), oz = 32 - (SZ>>1);
+  const gy = GAME_GY + 1;
+  const wall = [];
+  for(let i=0;i<SZ;i++){ wall[i] = []; for(let j=0;j<SZ;j++) wall[i][j] = 1; }
+  const rng = makeRng((Date.now() & 0xffff) + 13);
+  const stack = [[1,1]];
+  wall[1][1] = 0;
+  while(stack.length){
+    const c = stack[stack.length-1];
+    const ds = [[2,0],[-2,0],[0,2],[0,-2]].filter(d=>{
+      const nx = c[0]+d[0], nz = c[1]+d[1];
+      return nx>0 && nx<SZ-1 && nz>0 && nz<SZ-1 && wall[nx][nz];
+    });
+    if(!ds.length){ stack.pop(); continue; }
+    const d = ds[(rng()*ds.length)|0];
+    wall[c[0]+d[0]/2][c[1]+d[1]/2] = 0;
+    wall[c[0]+d[0]][c[1]+d[1]] = 0;
+    stack.push([c[0]+d[0], c[1]+d[1]]);
+  }
+  for(let i=0;i<SZ;i++) for(let j=0;j<SZ;j++){
+    stSet(ox+i, gy-1, oz+j, PLANK);                 // 미로 바닥
+    if(!wall[i][j]) continue;
+    for(let h=0;h<3;h++) stSet(ox+i, gy+h, oz+j, STONE);
+  }
+  const gx = SZ-2, gz = SZ-2;
+  /* 골인 바로 앞 통로에 문을 세운다 — 열쇠를 찾아야 지나간다 */
+  const nb = [[gx-1,gz],[gx,gz-1],[gx+1,gz],[gx,gz+1]].find(c=>!wall[c[0]][c[1]]);
+  if(nb) for(let h=0;h<2;h++) stSet(ox+nb[0], gy+h, oz+nb[1], M_DOOR);
+  stSet(ox+1, gy, oz+1, M_START);
+  stSet(ox+gx, gy, oz+gz, M_GOAL);
+  /* 열쇠는 시작점에서 먼 빈 칸에 */
+  let best = null, bestD = -1;
+  for(let i=1;i<SZ-1;i+=2) for(let j=1;j<SZ-1;j+=2){
+    if(wall[i][j]) continue;
+    if(i===1 && j===1) continue;
+    if(i===gx && j===gz) continue;
+    const d = Math.hypot(i-1, j-1) - Math.hypot(i-gx, j-gz);
+    if(d > bestD){ bestD = d; best = [i,j]; }
+  }
+  if(best) stSet(ox+best[0], gy, oz+best[1], M_KEY);
+  Undo.end('미로');
+  g.rules = {goal:'reach', time:120, lives:0, jump:1, need:0};
+  Studio.dirty(); Studio.head();
+  doSay('🌀 미로를 만들었어!\n🔑 열쇠를 찾아서 🚪 문을 열고 🏁 골인까지 가면 이겨.\n▶ 해보기 를 눌러 봐!');
+}
+
+/* ══ 장르 템플릿 5종 더 — "블록 쌓기 말고 다른 게임" 의 실제 답 ══ */
+/* 마법 블록에 딸린 설정(표지판 글, 정답 여부)을 같이 심어 준다 */
+function stOpt(x,y,z,o){
+  const g = Mode.game;
+  g.opt[x+','+y+','+z] = Object.assign({}, g.opt[x+','+y+','+z], o);
+}
+
+/* ⚡ 피하기 — 깜빡이는 함정 사이에서 버틴다 */
+function tmplDodge(){
+  const g = Mode.game;
+  stClearAll();
+  const gy = GAME_GY + 1, R = 9;
+  const rng = makeRng((Date.now() & 0xffff) + 23);
+  for(let dx=-R; dx<=R; dx++) for(let dz=-R; dz<=R; dz++){
+    stSet(32+dx, gy-1, 32+dz, PLANK);
+    /* 가장자리는 낮은 담 — 떨어져 죽는 게 아니라 피하다 죽어야 재미있다 */
+    if(Math.abs(dx)===R || Math.abs(dz)===R) stSet(32+dx, gy, 32+dz, STONE);
+  }
+  stSet(32, gy, 32, M_START);
+  let n = 0;
+  for(let i=0;i<200 && n<34;i++){
+    const dx = ((rng()*(2*R-1))|0) - (R-1), dz = ((rng()*(2*R-1))|0) - (R-1);
+    if(Math.abs(dx) < 3 && Math.abs(dz) < 3) continue;       // 시작점 둘레는 비워 둔다
+    const x = 32+dx, z = 32+dz;
+    if(getBlock(x, gy, z) !== AIR) continue;
+    stSet(x, gy, z, M_BLINK);
+    n++;
+  }
+  for(let i=0;i<5;i++){
+    const dx = ((rng()*(2*R-3))|0) - (R-2), dz = ((rng()*(2*R-3))|0) - (R-2);
+    const x = 32+dx, z = 32+dz;
+    if(getBlock(x, gy, z) === AIR) stSet(x, gy, z, M_COIN);
+  }
+  Undo.end('피하기');
+  g.rules = {goal:'survive', time:45, lives:3, jump:1, need:0};
+  Studio.dirty(); Studio.head();
+  doSay('⚡ 피하기를 만들었어!\n깜빡이는 함정 ' + n + '개 사이에서 45초를 버티면 이겨 😤\n함정은 1.5초마다 켜졌다 꺼져. 박자를 세면서 움직여 봐!');
+}
+
+/* 🏃 달리기 시합 — 시간 안에 결승선까지 */
+function tmplRace(){
+  const g = Mode.game;
+  stClearAll();
+  const gy = GAME_GY + 1;
+  const LEN = 44, x0 = 32;
+  let z = 52;
+  stSet(x0, gy, z, M_START);
+  for(let i=0;i<LEN;i++){
+    const zz = z - i;
+    for(let dx=-2; dx<=2; dx++) stSet(x0+dx, gy-1, zz, PATH_B);
+    if(i % 11 === 10) stSet(x0, gy, zz, M_CHECK);            // 중간 저장
+    if(i % 7 === 3)   stSet(x0, gy-1, zz, TRAMP);            // 통통 발판 = 가속
+    if(i % 5 === 2)   stSet(x0 + (i%3 - 1)*2, gy, zz, M_COIN);
+    if(i > 6 && i % 9 === 4){                                 // 피해 가야 하는 칸
+      stSet(x0 - 1, gy, zz, M_TRAP);
+      stSet(x0 + 1, gy, zz, M_TRAP);
+    }
+  }
+  const zg = z - LEN + 1;
+  for(let dx=-2; dx<=2; dx++) stSet(x0+dx, gy, zg, M_GOAL);
+  Undo.end('달리기 시합');
+  g.rules = {goal:'reach', time:30, lives:0, jump:1, need:0};
+  Studio.dirty(); Studio.head();
+  doSay('🏃 달리기 시합을 만들었어!\n30초 안에 🏁 결승선까지 달려야 해.\n🟩 통통 발판을 밟으면 더 빨리 갈 수 있어 💨\n너무 어려우면 "40초로 해 줘" 라고 말해 줘!');
+}
+
+/* ❓ 퀴즈 — 표지판을 읽고 ⭕ 또는 ❌ 를 밟는다 */
+function tmplQuiz(){
+  const g = Mode.game;
+  stClearAll();
+  const gy = GAME_GY + 1, x0 = 32;
+  const Q = [
+    {q:'도도새는 새다',              yes:true},
+    {q:'도도새는 하늘을 날았다',      yes:false},
+    {q:'블록섬에는 도도가 산다',      yes:true},
+    {q:'고양이는 물고기다',           yes:false},
+  ];
+  let z = 50;
+  stSet(x0, gy, z, M_START);
+  for(let dx=-4; dx<=4; dx++) for(let dz=-2; dz<=2; dz++) stSet(x0+dx, gy-1, z+dz, PLANK);
+  Q.forEach((it, i)=>{
+    const zz = z - 6*(i+1);
+    for(let dx=-4; dx<=4; dx++) for(let dz=-2; dz<=2; dz++) stSet(x0+dx, gy-1, zz+dz, PLANK);
+    for(let dz=-2; dz<=2; dz++) stSet(x0-5, gy-1, zz+dz, PLANK);   // 다음 방으로 가는 길
+    /* 문제는 표지판에 적는다 */
+    stSet(x0, gy, zz+2, M_SIGN);
+    stOpt(x0, gy, zz+2, {s:(i+1) + '. ' + it.q});
+    /* ⭕ 는 왼쪽, ❌ 는 오른쪽 — 자리는 늘 같아야 아이가 헷갈리지 않는다 */
+    stSet(x0-2, gy, zz-1, M_YES);
+    stOpt(x0-2, gy, zz-1, {r: it.yes ? 1 : 0, s: it.q + ' → ' + (it.yes ? '맞아요!' : '아니에요!')});
+    stSet(x0+2, gy, zz-1, M_NO);
+    stOpt(x0+2, gy, zz-1, {r: it.yes ? 0 : 1, s: it.q + ' → ' + (it.yes ? '맞아요!' : '아니에요!')});
+  });
+  const zg = z - 6*(Q.length+1);
+  for(let dx=-2; dx<=2; dx++) for(let dz=-2; dz<=2; dz++) stSet(x0+dx, gy-1, zg+dz, PLANK);
+  stSet(x0, gy, zg, M_GOAL);
+  Undo.end('퀴즈');
+  g.rules = {goal:'quiz', time:0, lives:3, jump:1, need:0};
+  Studio.dirty(); Studio.head();
+  doSay('❓ 퀴즈를 만들었어! 문제 ' + Q.length + '개를 넣어 뒀어.\n표지판을 읽고 ⭕ 나 ❌ 를 밟으면 돼.\n문제를 바꾸려면 표지판을 놓고 글자를 고치면 되고,\n정답이 ❌ 쪽이면 그 발판을 놓고 "✅ 정답" 을 눌러 주면 돼 😎');
+}
+
+/* 🦤 숨바꼭질 — 숨은 도도를 다 찾는다 */
+function tmplSeek(){
+  const g = Mode.game;
+  stClearAll();
+  const rng = makeRng((Date.now() & 0xffff) + 31);
+  const start = {x:32, z:32};
+  const top0 = Math.round(surfaceHeight(start.x+0.5, start.z+0.5, H-4));
+  stSet(start.x, top0, start.z, M_START);
+  let hid = 0;
+  for(let i=0;i<120 && hid<6;i++){
+    const a = rng()*Math.PI*2, r = 8 + rng()*18;
+    const x = Math.round(32 + Math.cos(a)*r), z = Math.round(32 + Math.sin(a)*r);
+    if(!inside(x, 2, z)) continue;
+    const top = Math.round(surfaceHeight(x+0.5, z+0.5, H-4));
+    if(top < 2 || top >= H-5) continue;
+    /* 작은 집을 짓고 그 안에 숨긴다 — "찾는 재미" 가 있어야 숨바꼭질이다 */
+    for(let dx=-1; dx<=1; dx++) for(let dz=-1; dz<=1; dz++){
+      for(let h=0; h<3; h++){
+        const edge = (Math.abs(dx)===1 || Math.abs(dz)===1);
+        if(edge && !(dx===0 && dz===-1 && h<2)) stSet(x+dx, top+h, z+dz, WOOD);
+      }
+      stSet(x+dx, top+3, z+dz, LEAF);
+    }
+    stSet(x, top, z, M_DODO);
+    hid++;
+  }
+  Undo.end('숨바꼭질');
+  g.rules = {goal:'seek', time:0, lives:0, jump:1, need:0};
+  Studio.dirty(); Studio.head();
+  doSay('🦤 숨바꼭질을 만들었어!\n작은 집 ' + hid + '채를 섬 곳곳에 세우고 그 안에 도도를 숨겼어.\n문은 앞쪽에 있어 — 들어가서 찾아 봐 🔍');
+}
+
+/* 장르 이름 → 템플릿 함수 */
+const TMPL_FN = {tmplObby, tmplTreasure, tmplMaze, tmplDodge, tmplRace, tmplQuiz, tmplSeek};
+function runTemplate(kindId){
+  const k = kindDef(kindId);
+  const fn = TMPL_FN[k.tmpl];
+  if(!fn){
+    doSay('🎨 자유롭게는 내가 깔아 줄 기본 판이 없어. 뭐부터 만들까?', doSuggest());
+    return false;
+  }
+  fn();
+  return true;
+}
+
+/* ── 알아듣는 말 표 (스튜디오 전용) ── */
+const ST_MAGIC = [
+  {k:['시작점','시작 점','스폰','출발'],      t:M_START},
+  {k:['골인','도착','끝점','결승'],           t:M_GOAL},
+  {k:['코인','동전','돈'],                   t:M_COIN},
+  {k:['별'],                                 t:M_STAR},
+  {k:['함정','가시','용암','트랩'],           t:M_TRAP},
+  {k:['열쇠','키'],                          t:M_KEY},
+  {k:['문','도어'],                          t:M_DOOR},
+  {k:['표지판','간판','안내판'],              t:M_SIGN},
+  {k:['체크포인트','체크','중간 저장'],        t:M_CHECK},
+  {k:['점프대','통통','트램'],               t:TRAMP},
+  {k:['얼음','미끄'],                        t:ICE},
+  {k:['사라지는 발판','사라지는','없어지는'],  t:M_VANISH},
+  {k:['깜빡','번쩍','전기'],                 t:M_BLINK},
+  {k:['숨은 도도','숨긴 도도','도도 숨'],     t:M_DODO},
+  {k:['동그라미','정답','맞음','오케이'],     t:M_YES},
+  {k:['엑스','가위표','오답','틀림'],         t:M_NO},
+];
+
+/* 장르 이름을 알아듣는 표 — "피하기 만들어 줘" 한 마디로 장르까지 바뀐다 */
+const ST_KIND = [
+  {k:['점프 게임','점프게임','점프맵','점프 맵','오비','장애물'], id:'obby'},
+  {k:['보물찾기','보물 찾기','보물','수집'],                     id:'treasure'},
+  {k:['미로','메이즈','방탈출','방 탈출'],                       id:'maze'},
+  {k:['피하기','피해','깜빡이','회피','생존','버티기'],           id:'dodge'},
+  {k:['달리기','레이스','시합','경주'],                          id:'race'},
+  {k:['퀴즈','문제 내','문제내','ox','오엑스'],                  id:'quiz'},
+  {k:['숨바꼭질','숨박꼭질','숨기기','찾기 게임'],                id:'seek'},
+];
+
+function doStudioSuggest(){
+  const g = Mode.game;
+  const out = [];
+  const k = kindDef(g.kind);
+  if(!Object.keys(g.edits).length){
+    if(k.tmpl) out.push({t:k.icon + ' ' + k.name + ' 기본 판 깔아 줘'});
+    KINDS.filter(x=>x.tmpl && x.id !== k.id).slice(0, 4)
+         .forEach(x=>out.push({t:x.icon + ' ' + x.name + ' 만들어 줘'}));
+    return out.slice(0, 5);
+  }
+  if(!magicCount(g, M_START)) out.push({t:'🚩 시작점 놔 줘'});
+  if(!magicCount(g, M_GOAL) && g.rules.goal === 'reach') out.push({t:'🏁 골인 놔 줘'});
+  if(g.rules.goal === 'quiz' && !magicCount(g, M_YES)) out.push({t:'⭕ 정답 발판 놔 줘'});
+  if(g.rules.goal === 'seek' && !magicCount(g, M_DODO)) out.push({t:'🦤 숨은 도도 놔 줘'});
+  if(g.rules.goal === 'survive') out.push({t:'⚡ 깜빡 함정 놔 줘'});
+  out.push({t:'🪜 발판 10개 깔아 줘'});
+  if(!magicCount(g, M_COIN)) out.push({t:'🪙 코인 놔 줘'});
+  out.push({t:'☠️ 함정 놔 줘'}, {t:'🎭 다른 장르로 바꿔 줘'}, {t:'▶ 해볼래'});
+  return out.slice(0, 6);
+}
+
+/* 스튜디오에서 알아들으면 true, 아니면 false (그러면 원래 도도AI 가 받는다) */
+function doStudioBrain(s){
+  const g = Mode.game;
+
+  /* 장르 + 템플릿 — 말 한 마디로 장르가 통째로 바뀐다 */
+  const kd = ST_KIND.find(e=>doHas(s, ...e.k));
+  if(kd){
+    closeDodo();
+    g.kind = kd.id;
+    const k = kindDef(kd.id);
+    g.rules.goal = k.goal;
+    Studio.dirty(); Studio.head();
+    runTemplate(kd.id);
+    buildHotbar();
+    return true;
+  }
+  if(doHas(s,'기본 판','기본판','처음부터','판 깔아')){
+    closeDodo(); runTemplate(g.kind); buildHotbar(); return true;
+  }
+  if(doHas(s,'다른 장르','장르 바꿔','장르','다른 게임')){
+    doSay('어떤 게임으로 바꿀까? 🎭\n지금 만든 건 없어지니까 잘 골라 줘!',
+      KINDS.filter(x=>x.tmpl).map(x=>({t:x.icon + ' ' + x.name, say:x.name + ' 만들어 줘'})));
+    return true;
+  }
+
+  /* 해보기 */
+  if(doHas(s,'해볼래','해 볼래','테스트','시험','플레이','해보자','해 보자','실행')){
+    closeDodo(); Studio.test(false); return true;
+  }
+  /* 나가기 */
+  if(doHas(s,'다 됐','다됐','그만','나갈래','나가기','저장하고')){
+    doSay('좋아! 🏝️ 나가기 를 누르면 섬으로 돌아가. 게임은 저절로 저장돼 😎');
+    return true;
+  }
+
+  /* 발판 깔기 */
+  if(doHas(s,'발판','계단','길') && doHas(s,'깔','놔','놓','만들','세워')){
+    const m = s.match(/(\d+)\s*(개|칸|장)?/);
+    closeDodo();
+    stLayPlats(m ? +m[1] : 8);
+    return true;
+  }
+
+  /* 규칙 바꾸기 */
+  let did = false;
+  const secs = s.match(/(\d+)\s*초/);
+  if(secs){ g.rules.time = clamp(+secs[1], 0, 600); did = true; }
+  const lives = s.match(/목숨\s*(\d+)/);
+  if(lives){ g.rules.lives = clamp(+lives[1], 0, 9); did = true; }
+  if(doHas(s,'목숨 무한','무한 목숨','목숨 없','안 죽')){ g.rules.lives = 0; did = true; }
+  if(doHas(s,'시간 없','시간 무한','제한 없')){ g.rules.time = 0; did = true; }
+  if(doHas(s,'높이 뛰','점프 높','더 높이','멀리 뛰')){ g.rules.jump = 3; did = true; }
+  if(doHas(s,'다 모으','전부 모으','수집하면','코인 다')){ g.rules.goal = 'collect'; did = true; }
+  if(doHas(s,'퀴즈 맞','문제 다 맞','다 맞히')){ g.rules.goal = 'quiz'; did = true; }
+  if(doHas(s,'도도 다 찾','다 찾으면','숨은 도도 찾')){ g.rules.goal = 'seek'; did = true; }
+  if(doHas(s,'골인하면','골인까지','도착하면')){ g.rules.goal = 'reach'; did = true; }
+  if(doHas(s,'버티','살아남')){ g.rules.goal = 'survive'; did = true; }
+  if(doHas(s,'높이 올라','제일 높이')){ g.rules.goal = 'high'; did = true; }
+  if(doHas(s,'쉽게','쉬워')){ g.rules.time = Math.max(30, (g.rules.time||60) + 30); g.rules.lives = 0; did = true; }
+  if(doHas(s,'어렵게','어려워','더 어려')){ g.rules.time = Math.max(15, (g.rules.time||60) - 20); g.rules.lives = 1; did = true; }
+  if(did){
+    Studio.dirty(); Studio.head();
+    const r = g.rules;
+    doSay('좋아! 규칙을 바꿨어 🎯\n' + goalDef(r.goal).icon + ' ' + goalDef(r.goal).name +
+          ' · ⏱️ ' + (r.time ? r.time + '초' : '시간 없음') +
+          ' · ❤️ ' + (r.lives ? r.lives + '개' : '무한'));
+    return true;
+  }
+
+  /* 마법 블록 놓기 */
+  const wantPut = doHas(s,'놔','놓','만들','세워','추가','넣어');
+  const mg = ST_MAGIC.find(e=>doHas(s, ...e.k));
+  if(mg && wantPut){ closeDodo(); stPutMagic(mg.t); return true; }
+  if(mg){
+    doSay(BLOCKS[mg.t].icon + ' ' + BLOCKS[mg.t].name + stEul(BLOCKS[mg.t].name) + ' 놓을까?', [
+      {t:'응, 여기에 놔 줘', say:BLOCKS[mg.t].name + ' 놔 줘'},
+      {t:'아니야'}
+    ]);
+    return true;
+  }
+  if(wantPut && doHas(s,'게임','판','맵')){
+    doSay('어떤 게임을 만들까? 🤔',
+      KINDS.filter(x=>x.tmpl).map(x=>({t:x.icon + ' ' + x.name, say:x.name + ' 만들어 줘'})));
+    return true;
+  }
+  return false;
+}
+
+/* ═══════════════════════════════════════════════════
+   24. 🟥 로블록스로 내보내기 (.rbxlx)
+   ───────────────────────────────────────────────────
+   사헌 님이 "로블록스 API 를 활용해라" 라고 했다. 정확히 하자면 —
+
+   · Engine API (Instance, Part, Humanoid …) 는 루아(Luau) 라서
+     로블록스 스튜디오/클라이언트 안에서만 돈다. 웹페이지에서는 못 부른다.
+   · Open Cloud API 는 진짜 REST 라서 부를 수는 있지만
+     (POST apis.roblox.com/universes/v1/{u}/places/{p}/versions),
+     API 키가 필요하고 그 키를 이 html 에 넣으면 파일을 연 사람 누구나
+     훔쳐볼 수 있다. 그래서 절대 넣지 않는다. 그건 서버가 할 일이다.
+
+   그래서 계정도 키도 서버도 없이 오늘 할 수 있는 것을 한다:
+   **로블록스가 읽는 장소 파일(.rbxlx, 그냥 XML)을 브라우저에서 만들어 준다.**
+   아이는 그 파일을 로블록스 스튜디오에서 열어서 자기 게임을 이어 만든다.
+   도도블록이 로블록스로 가는 계단인 셈이다.
+
+   블록 1칸 = 4스터드(로블록스 기본 블록 크기)로 바꾼다.
+   ═══════════════════════════════════════════════════ */
+const RBX_STUD = 4;                        // 블록 한 칸 = 4스터드
+const RBX_MAX_PARTS = 20000;               // 이보다 많으면 스튜디오가 버거워한다
+
+/* 로블록스 Enum.Material 값 (공식 문서 값 그대로) */
+const RBX_MAT = {
+  [GRASS]:1280, [DIRT]:832, [STONE]:800, [WOOD]:512, [LEAF]:1280, [SAND]:864,
+  [GLASS]:1568, [RAINBOW]:288, [WATER]:1568, [GOLD]:1088, [PLANK]:528,
+  [PATH_B]:816, [PATH_S]:816, [PATH_G]:816, [TRAMP]:256, [LAMP]:288, [ICE]:1536
+};
+const rbxMat = t => RBX_MAT[t] || 256;     // 256 = Plastic
+
+function rbxColor(t){
+  const c = (BLOCK_COLOR[t] !== undefined) ? BLOCK_COLOR[t] : 0xcccccc;
+  /* Color3uint8 은 0xFFrrggbb 를 부호 없는 정수로 적는다 */
+  return (0xff000000 | (c & 0xffffff)) >>> 0;
+}
+function rbxEsc(v){
+  return String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+/* 블록 하나(또는 가로로 이어 붙인 여러 칸) → <Item class="Part"> */
+function rbxPart(name, t, cx, cy, cz, sx, sy, sz, extra, kids){
+  return '<Item class="Part" referent="RBX' + (rbxPart.n++) + '"><Properties>' +
+    '<bool name="Anchored">true</bool>' +
+    '<bool name="CanCollide">' + ((BLOCKS[t] && BLOCKS[t].pass) ? 'false' : 'true') + '</bool>' +
+    '<Color3uint8 name="Color3uint8">' + rbxColor(t) + '</Color3uint8>' +
+    '<CoordinateFrame name="CFrame">' +
+      '<X>' + cx.toFixed(2) + '</X><Y>' + cy.toFixed(2) + '</Y><Z>' + cz.toFixed(2) + '</Z>' +
+      '<R00>1</R00><R01>0</R01><R02>0</R02>' +
+      '<R10>0</R10><R11>1</R11><R12>0</R12>' +
+      '<R20>0</R20><R21>0</R21><R22>1</R22>' +
+    '</CoordinateFrame>' +
+    '<token name="formFactorRaw">3</token>' +
+    '<token name="Material">' + rbxMat(t) + '</token>' +
+    '<string name="Name">' + rbxEsc(name) + '</string>' +
+    '<Vector3 name="size"><X>' + sx + '</X><Y>' + sy + '</Y><Z>' + sz + '</Z></Vector3>' +
+    '<float name="Transparency">' + ((BLOCKS[t] && BLOCKS[t].transparent) ? '0.45' : '0') + '</float>' +
+    (extra || '') +
+    '</Properties>' + (kids || '') + '</Item>';
+}
+rbxPart.n = 1;
+
+function rbxScript(name, src){
+  return '<Item class="Script" referent="RBX' + (rbxPart.n++) + '"><Properties>' +
+    '<string name="Name">' + rbxEsc(name) + '</string>' +
+    '<ProtectedString name="Source"><![CDATA[' + src + ']]></ProtectedString>' +
+    '</Properties></Item>';
+}
+
+/* 마법 블록마다 붙는 작은 루아 — 로블록스에서도 "게임"이 되게 하는 최소한 */
+const RBX_LUA = {
+  coin: [
+    'local p = script.Parent',
+    'p.Touched:Connect(function(hit)',
+    '  local hum = hit.Parent and hit.Parent:FindFirstChildOfClass("Humanoid")',
+    '  if hum then p:Destroy() end',
+    'end)'
+  ].join('\n'),
+  kill: [
+    'local p = script.Parent',
+    'p.Touched:Connect(function(hit)',
+    '  local hum = hit.Parent and hit.Parent:FindFirstChildOfClass("Humanoid")',
+    '  if hum then hum.Health = 0 end',
+    'end)'
+  ].join('\n'),
+  goal: [
+    'local p = script.Parent',
+    'local done = {}',
+    'p.Touched:Connect(function(hit)',
+    '  local char = hit.Parent',
+    '  if not (char and char:FindFirstChildOfClass("Humanoid")) then return end',
+    '  local plr = game:GetService("Players"):GetPlayerFromCharacter(char)',
+    '  if not plr or done[plr] then return end',
+    '  done[plr] = true',
+    '  local gui = Instance.new("ScreenGui")',
+    '  local t = Instance.new("TextLabel")',
+    '  t.Size = UDim2.new(1, 0, 0.2, 0)',
+    '  t.Position = UDim2.new(0, 0, 0.4, 0)',
+    '  t.BackgroundTransparency = 0.3',
+    '  t.TextScaled = true',
+    '  t.Text = "GOAL!"',
+    '  t.Parent = gui',
+    '  gui.Parent = plr:WaitForChild("PlayerGui")',
+    'end)'
+  ].join('\n')
+};
+const RBX_MAGIC = {
+  [M_COIN]:{name:'Coin',  lua:'coin'},
+  [M_STAR]:{name:'Star',  lua:'coin'},
+  [M_KEY]: {name:'Key',   lua:'coin'},
+  [M_DODO]:{name:'Dodo',  lua:'coin'},
+  [M_YES]: {name:'Yes',   lua:'coin'},
+  [M_TRAP]:{name:'Trap',  lua:'kill'},
+  [M_BLINK]:{name:'Blink',lua:'kill'},
+  [M_NO]:  {name:'No',    lua:'kill'},
+  [M_GOAL]:{name:'Goal',  lua:'goal'},
+};
+
+/* 게임 카드 → .rbxlx 글자 전체 */
+function rbxlxOf(g){
+  rbxPart.n = 1;
+  const S = RBX_STUD;
+  const offX = 32 * S, offZ = 32 * S, offY = GAME_GY * S;   // 가운데가 0,0 이 되게
+  const cx = v => v * S - offX + S/2;
+  const cz = v => v * S - offZ + S/2;
+  const cy = v => v * S - offY + S/2;
+
+  /* 마법 블록은 하나씩(스크립트가 붙으니까), 보통 블록은 가로로 이어 붙인다 */
+  const plain = {}, magic = [];
+  for(const k in g.edits){
+    const t = g.edits[k]|0;
+    if(t === AIR) continue;
+    const a = k.split(','), x = +a[0], y = +a[1], z = +a[2];
+    if(isMagic(t)) magic.push({x:x, y:y, z:z, t:t, k:k});
+    else (plain[y+','+z] = plain[y+','+z] || []).push({x:x, t:t});
+  }
+
+  let body = '', parts = 0, cut = false;
+  /* 바닥 — 평평한 판/작은 섬은 큰 판 하나로 대신한다 (블록 수천 개를 아낀다) */
+  if(g.ground !== 'sky'){
+    /* 아이가 놓은 블록과 윗면이 정확히 겹치면 로블록스에서 화면이 깜빡인다.
+       0.05스터드만 낮춰 둔다 (사람이 알아볼 수 없고, 걸려 넘어지지도 않는다) */
+    body += rbxPart('Baseplate', GRASS, 0, cy(GAME_GY) + S/2 - 0.55, 0, W*S, 1, D*S);
+    parts++;
+  }
+  for(const key in plain){
+    const a = key.split(','), y = +a[0], z = +a[1];
+    const row = plain[key].sort((p,q)=>p.x-q.x);
+    let i = 0;
+    while(i < row.length){
+      let j = i;
+      while(j+1 < row.length && row[j+1].x === row[j].x + 1 && row[j+1].t === row[i].t) j++;
+      const n = j - i + 1;
+      if(parts >= RBX_MAX_PARTS){ cut = true; break; }
+      const midX = (row[i].x + row[j].x) / 2;
+      body += rbxPart(BLOCKS[row[i].t] ? BLOCKS[row[i].t].name : 'Block', row[i].t,
+                      midX * S - offX + S/2, cy(y), cz(z), n * S, S, S);
+      parts++;
+      i = j + 1;
+    }
+    if(cut) break;
+  }
+  /* 시작점은 SpawnLocation 으로 — 로블록스가 알아서 여기서 시작시켜 준다 */
+  let spawned = 0;
+  for(const m of magic){
+    if(parts >= RBX_MAX_PARTS){ cut = true; break; }
+    if(m.t === M_START){
+      if(spawned++) continue;                       // 스폰은 하나면 된다
+      body += '<Item class="SpawnLocation" referent="RBX' + (rbxPart.n++) + '"><Properties>' +
+        '<bool name="Anchored">true</bool><bool name="CanCollide">true</bool>' +
+        '<Color3uint8 name="Color3uint8">' + rbxColor(M_START) + '</Color3uint8>' +
+        '<CoordinateFrame name="CFrame"><X>' + cx(m.x).toFixed(2) + '</X><Y>' +
+          (cy(m.y) - S/2 + 0.5).toFixed(2) + '</Y><Z>' + cz(m.z).toFixed(2) + '</Z>' +
+          '<R00>1</R00><R01>0</R01><R02>0</R02><R10>0</R10><R11>1</R11><R12>0</R12>' +
+          '<R20>0</R20><R21>0</R21><R22>1</R22></CoordinateFrame>' +
+        '<token name="formFactorRaw">3</token>' +
+        '<string name="Name">Start</string>' +
+        '<bool name="Neutral">true</bool>' +
+        '<Vector3 name="size"><X>' + S + '</X><Y>1</Y><Z>' + S + '</Z></Vector3>' +
+        '</Properties></Item>';
+      parts++;
+      continue;
+    }
+    const spec = RBX_MAGIC[m.t];
+    const kid = spec ? rbxScript(spec.name + 'Script', RBX_LUA[spec.lua]) : '';
+    body += rbxPart(spec ? spec.name : (BLOCKS[m.t] ? BLOCKS[m.t].name : 'Magic'), m.t,
+                    cx(m.x), cy(m.y), cz(m.z), S, S, S, '', kid);
+    parts++;
+  }
+
+  const xml =
+    '<roblox xmlns:xmime="http://www.w3.org/2005/05/xmlmime" ' +
+      'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ' +
+      'xsi:noNamespaceSchemaLocation="http://www.roblox.com/roblox.xsd" version="4">' +
+    '<Item class="Workspace" referent="RBXWS"><Properties>' +
+      '<bool name="FilteringEnabled">true</bool>' +
+      '<string name="Name">Workspace</string>' +
+    '</Properties>' +
+    '<Item class="Model" referent="RBXMODEL"><Properties>' +
+      '<string name="Name">' + rbxEsc(g.title || '도도블록 게임') + '</string>' +
+    '</Properties>' + body + '</Item>' +
+    '</Item>' +
+    '<Item class="Lighting" referent="RBXLIGHT"><Properties>' +
+      '<string name="Name">Lighting</string>' +
+      '<float name="ClockTime">14</float>' +
+    '</Properties></Item>' +
+    '</roblox>';
+  return {xml:xml, parts:parts, cut:cut};
+}
+
+function exportRbxlx(g){
+  if(!g) return {ok:false, msg:'게임을 먼저 골라 주세요.'};
+  let r;
+  try{ r = rbxlxOf(g); }
+  catch(e){ return {ok:false, msg:'😢 파일을 만들다가 막혔어요. 블록을 조금 줄이고 다시 해 볼까요?'}; }
+  if(!r.parts) return {ok:false, msg:'아직 블록이 없어요. 먼저 게임을 만들어 주세요!'};
+  const name = (String(g.title || 'dodoblock').replace(/[\\/:*?"<>|]/g, '') || 'dodoblock') + '.rbxlx';
+  try{
+    const blob = new Blob([r.xml], {type:'application/xml'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url), 4000);
+  }catch(e){
+    return {ok:false, msg:'😢 이 브라우저에서는 파일 저장이 막혀 있어요.'};
+  }
+  return {ok:true, msg:'✅ ' + name + ' 을(를) 저장했어요! (블록 ' + r.parts + '개)' +
+    (r.cut ? ' ※ 너무 커서 일부만 담았어요.' : '') +
+    ' 로블록스 스튜디오에서 이 파일을 열면 내 게임이 그대로 나와요. ' +
+    '규칙(시간·목숨·이기는 방법)은 따라가지 않아요 — 그건 로블록스에서 루아로 만들어야 해요.'};
+}
 /* ═══════════════════════════════════════════════════
    🪶 화면 아래 도도AI 프롬프트
    이 게임의 핵심은 "AI와 함께 만드는 것"이라, 창을 열지 않아도
@@ -7383,9 +9897,9 @@ const AI_PH = [
 let aiPhI = 0, aiAnsT = null;
 
 function aiFocus(){
-  const el = $('#aiinput'); if(!el) return;
   if(document.pointerLockElement) document.exitPointerLock();
-  el.focus();
+  if(aiDock){ doFocus(); return; }           // 스튜디오에선 옆 붙박이 칸으로
+  const el = $('#aiinput'); if(el) el.focus();
 }
 function aiHideAns(){
   clearTimeout(aiAnsT); aiAnsT = null;
@@ -7406,7 +9920,7 @@ function aiChipEl(b, after){
   return el;
 }
 function aiSay(text, btns){
-  if(dodoOpen) return;                       // 큰 창이 떠 있으면 거기서 이미 보여 준다
+  if(doVisible()) return;                    // 큰 창·붙박이가 떠 있으면 거기서 이미 보여 준다
   const box = $('#aians'); if(!box) return;
   box.textContent = text;                    // 아이·친구가 쓴 글이 섞이므로 textContent 로만
   box.style.display = 'block';
@@ -7422,7 +9936,7 @@ function aiSay(text, btns){
 function aiChips(on){
   const box = $('#aichips'); if(!box) return;
   box.innerHTML = '';
-  if(!on || dodoOpen){ box.style.display = 'none'; return; }
+  if(!on || doVisible()){ box.style.display = 'none'; return; }
   doSuggest().slice(0, 3).forEach(b => box.appendChild(aiChipEl(b, aiFocus)));
   box.style.display = 'flex';
 }
@@ -7436,6 +9950,13 @@ function aiSend(){
 }
 
 window.BW = {player, setBlock, getBlock, scene, camera, renderer, voxels, W,H,D, IDX, keys,
+  Mode, Studio, Play, Games, newGame, gameCode, readGameCode, modeGo, magicCount,
+  openStudioHome, closeStudioHome, tmplObby, tmplTreasure, tmplMaze, stLayPlats,
+  KINDS, kindDef, GOALS, runTemplate, tmplDodge, tmplRace, tmplQuiz, tmplSeek,
+  rbxlxOf, exportRbxlx, setAiDock, dockWide, doAskDock(t){ doAsk(t); },
+  M_VANISH, M_BLINK, M_DODO, M_YES, M_NO, MAGIC_LIST,
+  M_START, M_GOAL, M_COIN, M_STAR, M_TRAP, M_KEY, M_DOOR, M_SIGN, M_CHECK,
+  panelOpen, flying(){ return FLYING; }, GAME_GY,
   sim(dt,n){ for(let i=0;i<(n||1);i++){ if(jumpBuffer>0) jumpBuffer-=dt; stepGame(dt); } },
   pressJump(){ jumpBuffer=0.14; },
   state, updateAim, breakBlock, placeBlock, selectSlot, addExp,
@@ -7447,7 +9968,7 @@ window.BW = {player, setBlock, getBlock, scene, camera, renderer, voxels, W,H,D,
   comboOn(){ return comboOn; }, registerCoinForCombo,
   SKINS, buySkin, applySkin, openShop, closeShop, shopOpen(){ return shopOpen; },
   spawnGoldBlock, goldEvent, pets, SHOP, npc(){ return npcGroup; }, npcLine, leaveShop,
-  tut, tutStart, TUT_STEPS, setTouchMode, touchMode(){ return touchMode; }, touch, Sound, setSoundOn,
+  tut, tutStart, tutSkip, TUT_STEPS, setTouchMode, touchMode(){ return touchMode; }, touch, Sound, setSoundOn,
   Bag, RECIPES, CRAFTED, craftOne, openCraft, closeCraft, hotbarList,
   Undo, DayNight, Lamps, cycleTimeMode,
   BLUEPRINTS, Blueprint, bpCells, bpSize, openPlans, closePlans,
