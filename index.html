@@ -317,7 +317,7 @@
 
   /* ── 튜토리얼 ── */
   #tut{
-    position:fixed; left:50%; bottom:130px; transform:translateX(-50%);
+    position:fixed; left:50%; bottom:192px; transform:translateX(-50%);
     z-index:22; display:none; text-align:center; pointer-events:none; max-width:92vw;
   }
   #tut .tcard{
@@ -556,6 +556,54 @@
   }
   #dosend:active{transform:translateY(2px); box-shadow:0 2px 0 #2a8c4a;}
 
+  /* ── 🪶 화면 아래 도도AI 프롬프트 ──
+     이 게임의 핵심은 AI와 함께 만드는 것이다. 창을 따로 열어야 말할 수 있으면
+     아이는 결국 안 쓴다. 그래서 늘 화면 아래에 붙여 둔다. */
+  #aibar{
+    /* bottom 은 layoutUI() 가 블록 바 높이를 재서 정한다 (블록 바가 두 줄이 되기도 한다) */
+    position:fixed; left:50%; bottom:108px; transform:translateX(-50%);
+    z-index:24; pointer-events:auto; display:none;
+    width:min(620px, 96vw); max-width:min(96vw, calc(100vw - 240px));
+  }
+  body.playing #aibar{display:block;}
+  body.playing.dodochat #aibar{display:none;}   /* 큰 창이 떠 있을 땐 숨긴다 */
+  #airow{
+    display:flex; align-items:center; gap:8px; padding:7px 9px;
+    background:rgba(255,255,255,.94); border-radius:22px;
+    box-shadow:0 5px 0 rgba(0,0,0,.16), 0 12px 28px rgba(0,0,0,.2);
+    transition:box-shadow .15s ease;
+  }
+  body.aitalk #airow{box-shadow:0 0 0 3px #ffd84d, 0 5px 0 rgba(0,0,0,.16), 0 12px 28px rgba(0,0,0,.2);}
+  #aiicon{font-size:22px; line-height:1; padding-left:5px;}
+  #aiinput{
+    flex:1; min-width:0; border:none; outline:none; background:transparent;
+    font-family:inherit; font-weight:800; font-size:16px; color:#3b3350; padding:6px 0;
+  }
+  #aiinput::placeholder{color:#a49cb8; font-weight:700;}
+  #aisend{
+    border:none; border-radius:16px; cursor:pointer; font-family:inherit; font-weight:900;
+    font-size:15px; color:#fff; padding:9px 15px; white-space:nowrap;
+    background:linear-gradient(#7ae582,#38b862); box-shadow:0 4px 0 #2a8c4a;
+  }
+  #aisend:active{transform:translateY(2px); box-shadow:0 2px 0 #2a8c4a;}
+  #aimore{
+    border:none; border-radius:50%; width:38px; height:38px; cursor:pointer;
+    font-size:18px; background:#efe9ff; box-shadow:0 4px 0 rgba(0,0,0,.13); font-family:inherit;
+  }
+  #aimore:active{transform:translateY(2px); box-shadow:0 2px 0 rgba(0,0,0,.13);}
+  /* 대답·예시는 줄 위에 떠오른다 — 줄 자체가 움직이면 아이가 놓친다 */
+  #aistack{
+    position:absolute; left:0; right:0; bottom:calc(100% + 8px);
+    display:flex; flex-direction:column; gap:7px; align-items:stretch;
+  }
+  #aians{
+    display:none; background:#fffdf7; color:#3b3350; border-radius:18px;
+    padding:11px 15px; font-size:15px; line-height:1.55; white-space:pre-line;
+    word-break:break-word; max-height:34vh; overflow-y:auto;
+    box-shadow:0 4px 0 rgba(0,0,0,.12), 0 10px 22px rgba(0,0,0,.2);
+  }
+  #aibtns,#aichips{display:none; flex-wrap:wrap; gap:6px; justify-content:center;}
+
   /* ── 아이디어 세 칸 · 명예의 전당 ── */
   .ifield{margin-bottom:9px;}
   .ifield label{display:block; font-size:13px; opacity:.72; margin:0 0 4px 3px;}
@@ -710,7 +758,7 @@
     #stickknob{width:54px; height:54px; margin:-27px 0 0 -27px;}
 
     body.touchmode #hotbar{bottom:182px; transform:translateX(-50%) scale(1);}
-    body.touchmode #tut{bottom:262px;}
+    body.touchmode #tut{bottom:342px;}
     body.touchmode #tools{top:50%; bottom:auto; right:6px; width:86px;}
     .modal{padding:6px;}
     .mbox{padding:15px 15px 13px; border-radius:20px;}
@@ -744,6 +792,11 @@
     .quest .qtx{font-size:11px;}
     .quest .qnum{font-size:9px;}
     #hotbar{gap:5px; padding:5px 7px; max-width:min(96vw, calc(100vw - 216px));}
+    #airow{padding:5px 7px; gap:6px;}
+    #aiinput{font-size:15px; padding:4px 0;}
+    #aisend{padding:7px 12px; font-size:14px;}
+    #aimore{width:34px; height:34px; font-size:16px;}
+    #tut{bottom:172px;}
     .slot{width:46px; height:52px; border-radius:11px;}
     .slot .ic{font-size:19px;}
     .slot .nm{font-size:8px;}
@@ -752,7 +805,7 @@
   }
   @media (max-width:620px) and (orientation:landscape){
     body.touchmode #hotbar{bottom:96px; transform:translateX(-50%) scale(.85);}
-    body.touchmode #tut{bottom:150px;}
+    body.touchmode #tut{bottom:246px;}
     #quests{max-height:38vh; overflow:hidden;}
   }
 
@@ -798,6 +851,21 @@
   <div class="card" id="quests">
     <div id="qtitle">📋 퀘스트</div>
     <div id="qlist"></div>
+  </div>
+  <!-- 🪶 도도AI 프롬프트 — 늘 화면 아래에 붙어 있다 -->
+  <div id="aibar">
+    <div id="aistack">
+      <div id="aians"></div>
+      <div id="aibtns"></div>
+      <div id="aichips"></div>
+    </div>
+    <div id="airow">
+      <span id="aiicon">🪶</span>
+      <input id="aiinput" maxlength="60" spellcheck="false" autocomplete="off"
+             placeholder="도도AI에게 말해 봐 — 무지개 미끄럼틀 만들어 줘">
+      <button id="aisend">말하기</button>
+      <button id="aimore" title="지난 이야기 다 보기 (T)">💬</button>
+    </div>
   </div>
   <div id="hotbar"></div>
   <div id="combo"></div>
@@ -3911,6 +3979,7 @@ function buildHelp(){
     ['I','🏝️ 내 섬 — 꾸미기 · 섬 테마 · 오르골 · 사진 벽화 · 보물 숨기기'],
     ['K','🎨 도도 꾸미기 — 깃털색 · 부리색 · 모자'],
     ['👀','화면 한가운데 조준점이 가리키는 칸에 쌓고 부숴요. 노란 테두리가 새 블록이 생길 자리예요'],
+    ['Enter','🪶 화면 아래 도도AI 칸으로 바로 가기 — 하고 싶은 말을 쓰면 도도가 해 줘요'],
     ['Shift + R  또는 🎥','녹화 시작 / 멈추기 (쇼츠 모양 세로 영상)'],
     ['B','청사진 건축학교'],
     ['V','내 배지'],
@@ -5962,19 +6031,28 @@ function layoutUI(){
   const hbTop = hotbar ? hotbar.getBoundingClientRect().top : innerHeight;
   const th = tools.getBoundingClientRect().height;
 
+  /* 🪶 도도AI 줄은 블록 바 바로 위 — 대답 말풍선이 블록 바를 가리지 않게 */
+  const aibar = $('#aibar');
+  let barTop = hbTop;
+  if(aibar){
+    aibar.style.bottom = Math.round(innerHeight - hbTop + 10) + 'px';
+    const ar = aibar.getBoundingClientRect();
+    if(ar.height > 0) barTop = ar.top;
+  }
+
   /* 퀘스트 칸 아래 ~ 블록 바 위 사이에 단추가 들어갈 자리가 있나? */
-  if(hbTop - qb < th + 20){
+  if(barTop - qb < th + 20){
     document.body.classList.add('rowtools');        // 자리가 없으면 위쪽에 가로로
   } else {
     let top = (innerHeight - th) / 2;               // 기본은 세로 가운데
     top = Math.max(top, qb + 10);                   // 퀘스트 칸 아래로
-    top = Math.min(top, hbTop - th - 10);           // 블록 바 위로
+    top = Math.min(top, barTop - th - 10);          // 도도AI 줄 위로
     top = Math.max(top, 10);
     tools.style.top = Math.round(top) + 'px';
     tools.style.transform = 'none';
   }
 
-  if(hint) hint.style.bottom = Math.round(innerHeight - hbTop + 12) + 'px';
+  if(hint) hint.style.bottom = Math.round(innerHeight - barTop + 12) + 'px';
 }
 
 function stepGame(dt){
@@ -6763,6 +6841,29 @@ $('#copythanks').addEventListener('click', ()=>friendMsg(copyField('thankscode',
 $('#changenick').addEventListener('click', ()=>askNick(()=>renderFriends()));
 $('#ideago').addEventListener('click', sendIdea);
 $('#btnDodo').addEventListener('click', guard(openDodo));
+/* 🪶 화면 아래 프롬프트 줄 */
+$('#aisend').addEventListener('click', ()=>{ aiSend(); aiFocus(); });
+$('#aimore').addEventListener('click', guard(openDodo));
+$('#aibar').addEventListener('mousedown', ()=>{
+  if(document.pointerLockElement) document.exitPointerLock();   // 마우스를 잡고 있어도 바로 쓸 수 있게
+});
+$('#aiinput').addEventListener('focus', ()=>{ document.body.classList.add('aitalk'); aiChips(true); });
+$('#aiinput').addEventListener('blur', ()=>{
+  document.body.classList.remove('aitalk');
+  setTimeout(()=>aiChips(false), 140);
+});
+$('#aiinput').addEventListener('keydown', e=>{
+  e.stopPropagation();                        // 글을 쓰는 동안 게임 단축키가 같이 눌리면 안 된다
+  if(e.code === 'Enter'){ e.preventDefault(); aiSend(); }
+  else if(e.code === 'Escape'){ e.target.value = ''; e.target.blur(); }
+});
+/* 놀다가 엔터만 누르면 바로 말할 수 있다 (마우스 없이) */
+setInterval(()=>{
+  const el = $('#aiinput');
+  if(!el || !started || document.activeElement === el || el.value) return;
+  aiPhI = (aiPhI + 1) % AI_PH.length;
+  el.placeholder = AI_PH[aiPhI];
+}, 4200);
 $('#dosend').addEventListener('click', doSend);
 $('#doclose').addEventListener('click', closeDodo);
 $('#dodoai').addEventListener('click', e=>{ if(e.target.id === 'dodoai') closeDodo(); });
@@ -6776,7 +6877,8 @@ $('#nickinput').addEventListener('keydown', e=>{ if(e.code==='Enter') saveNick()
 if(!state.uid) state.uid = newUid();
 addEventListener('keydown', e=>{
   if(!started) return;
-  const typing = document.activeElement && document.activeElement.tagName === 'TEXTAREA';
+  const ae = document.activeElement;
+  const typing = ae && (ae.tagName === 'TEXTAREA' || ae.tagName === 'INPUT');
   if(typing) return;
   const anyModal = craftOpen || plansOpen || bagOpen || friendsOpen || ideaOpen || shortsOpen ||
                    islandOpen || dodoOpen || lookOpen ||
@@ -6792,6 +6894,7 @@ addEventListener('keydown', e=>{
   }
   if(e.code==='Tab'){ e.preventDefault(); if(!anyModal) guard(openBag)(); return; }
   if(anyModal || shopOpen) return;
+  if(e.code==='Enter'){ e.preventDefault(); aiFocus(); return; }
   if(e.code==='KeyZ') Undo.undo();
   if(e.code==='KeyC') craftOpen ? closeCraft() : openCraft();
   if(e.code==='KeyB') plansOpen ? closePlans() : openPlans();
@@ -6822,6 +6925,8 @@ requestAnimationFrame(frame);
 $('#startbtn').addEventListener('click', ()=>{
   $('#start').style.display='none';
   started = true;
+  document.body.classList.add('playing');     // 🪶 아래 프롬프트 줄은 놀기 시작하면 나온다
+  layoutUI();                                 // 줄이 생겼으니 자리를 다시 잡는다
   Sound.resume();
   canvas.focus && canvas.focus();
   function afterNick(){
@@ -6915,7 +7020,7 @@ function doBtns(list){
   box.appendChild(row);
   box.scrollTop = box.scrollHeight;
 }
-function doSay(text, btns){ doPush('ai', text); doBtns(btns); }
+function doSay(text, btns){ doPush('ai', text); doBtns(btns); aiSay(text, btns); }
 
 /* ── 알아듣는 말 표 — 먼저 나오는 것이 이긴다 (자세한 이름이 위로) ── */
 const DO_BUILD = [
@@ -7245,6 +7350,8 @@ function doAsk(raw){
 function doSend(){ doAsk($('#doinput').value); }
 function openDodo(){
   dodoOpen = true;
+  document.body.classList.add('dodochat');
+  aiHideAns();
   $('#dodoai').style.display = 'flex';
   if(document.pointerLockElement) document.exitPointerLock();
   doDrawAll();
@@ -7254,7 +7361,79 @@ function openDodo(){
   Sound.shop();
   setTimeout(()=>{ const el = $('#doinput'); if(el) el.focus(); }, 60);
 }
-function closeDodo(){ dodoOpen = false; $('#dodoai').style.display = 'none'; }
+function closeDodo(){
+  dodoOpen = false;
+  document.body.classList.remove('dodochat');
+  $('#dodoai').style.display = 'none';
+}
+
+/* ═══════════════════════════════════════════════════
+   🪶 화면 아래 도도AI 프롬프트
+   이 게임의 핵심은 "AI와 함께 만드는 것"이라, 창을 열지 않아도
+   언제든 바로 말할 수 있어야 한다. 말표(doBrain)는 도도 장로 창과 똑같은 것을 쓴다.
+   ═══════════════════════════════════════════════════ */
+const AI_PH = [
+  '도도AI에게 말해 봐 — 무지개 미끄럼틀 만들어 줘',
+  '도도AI에게 말해 봐 — 노을섬으로 바꿔 줘',
+  '도도AI에게 말해 봐 — 나 뭐 해야 돼?',
+  '도도AI에게 말해 봐 — 오르골 만들래',
+  '도도AI에게 말해 봐 — 보물 숨겨 줘',
+  '도도AI에게 말해 봐 — 도도 꾸며 줘',
+];
+let aiPhI = 0, aiAnsT = null;
+
+function aiFocus(){
+  const el = $('#aiinput'); if(!el) return;
+  if(document.pointerLockElement) document.exitPointerLock();
+  el.focus();
+}
+function aiHideAns(){
+  clearTimeout(aiAnsT); aiAnsT = null;
+  const b = $('#aians'); if(b){ b.style.display = 'none'; b.textContent = ''; }
+  const r = $('#aibtns'); if(r){ r.innerHTML = ''; r.style.display = 'none'; }
+}
+/* 누를 수 있는 단추를 만든다 — 눌러도 글칸에서 손이 떠나지 않게 mousedown 을 막는다 */
+function aiChipEl(b, after){
+  const el = document.createElement('button');
+  el.className = 'dochip' + (b.cls ? ' ' + b.cls : '');
+  el.textContent = b.t;
+  el.addEventListener('mousedown', e=>e.preventDefault());
+  el.addEventListener('click', ()=>{
+    Sound.click();
+    if(after) after();
+    if(b.go) b.go(); else doAsk(b.say || b.t);
+  });
+  return el;
+}
+function aiSay(text, btns){
+  if(dodoOpen) return;                       // 큰 창이 떠 있으면 거기서 이미 보여 준다
+  const box = $('#aians'); if(!box) return;
+  box.textContent = text;                    // 아이·친구가 쓴 글이 섞이므로 textContent 로만
+  box.style.display = 'block';
+  const row = $('#aibtns');
+  row.innerHTML = '';
+  (btns || []).forEach(b => row.appendChild(aiChipEl(b, aiHideAns)));
+  row.style.display = (btns && btns.length) ? 'flex' : 'none';
+  clearTimeout(aiAnsT);
+  /* 되묻는 중이면 아이가 고를 시간을 넉넉히 준다 */
+  aiAnsT = setTimeout(aiHideAns, (btns && btns.length) ? 30000 : 9000);
+}
+/* 빈칸만 주면 아이는 뭘 써야 할지 모른다 — 누를 수 있는 예시를 띄운다 */
+function aiChips(on){
+  const box = $('#aichips'); if(!box) return;
+  box.innerHTML = '';
+  if(!on || dodoOpen){ box.style.display = 'none'; return; }
+  doSuggest().slice(0, 3).forEach(b => box.appendChild(aiChipEl(b, aiFocus)));
+  box.style.display = 'flex';
+}
+function aiSend(){
+  const el = $('#aiinput'); if(!el) return;
+  const v = el.value;
+  if(!String(v).trim()) return;
+  el.value = '';
+  doAsk(v);
+  aiChips(true);
+}
 
 window.BW = {player, setBlock, getBlock, scene, camera, renderer, voxels, W,H,D, IDX, keys,
   sim(dt,n){ for(let i=0;i<(n||1);i++){ if(jumpBuffer>0) jumpBuffer-=dt; stepGame(dt); } },
@@ -7262,6 +7441,7 @@ window.BW = {player, setBlock, getBlock, scene, camera, renderer, voxels, W,H,D,
   state, updateAim, breakBlock, placeBlock, selectSlot, addExp,
   aim(){ return aimed; }, hotbarSlot(){ return selectedSlot; },
   placeSpot(){ return placeAt; }, placeTarget, ghost, highlight, camState,
+  aiSend, aiSay, aiChips, aiFocus, aiHideAns, AI_PH,
   OBBIES, Collect, finishObby, remaining(){ return Collect.remaining(); },
   QUEST_POOL, checkQuests, refillQuests, gainCoins, hasUnlock, UNLOCKS,
   comboOn(){ return comboOn; }, registerCoinForCombo,
