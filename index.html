@@ -326,6 +326,14 @@
   }
   #tut .tstep{font-size:12px; opacity:.55; margin-bottom:4px;}
   #tut .tarrow{font-size:34px; animation:tbounce .9s ease-in-out infinite;}
+  /* 건너뛰기 — #tut 은 클릭이 통과되게 해 놔서 이 단추만 다시 켜 준다 */
+  #tutskip{
+    margin-top:9px; border:none; border-radius:14px; cursor:pointer; pointer-events:auto;
+    font-family:inherit; font-weight:900; font-size:14px; color:#4a4266;
+    background:rgba(255,255,255,.92); padding:9px 16px;
+    box-shadow:0 4px 0 rgba(0,0,0,.16);
+  }
+  #tutskip:active{transform:translateY(2px); box-shadow:0 2px 0 rgba(0,0,0,.16);}
   @keyframes tbounce{0%,100%{transform:translateY(0)}50%{transform:translateY(10px)}}
   body.touchmode #tut{bottom:210px;}
 
@@ -1029,7 +1037,8 @@
 <div id="help"><div id="helpbox">
   <h2>❓ 도도 조작법</h2>
   <table id="helptable"></table>
-  <button class="bigclose" id="helpclose" style="margin-top:16px">알겠어요!</button>
+  <button class="bigclose" id="helpagain" style="margin-top:14px;background:linear-gradient(#ffcf3f,#ff9f1a);box-shadow:0 5px 0 #c9700a;color:#5c3a00">🔰 튜토리얼 다시 보기</button>
+  <button class="bigclose" id="helpclose" style="margin-top:10px">알겠어요!</button>
 </div></div>
 
 <div class="worldlabel" id="npclabel"></div>
@@ -4113,7 +4122,10 @@ const TUT_STEPS = [
 
 function tutStart(){
   tut.on = true; tut.step = 0;
+  tut.moved = 0; tut.looked = 0;
+  tut.jumped = false; tut.broke = false; tut.placed = false; tut.coin = false;
   tut.lastX = player.x; tut.lastZ = player.z;
+  _lastYaw = player.yaw;          // 안 그러면 '둘러보기' 가 시작하자마자 통과된다
   tutRender();
 }
 function tutRender(){
@@ -4132,7 +4144,21 @@ function tutRender(){
   box.innerHTML = '<div class="tcard">' +
     '<div class="tstep">' + (tut.step+1) + ' / ' + TUT_STEPS.length + '</div>' +
     (touchMode ? st.mo : st.pc) +
-    '<div class="tarrow">' + st.arrow + '</div></div>';
+    '<div class="tarrow">' + st.arrow + '</div></div>' +
+    '<button id="tutskip">건너뛰기 ⏭️</button>';
+  /* 화면을 새로 그릴 때마다 단추도 새로 생기니 여기서 연결한다 */
+  const sk = $('#tutskip');
+  if(sk) sk.addEventListener('click', (e)=>{ e.stopPropagation(); tutSkip(); });
+}
+/* 이미 할 줄 아는 아이는 여섯 걸음을 다 밟을 이유가 없다.
+   대신 되돌릴 길을 남긴다 — ❓ 조작법에서 다시 볼 수 있다. */
+function tutSkip(){
+  tut.on = false;
+  $('#tut').style.display = 'none';
+  state.tutorialDone = 1;
+  saveSoon();
+  Sound.click();
+  showHint('⏭️ 건너뛰었어요! 다시 보고 싶으면 ❓ 를 눌러요', 3200);
 }
 function tutAdvance(){
   if(!tut.on) return;
@@ -7592,6 +7618,12 @@ checkBadges();
 setSoundOn(state.soundOn !== 0);
 $('#btnSound').addEventListener('click', ()=>{ setSoundOn(!Sound.isEnabled()); Sound.resume(); Sound.click(); });
 $('#btnHelp').addEventListener('click', ()=>{ buildHelp(); $('#help').style.display='flex'; });
+$('#helpagain').addEventListener('click', ()=>{
+  $('#help').style.display = 'none';
+  if(!inIsland()){ showHint('🏝️ 튜토리얼은 내 섬에서 볼 수 있어요', 2400); Sound.deny(); return; }
+  tutStart();
+  Sound.click();
+});
 QUALITY.mode = state.quality || 'auto';
 applyQuality(QUALITY.mode === 'low' ? 'low' : 'high');
 /* 화질은 🎒 가방 안에서 바꾼다 (화면 단추를 줄이느라 뺐다) */
@@ -8826,7 +8858,7 @@ window.BW = {player, setBlock, getBlock, scene, camera, renderer, voxels, W,H,D,
   comboOn(){ return comboOn; }, registerCoinForCombo,
   SKINS, buySkin, applySkin, openShop, closeShop, shopOpen(){ return shopOpen; },
   spawnGoldBlock, goldEvent, pets, SHOP, npc(){ return npcGroup; }, npcLine, leaveShop,
-  tut, tutStart, TUT_STEPS, setTouchMode, touchMode(){ return touchMode; }, touch, Sound, setSoundOn,
+  tut, tutStart, tutSkip, TUT_STEPS, setTouchMode, touchMode(){ return touchMode; }, touch, Sound, setSoundOn,
   Bag, RECIPES, CRAFTED, craftOne, openCraft, closeCraft, hotbarList,
   Undo, DayNight, Lamps, cycleTimeMode,
   BLUEPRINTS, Blueprint, bpCells, bpSize, openPlans, closePlans,
