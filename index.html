@@ -312,6 +312,13 @@
     grid-column:1 / span 2; width:auto; height:70px; border-radius:38px; font-size:26px;
     background:linear-gradient(#9be7a0,#4fc86a); color:#0f3d1c;
   }
+  /* 🎈 던지기 — 놀 때는 블록을 놓고 부수지 않으니 그 자리를 물풍선이 쓴다 */
+  .tbtn.throw{
+    grid-column:1 / span 2; width:auto; height:70px; border-radius:38px; font-size:26px;
+    background:linear-gradient(#bfe9ff,#5fc9ff); color:#0b3a52; display:none;
+  }
+  body.playing #tBreak, body.playing #tPlace{display:none;}
+  body.playing.throwing #tThrow{display:flex; flex-direction:row; gap:7px;}
   body.touchmode #hotbar{bottom:118px; transform:translateX(-50%) scale(.92);}
   body.touchmode #fps{top:4px;}
 
@@ -1233,6 +1240,7 @@
   <div id="tbtns">
     <button class="tbtn" id="tBreak">⛏️<small>부수기</small></button>
     <button class="tbtn" id="tPlace">🧱<small>놓기</small></button>
+    <button class="tbtn throw" id="tThrow">🎈<small>던지기</small></button>
     <button class="tbtn jump" id="tJump">⬆️ 점프</button>
   </div>
 </div>
@@ -1375,6 +1383,7 @@
   <div class="pv" id="pvhigh" style="display:none">🧗 0</div>
   <div class="pv" id="pvstar" style="display:none">⭐ 0</div>
   <div class="pv" id="pvfind" style="display:none">🦤 0</div>
+  <div class="pv" id="pvammo" style="display:none">🎈 0</div>
   <button class="pv pvbtn" id="pvchat" title="대화창 (M)">💬</button>
   <button class="pv pvbtn" id="pvexit" title="게임에서 나가기 (Esc)">🏝️ 나가기</button>
 </div>
@@ -1794,7 +1803,10 @@ const AIR=0, GRASS=1, DIRT=2, STONE=3, WOOD=4, LEAF=5, SAND=6, GLASS=7, RAINBOW=
       M_START=18, M_GOAL=19, M_COIN=20, M_STAR=21, M_TRAP=22,
       M_KEY=23, M_DOOR=24, M_SIGN=25, M_CHECK=26,
       /* 장르를 넓히려고 더한 것들 — 피하기 · 퀴즈 · 숨바꼭질 */
-      M_VANISH=27, M_BLINK=28, M_DODO=29, M_YES=30, M_NO=31;
+      M_VANISH=27, M_BLINK=28, M_DODO=29, M_YES=30, M_NO=31,
+      /* 🎈 물풍선 맞히기(슈팅) — 총이 아니라 물풍선이다.
+         초등학생 게임이라 맞아서 아픈 것이 아니라 젖어서 터지는 쪽으로 갔다. */
+      M_TARGET=32, M_AMMO=33;
 
 const BLOCKS = {
   [GRASS]:  {name:'잔디',   icon:'🌱'},
@@ -1829,6 +1841,9 @@ const BLOCKS = {
   [M_DODO]: {name:'숨은 도도',   icon:'🦤', magic:true, pass:true},
   [M_YES]:  {name:'맞음',        icon:'⭕', magic:true, pass:true, glow:true},
   [M_NO]:   {name:'틀림',        icon:'❌', magic:true, pass:true},
+  /* 과녁은 단단하다 — 걸어가서 닿는 게 아니라 물풍선을 맞혀야 터진다 */
+  [M_TARGET]:{name:'과녁',       icon:'🎯', magic:true},
+  [M_AMMO]: {name:'물풍선 상자', icon:'🎈', magic:true, pass:true, glow:true},
 };
 const BLOCK_COLOR = {
   [GRASS]:0x63c64d, [DIRT]:0x96653f, [STONE]:0x9aa0a8, [WOOD]:0x9c6b3f,
@@ -1839,17 +1854,18 @@ const BLOCK_COLOR = {
   [M_START]:0x5ad07a, [M_GOAL]:0xf2f2f2, [M_COIN]:0xffc82e, [M_STAR]:0xffe45c,
   [M_TRAP]:0xd2455c, [M_KEY]:0xffb03a, [M_DOOR]:0xa9722f, [M_SIGN]:0x7fc6ff,
   [M_CHECK]:0x4aa3ff,
-  [M_VANISH]:0xc9b6ff, [M_BLINK]:0xff9f2e, [M_DODO]:0x8fd9cf, [M_YES]:0x4fd86a, [M_NO]:0xe4574f
+  [M_VANISH]:0xc9b6ff, [M_BLINK]:0xff9f2e, [M_DODO]:0x8fd9cf, [M_YES]:0x4fd86a, [M_NO]:0xe4574f,
+  [M_TARGET]:0xff6b6b, [M_AMMO]:0x5fc9ff
 };
 const RENDER_TYPES = [GRASS,DIRT,STONE,WOOD,LEAF,SAND,GLASS,RAINBOW,GOLD,PATH_B,PATH_S,PATH_G,PLANK,TRAMP,LAMP,ICE,
   M_START,M_GOAL,M_COIN,M_STAR,M_TRAP,M_KEY,M_DOOR,M_SIGN,M_CHECK,
-  M_VANISH,M_BLINK,M_DODO,M_YES,M_NO];
+  M_VANISH,M_BLINK,M_DODO,M_YES,M_NO,M_TARGET,M_AMMO];
 /* 마법 블록 가운데 "걸어 들어가서 닿는" 것들 (코인·함정·골인 …) */
 const MAGIC_LIST = [M_START,M_GOAL,M_COIN,M_STAR,M_TRAP,M_KEY,M_DOOR,M_SIGN,M_CHECK,
-                    M_VANISH,M_BLINK,M_DODO,M_YES,M_NO];
-const isMagic = t => t>=M_START && t<=M_NO;
+                    M_VANISH,M_BLINK,M_DODO,M_YES,M_NO,M_TARGET,M_AMMO];
+const isMagic = t => t>=M_START && t<=M_AMMO;
 const PASS_THRU = new Set([M_START,M_GOAL,M_COIN,M_STAR,M_TRAP,M_KEY,M_SIGN,M_CHECK,
-                           M_BLINK,M_DODO,M_YES,M_NO]);
+                           M_BLINK,M_DODO,M_YES,M_NO,M_AMMO]);
 const isLiquid = t => t===WATER;
 /* 마법 블록은 스튜디오(만들 때)에선 단단하고, 플레이(놀 때)에선 통과된다.
    그래서 만들 때는 조준해서 놓고 부술 수 있고, 놀 때는 걸어 들어가 먹는다. */
@@ -1993,6 +2009,8 @@ function buildTextures(){
   TEX[M_DODO]  = iconTex('#8fd9cf','🦤','#4fa89b');
   TEX[M_YES]   = iconTex('#4fd86a','⭕','#2a9c46');
   TEX[M_NO]    = iconTex('#e4574f','❌','#a32c26');
+  TEX[M_TARGET]= iconTex('#ff6b6b','🎯','#c23b3b');
+  TEX[M_AMMO]  = iconTex('#5fc9ff','🎈','#2b8fc4');
 }
 
 const MATS = {};
@@ -2719,7 +2737,7 @@ const input = {
   jumpWanted(){ return jumpBuffer>0; },
   consumeJump(){ jumpBuffer=0; }
 };
-const touch = {moveX:0, moveY:0, lookX:0, lookY:0, breaking:false, placing:false};
+const touch = {moveX:0, moveY:0, lookX:0, lookY:0, breaking:false, placing:false, throwing:false};
 
 const NO_SCROLL = {Space:1, ArrowUp:1, ArrowDown:1, ArrowLeft:1, ArrowRight:1};
 /* 창이 떠 있거나 코드를 입력 중이면 캐릭터가 멋대로 움직이면 안 된다 */
@@ -4524,6 +4542,7 @@ function setupTouch(){
   };
   hold($('#tBreak'), ()=>{ touch.breaking = true; }, ()=>{ touch.breaking = false; });
   hold($('#tPlace'), ()=>{ touch.placing  = true; }, ()=>{ touch.placing  = false; });
+  hold($('#tThrow'), ()=>{ touch.throwing = true; }, ()=>{ touch.throwing = false; });
   $('#tJump').addEventListener('pointerdown', e=>{ jumpBuffer = 0.14; e.preventDefault(); });
 
   setTouchMode(IS_TOUCH);
@@ -4682,9 +4701,16 @@ function buildHelp(){
     const pl = touchMode
       ? [['왼쪽 동그라미','움직이기'],['화면 문지르기','둘러보기'],['⬆️ 점프','폴짝 뛰기']]
       : [['W A S D','움직이기'],['← ↑ ↓ →','둘러보기'],['스페이스','점프']];
+    /* 🎈 이 게임에 과녁이 있을 때만 던지는 법을 알려 준다 */
+    if(Play.needHit && Play.needHit()){
+      pl.push(touchMode ? ['🎈 던지기','물풍선 던지기 — 꾹 누르면 계속 던져요']
+                        : ['E  또는 F  또는 왼쪽 클릭','🎈 물풍선 던지기']);
+    }
     const more = [
       ['🚩 시작점','여기서 시작해요'],
       ['🏁 골인','닿으면 이겨요'],
+      ['🎯 과녁','🎈 물풍선을 맞히면 터져요 (걸어서는 못 없애요)'],
+      ['🎈 물풍선 상자','주우면 물풍선 5개를 더 줘요'],
       ['🪙 코인','먹으면 점수 (조금 뒤 다시 생겨요)'],
       ['⭐ 별','큰 점수'],
       ['☠️ 함정','닿으면 목숨이 줄고 처음으로 돌아가요'],
@@ -6897,6 +6923,7 @@ const GOALS = [
   {id:'survive', icon:'⏱️', name:'버티기',        tip:'시간이 끝날 때까지 살아남아요'},
   {id:'quiz',    icon:'❓', name:'퀴즈 다 맞히기', tip:'⭕ 를 다 밟으면 이겨요 (❌ 를 밟으면 틀려요)'},
   {id:'seek',    icon:'🦤', name:'숨은 도도 찾기', tip:'🦤 숨은 도도를 다 찾으면 이겨요'},
+  {id:'hit',     icon:'🎯', name:'과녁 다 맞히기', tip:'🎈 물풍선을 던져 🎯 과녁을 다 맞히면 이겨요'},
 ];
 const goalDef = id => GOALS.find(g=>g.id===id) || GOALS[0];
 
@@ -6929,6 +6956,9 @@ const KINDS = [
   {id:'seek',     icon:'🦤', name:'숨바꼭질',    desc:'숨은 도도를 다 찾아내기',
    ground:'island', goal:'seek',    tmpl:'tmplSeek',
    bar:[M_START, M_GOAL, M_DODO, M_SIGN, M_KEY, M_DOOR, M_CHECK, M_COIN, M_STAR]},
+  {id:'shoot',    icon:'🎈', name:'물풍선 맞히기', desc:'물풍선을 던져 과녁을 맞혀요',
+   ground:'flat',   goal:'hit',     tmpl:'tmplShoot',
+   bar:[M_START, M_GOAL, M_TARGET, M_AMMO, M_TRAP, M_CHECK, TRAMP, M_SIGN, M_STAR]},
   {id:'free',     icon:'🎨', name:'자유롭게',    desc:'내 마음대로 — 다 꺼내 써요',
    ground:'flat',   goal:'reach',   tmpl:'',
    bar:[M_START, M_GOAL, M_COIN, M_STAR, M_TRAP, M_KEY, M_DOOR, M_SIGN, M_CHECK]},
@@ -7094,6 +7124,97 @@ function applyGameEdits(){
 }
 
 /* ═══════════════════════════════════════════════════
+   20.9 🎈 물풍선 — "슈팅 게임"을 초등학생 것으로 바꾼 조각
+   ───────────────────────────────────────────────────
+   사헌 님이 슈팅 게임도 만들 수 있게 해 달라고 했다.
+   총과 맞아서 아픈 표현은 넣지 않았다. 대신 **물풍선을 던져서
+   과녁을 맞히면 물이 튀며 터진다.** 규칙(조준 → 던짐 → 맞힘 → 점수)은
+   슈팅 게임 그대로인데, 맞는 쪽이 사람이 아니라 과녁이고 아프지 않다.
+
+   물풍선은 블록이 아니라 날아가는 물건이라 블록 칸에 못 담는다.
+   그래서 게임 카드에는 🎯 과녁과 🎈 물풍선 상자만 저장하고,
+   날아가는 동안의 물풍선은 여기서만 잠깐 산다.
+   ═══════════════════════════════════════════════════ */
+const Balloon = (function(){
+  const SPEED = 21;            // 던지는 빠르기 (칸/초)
+  const GRAV  = 15;            // 물풍선도 떨어진다 — 멀면 위를 조금 보고 던져야 한다
+  const LIFE  = 3.2;           // 이 시간이 지나면 저절로 사라진다
+  const CAP   = 12;            // 동시에 날아다닐 수 있는 개수
+  const STEP  = 0.18;          // 한 번에 이만큼씩 나아가며 부딪혔는지 본다
+  let group = null;
+  const pool = [];
+
+  function ensure(){
+    if(group) return;
+    group = new THREE.Group();
+    scene.add(group);
+    for(let i=0;i<CAP;i++){
+      const m = boxMesh(.34,.34,.34, 0x5fc9ff);
+      m.visible = false;
+      group.add(m);
+      pool.push({mesh:m, on:false, x:0,y:0,z:0, vx:0,vy:0,vz:0, t:0});
+    }
+  }
+  function free(){ ensure(); return pool.find(b=>!b.on) || null; }
+
+  /* 도도가 보고 있는 쪽으로 던진다 (카메라 방향의 반대가 앞쪽) */
+  function fire(){
+    const b = free();
+    if(!b) return false;
+    const cp = Math.cos(player.pitch), sp = Math.sin(player.pitch);
+    const fx = -Math.sin(player.yaw)*cp, fy = sp, fz = -Math.cos(player.yaw)*cp;
+    b.on = true; b.t = 0;
+    b.x = player.x + fx*0.6;
+    b.y = player.y + 1.35 + fy*0.6;
+    b.z = player.z + fz*0.6;
+    b.vx = fx*SPEED; b.vy = fy*SPEED + 2.2; b.vz = fz*SPEED;
+    b.mesh.visible = true;
+    b.mesh.position.set(b.x, b.y, b.z);
+    Sound.bounce();
+    return true;
+  }
+
+  function pop(b, hitX, hitY, hitZ){
+    b.on = false;
+    b.mesh.visible = false;
+    Particles.burst(hitX, hitY, hitZ, 0x5fc9ff, 14, 3.2);
+  }
+
+  /* onHit(x,y,z,type) 을 돌려주면 그 칸을 맞혔다는 뜻 */
+  function tick(dt, onHit){
+    if(!pool.length) return;
+    for(const b of pool){
+      if(!b.on) continue;
+      b.t += dt;
+      if(b.t > LIFE){ pop(b, b.x, b.y, b.z); continue; }
+      b.vy -= GRAV * dt;
+      let moved = 0;
+      const dist = Math.hypot(b.vx, b.vy, b.vz) * dt;
+      let hit = false;
+      while(moved < dist && !hit){
+        const seg = Math.min(STEP, dist - moved);
+        const k = seg / (dist || 1);
+        b.x += b.vx * dt * k; b.y += b.vy * dt * k; b.z += b.vz * dt * k;
+        moved += seg;
+        const gx = Math.floor(b.x), gy = Math.floor(b.y), gz = Math.floor(b.z);
+        if(gy < 0 || gy >= H || gx < 0 || gx >= W || gz < 0 || gz >= D){ hit = true; pop(b, b.x, b.y, b.z); break; }
+        const t = getBlock(gx, gy, gz);
+        if(t === AIR || isLiquid(t)) continue;
+        /* 걸어서 통과되는 블록(코인·함정 …)은 물풍선도 그냥 지나간다 */
+        if(PASS_THRU.has(t)) continue;
+        hit = true;
+        pop(b, gx+.5, gy+.5, gz+.5);
+        if(onHit) onHit(gx, gy, gz, t);
+      }
+      if(!hit) b.mesh.position.set(b.x, b.y, b.z);
+    }
+  }
+  function clear(){ for(const b of pool){ b.on = false; b.mesh.visible = false; } }
+  function flying(){ return pool.filter(b=>b.on).length; }
+  return {fire, tick, clear, flying};
+})();
+
+/* ═══════════════════════════════════════════════════
    21. 🎮 플레이 모드 — 게임 카드를 규칙대로 돌린다
    ───────────────────────────────────────────────────
    로블록스 core 커리큘럼 2장에서 가져온 두 가지:
@@ -7115,6 +7236,8 @@ const Play = (function(){
   const gone = {};                   // 먹어서 잠깐 사라진 자리 → 되살아날 시각
   const vanQ = {};                   // ⏳ 밟혀서 곧 사라질 발판 → 사라질 시각
   let blinks = [], blinkOn = null;   // ⚡ 깜빡 함정 자리 목록
+  let ammo = 0, hits = 0, needHit = 0, throwCd = 0;   // 🎈 물풍선
+  const AMMO_START = 10, AMMO_BOX = 5, AMMO_BACK = 12, THROW_CD = 0.42;
   let cp = null;                     // 체크포인트
   let signAt = 0, lastSign = '';
 
@@ -7138,6 +7261,12 @@ const Play = (function(){
     for(const k in vanQ) delete vanQ[k];
     blinks = magicIn(Mode.game, M_BLINK).slice(0, BLINK_MAX);
     blinkOn = null;
+    /* 🎈 과녁이 있는 게임이면 물풍선을 들고 시작한다 */
+    hits = 0; throwCd = 0;
+    needHit = magicCount(Mode.game, M_TARGET);
+    ammo = needHit ? AMMO_START : 0;
+    Balloon.clear();
+    document.body.classList.toggle('throwing', needHit > 0);
     cp = null;
     document.body.classList.add('playing');
     $('#playgoal').textContent = goalDef(r.goal).icon + ' ' + goalDef(r.goal).tip;
@@ -7165,6 +7294,28 @@ const Play = (function(){
     } else if(r.goal === 'quiz' && needRight){
       find.style.display = 'block'; find.textContent = '⭕ ' + right + ' / ' + needRight;
     } else find.style.display = 'none';
+    const am = $('#pvammo');
+    if(needHit){
+      am.style.display = 'block';
+      am.textContent = '🎈 ' + ammo + '  🎯 ' + hits + ' / ' + needHit;
+    } else am.style.display = 'none';
+  }
+
+  /* ── 🎈 던지기 ── */
+  function canThrow(){ return on && !over && needHit > 0 && ammo > 0 && throwCd <= 0; }
+  function doThrow(){
+    if(!canThrow()){
+      if(on && !over && needHit && ammo <= 0 && throwCd <= 0){
+        throwCd = 0.6;
+        Sound.deny();
+        showHint('🎈 물풍선이 없어요! 🎈 상자를 주우러 가요', 1800);
+      }
+      return false;
+    }
+    if(!Balloon.fire()) return false;
+    ammo--; throwCd = THROW_CD;
+    hud();
+    return true;
   }
 
   /* 몸이 닿아 있는 마법 블록들 */
@@ -7182,7 +7333,7 @@ const Play = (function(){
   function eat(x,y,z,t){
     setBlock(x,y,z,AIR);
     markDirtyAround(x,z);
-    gone[x+','+y+','+z] = {t:t, at:elapsed + COIN_BACK};
+    gone[x+','+y+','+z] = {t:t, at:elapsed + (t === M_AMMO ? AMMO_BACK : COIN_BACK)};
   }
   function optOf(x,y,z){
     const g = Mode.game;
@@ -7250,6 +7401,7 @@ const Play = (function(){
     if(over) return;
     over = true; on = false;
     FLYING = false;
+    Balloon.clear();
     const r = rules();
     const score = r.goal === 'high' ? high : coins;
     $('#presic').textContent   = won ? '🎉' : '😢';
@@ -7262,6 +7414,7 @@ const Play = (function(){
       if(r.goal === 'survive') body = '⏱️ ' + r.time + '초를 버텼어요!';
       if(r.goal === 'quiz')    body = '❓ 문제 ' + right + '개를 다 맞혔어요! (' + elapsed.toFixed(1) + '초)';
       if(r.goal === 'seek')    body = '🦤 숨은 도도 ' + found + '마리를 다 찾았어요! (' + elapsed.toFixed(1) + '초)';
+      if(r.goal === 'hit')     body = '🎯 과녁 ' + hits + '개를 다 맞혔어요! (' + elapsed.toFixed(1) + '초)';
     } else {
       body = why || '다시 해 볼까요?';
     }
@@ -7291,10 +7444,30 @@ const Play = (function(){
     const h = Math.max(0, Math.round(player.y - GAME_GY));
     if(h > high) high = h;
 
+    /* 🎈 던지기 — 놀 때는 블록을 놓고 부수지 않으니 그 키를 그대로 쓴다 */
+    if(throwCd > 0) throwCd -= dt;
+    if(needHit){
+      const want = keys['KeyE'] || keys['KeyF'] || keys['KeyR'] || keys['KeyQ'] ||
+                   touch.throwing || (locked && mouseDown[0]);
+      if(want) doThrow();
+      Balloon.tick(dt, (x,y,z,t)=>{
+        if(t !== M_TARGET) return;
+        hits++;
+        setBlock(x,y,z,AIR); markDirtyAround(x,z);
+        Sound.coin();
+        Particles.burst(x+.5, y+.5, z+.5, 0xff6b6b, 20, 4.2);
+        showHint('🎯 명중! ' + hits + ' / ' + needHit, 1500);
+        hud();
+        if(r.goal === 'hit' && hits >= needHit && magicCount(Mode.game, M_GOAL) === 0){
+          finish(true); return;
+        }
+      });
+    }
+
     /* 되살아날 때가 된 코인·발판 되돌리기 */
     for(const k in gone){
       const it = gone[k];
-      if(it.t !== M_COIN && it.t !== M_VANISH){ continue; }
+      if(it.t !== M_COIN && it.t !== M_VANISH && it.t !== M_AMMO){ continue; }
       if(elapsed >= it.at){
         const a = k.split(',');
         setBlock(+a[0], +a[1], +a[2], it.t);
@@ -7358,6 +7531,13 @@ const Play = (function(){
         Sound.fanfare();
         Particles.burst(m.x+.5, m.y+.5, m.z+.5, 0xffe45c, 22, 5);
         hud();
+      } else if(m.t === M_AMMO){
+        ammo += AMMO_BOX;
+        eat(m.x,m.y,m.z,M_AMMO);
+        Sound.coin();
+        Particles.burst(m.x+.5, m.y+.5, m.z+.5, 0x5fc9ff, 14, 3.5);
+        showHint('🎈 물풍선 ' + AMMO_BOX + '개를 주웠어요!', 1600);
+        hud();
       } else if(m.t === M_KEY){
         keyCnt++;
         setBlock(m.x,m.y,m.z,AIR); markDirtyAround(m.x,m.z);
@@ -7417,6 +7597,8 @@ const Play = (function(){
           showHint('❓ 문제가 ' + (needRight - right) + '개 남았어요!', 1800);
         } else if(r.goal === 'seek' && found < needFind){
           showHint('🦤 도도가 ' + (needFind - found) + '마리 더 숨어 있어요!', 1800);
+        } else if(r.goal === 'hit' && hits < needHit){
+          showHint('🎯 과녁이 ' + (needHit - hits) + '개 남았어요!', 1800);
         } else if(r.goal === 'high' || r.goal === 'survive'){
           finish(true); return;
         } else {
@@ -7438,6 +7620,7 @@ const Play = (function(){
     player.vx = player.vy = player.vz = 0;
     /* 먹었던 것들을 전부 되돌린다 */
     for(const k in vanQ) delete vanQ[k];
+    Balloon.clear();
     const g = Mode.game;
     for(const k in g.edits){
       const t = g.edits[k]|0;
@@ -7449,7 +7632,8 @@ const Play = (function(){
   }
 
   return {start, tick, retry, isOn(){ return on; }, isOver(){ return over; },
-          finish, lives(){ return lives; },
+          finish, lives(){ return lives; }, throwOne: doThrow,
+          ammo(){ return ammo; }, hits(){ return hits; }, needHit(){ return needHit; },
           score(){ return {coins:coins, stars:stars, time:elapsed, high:high,
                            found:found, right:right, needFind:needFind, needRight:needRight}; }};
 })();
@@ -7596,6 +7780,7 @@ const Studio = (function(){
     if(g.rules.goal === 'collect' && !magicCount(g, M_COIN)) miss.push('🪙 코인');
     if(g.rules.goal === 'quiz' && !magicCount(g, M_YES))    miss.push('⭕ 맞음');
     if(g.rules.goal === 'seek' && !magicCount(g, M_DODO))   miss.push('🦤 숨은 도도');
+    if(g.rules.goal === 'hit' && !magicCount(g, M_TARGET))  miss.push('🎯 과녁');
     if(g.rules.goal === 'survive' && !g.rules.time)         miss.push('⏱️ 버틸 시간');
     const warn = $('#stwarn');
     warn.style.display = miss.length ? 'block' : 'none';
@@ -9826,6 +10011,39 @@ function tmplSeek(){
   stTmplDone('🦤 숨바꼭질을 만들었어!\n작은 집 ' + hid + '채를 섬 곳곳에 세우고 그 안에 도도를 숨겼어.\n문은 앞쪽에 있어 — 들어가서 찾아 봐 🔍');
 }
 
+/* 🎈 물풍선 맞히기 — 사격장처럼 과녁을 세워 둔다 */
+function tmplShoot(){
+  const g = Mode.game;
+  stClearAll();
+  const gy = GAME_GY + 1, x0 = 32;
+  /* 서서 던지는 자리 */
+  for(let dx=-4; dx<=4; dx++) for(let dz=-1; dz<=3; dz++) stSet(x0+dx, gy-1, 46+dz, PLANK);
+  stSet(x0, gy, 48, M_START);
+  stSet(x0-3, gy, 48, M_AMMO);
+  stSet(x0+3, gy, 48, M_AMMO);
+  /* 과녁 9개 — 가까운 줄은 낮게, 먼 줄은 높게 세워서 조준이 달라지게 한다 */
+  let n = 0;
+  const rows = [{z:38, h:0}, {z:32, h:1}, {z:26, h:2}];
+  rows.forEach(row=>{
+    for(let i=-1; i<=1; i++){
+      const x = x0 + i*4, y = gy + row.h;
+      /* 과녁을 받치는 기둥 */
+      for(let h=gy-1; h<y; h++) stSet(x, h, row.z, WOOD);
+      stSet(x, y, row.z, M_TARGET);
+      n++;
+    }
+    stSet(x0, gy, row.z + 3, M_AMMO);       // 앞으로 나가면 물풍선을 더 준다
+  });
+  stSet(x0, gy, 20, M_GOAL);
+  /* 앞으로 걸어갈 길 */
+  for(let z=20; z<=45; z++) for(let dx=-1; dx<=1; dx++) stSet(x0+dx, gy-1, z, PATH_B);
+  Undo.end('물풍선 맞히기');
+  g.rules = {goal:'hit', time:60, lives:0, jump:1, need:0};
+  Studio.dirty(); Studio.head();
+  stTmplDone('🎈 물풍선 맞히기를 만들었어!\n🎯 과녁 ' + n + '개를 세 줄로 세웠어. 뒤쪽 줄일수록 높아서 어려워 😤\n' +
+             '보고 있는 쪽으로 던지니까 화면 가운데 십자에 맞춰 봐.');
+}
+
 /* 장르 이름 → 템플릿 함수 */
 /* ═══════════════════════════════════════════════════
    23.5 🎯 만들기 차례표 — "게임이 완성되기까지 뭘 해야 하나"
@@ -9856,6 +10074,8 @@ const ST_CORE = {
              ok:g=>magicCount(g,M_YES) >= 1 && magicCount(g,M_NO) >= 1, chip:'⭕ 정답 발판 놔 줘'},
   seek:     {icon:'🦤', name:'도도 숨기기',    tip:'🦤 숨은 도도를 3마리 넘게 숨겨 보자',
              ok:g=>magicCount(g,M_DODO) >= 3, chip:'🦤 숨은 도도 놔 줘'},
+  shoot:    {icon:'🎯', name:'과녁 세우기',    tip:'🎯 과녁을 3개 넘게 세우고 🎈 물풍선 상자도 놔 보자',
+             ok:g=>magicCount(g,M_TARGET) >= 3, chip:'🎯 과녁 놔 줘'},
   free:     {icon:'🧱', name:'마음껏 짓기',    tip:'하고 싶은 걸 지어 보자',
              ok:g=>Object.keys(g.edits).length >= 60, chip:'🪜 발판 10개 깔아 줘'}
 };
@@ -9868,6 +10088,7 @@ function stWinOk(g){
     case 'survive': return (g.rules.time|0) >= 10;
     case 'quiz':    return magicCount(g, M_YES) >= 1;
     case 'seek':    return magicCount(g, M_DODO) >= 1;
+    case 'hit':     return magicCount(g, M_TARGET) >= 1;
   }
   return true;
 }
@@ -9923,7 +10144,7 @@ function stTmplDone(msg){
         nx ? [{t:nx.chip}, {t:'다음에 뭐 해?'}] : null);
 }
 
-const TMPL_FN = {tmplObby, tmplTreasure, tmplMaze, tmplDodge, tmplRace, tmplQuiz, tmplSeek};
+const TMPL_FN = {tmplObby, tmplTreasure, tmplMaze, tmplDodge, tmplRace, tmplQuiz, tmplSeek, tmplShoot};
 function runTemplate(kindId, full){
   const k = kindDef(kindId);
   const fn = TMPL_FN[k.tmpl];
@@ -9954,6 +10175,8 @@ const ST_MAGIC = [
   {k:['숨은 도도','숨긴 도도','도도 숨'],     t:M_DODO},
   {k:['동그라미','정답','맞음','오케이'],     t:M_YES},
   {k:['엑스','가위표','오답','틀림'],         t:M_NO},
+  {k:['과녁','표적','타겟'],                 t:M_TARGET},
+  {k:['물풍선','풍선','총알'],               t:M_AMMO},
 ];
 
 /* 장르 이름을 알아듣는 표 — "피하기 만들어 줘" 한 마디로 장르까지 바뀐다 */
@@ -9965,6 +10188,7 @@ const ST_KIND = [
   {k:['달리기','레이스','시합','경주'],                          id:'race'},
   {k:['퀴즈','문제 내','문제내','ox','오엑스'],                  id:'quiz'},
   {k:['숨바꼭질','숨박꼭질','숨기기','찾기 게임'],                id:'seek'},
+  {k:['슈팅','물풍선 게임','맞히기','사격','쏘는','과녁 게임','총 게임'], id:'shoot'},
 ];
 
 function doStudioSuggest(){
@@ -10073,6 +10297,7 @@ function doStudioBrain(s){
   if(doHas(s,'다 모으','전부 모으','수집하면','코인 다')){ g.rules.goal = 'collect'; did = true; }
   if(doHas(s,'퀴즈 맞','문제 다 맞','다 맞히')){ g.rules.goal = 'quiz'; did = true; }
   if(doHas(s,'도도 다 찾','다 찾으면','숨은 도도 찾')){ g.rules.goal = 'seek'; did = true; }
+  if(doHas(s,'과녁 다','다 맞히면','전부 맞히')){ g.rules.goal = 'hit'; did = true; }
   if(doHas(s,'골인하면','골인까지','도착하면')){ g.rules.goal = 'reach'; did = true; }
   if(doHas(s,'버티','살아남')){ g.rules.goal = 'survive'; did = true; }
   if(doHas(s,'높이 올라','제일 높이')){ g.rules.goal = 'high'; did = true; }
@@ -10221,6 +10446,8 @@ const RBX_MAGIC = {
   [M_BLINK]:{name:'Blink',lua:'kill'},
   [M_NO]:  {name:'No',    lua:'kill'},
   [M_GOAL]:{name:'Goal',  lua:'goal'},
+  [M_TARGET]:{name:'Target', lua:'coin'},
+  [M_AMMO]:{name:'Ammo',   lua:'coin'},
 };
 
 /* 게임 카드 → .rbxlx 글자 전체 */
@@ -10978,7 +11205,8 @@ window.BW = {player, setBlock, getBlock, scene, camera, renderer, voxels, W,H,D,
   KINDS, kindDef, GOALS, runTemplate, tmplDodge, tmplRace, tmplQuiz, tmplSeek,
   stPlan, stNext, stDoneCount, ST_CORE, stStripMagic,
   rbxlxOf, exportRbxlx, setAiDock, dockWide, doAskDock(t){ doAsk(t); },
-  M_VANISH, M_BLINK, M_DODO, M_YES, M_NO, MAGIC_LIST,
+  M_VANISH, M_BLINK, M_DODO, M_YES, M_NO, M_TARGET, M_AMMO, MAGIC_LIST,
+  Balloon, tmplShoot,
   M_START, M_GOAL, M_COIN, M_STAR, M_TRAP, M_KEY, M_DOOR, M_SIGN, M_CHECK,
   panelOpen, flying(){ return FLYING; }, GAME_GY,
   sim(dt,n){ for(let i=0;i<(n||1);i++){ if(jumpBuffer>0) jumpBuffer-=dt; stepGame(dt); } },
