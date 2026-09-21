@@ -39,7 +39,8 @@
   }
   #crosshair:before{left:11px; top:2px; width:4px; height:22px;}
   #crosshair:after{top:11px; left:2px; height:4px; width:22px;}
-  body.nolock #crosshair{opacity:0;}
+  /* 마우스를 안 잡아도(키보드로만 놀아도) 조준점은 보여야 한다 */
+  body.nolock #crosshair{opacity:.6;}
 
   /* 시작 화면 */
   #start{
@@ -2483,29 +2484,114 @@ function raycastVoxel(ox,oy,oz, dx,dy,dz, maxDist){
   return null;
 }
 
-let aimed = null;
-const highlight = new THREE.LineSegments(
-  new THREE.EdgesGeometry(new THREE.BoxGeometry(1.012,1.012,1.012)),
-  new THREE.LineBasicMaterial({color:0x201830, transparent:true, opacity:.75})
-);
-highlight.visible = false;
-scene.add(highlight);
+let aimed = null;      // 조준점이 가리키는 블록 (Q 로 부술 칸)
+let placeAt = null;    // 새 블록이 실제로 생길 칸 (E 로 놓을 칸)
 
-function updateAim(){
-  camera.getWorldDirection(_dir);
-  const ox = player.x, oy = player.y + 1.5, oz = player.z;
-  aimed = raycastVoxel(ox,oy,oz, _dir.x,_dir.y,_dir.z, REACH);
-  if(aimed){
-    highlight.visible = true;
-    highlight.position.set(aimed.x+0.5, aimed.y+0.5, aimed.z+0.5);
-  } else highlight.visible = false;
-  $('#crosshair').style.transform = aimed ? 'scale(1.3)' : 'scale(1)';
+/* 부술 칸 테두리 — 흰 선 두 겹이라 어두운 블록 위에서도 보인다.
+   depthTest:false 라서 도도 몸에 가려도 그대로 보인다(3인칭이라 이게 중요하다). */
+function outlineBox(size, color, opacity){
+  const m = new THREE.LineSegments(
+    new THREE.EdgesGeometry(new THREE.BoxGeometry(size,size,size)),
+    new THREE.LineBasicMaterial({color:color, transparent:true, opacity:opacity, depthTest:false})
+  );
+  m.visible = false; m.renderOrder = 997; m.frustumCulled = false;
+  scene.add(m);
+  return m;
 }
+const highlight  = outlineBox(1.014, 0xffffff, .95);
+const highlight2 = outlineBox(1.046, 0x201830, .55);
+
+/* 놓일 자리 미리보기 — 고른 블록 색으로 반투명하게 미리 보여 준다 */
+const ghost = new THREE.Mesh(
+  new THREE.BoxGeometry(.96,.96,.96),
+  new THREE.MeshBasicMaterial({color:0xffffff, transparent:true, opacity:.36,
+                               depthTest:false, depthWrite:false})
+);
+ghost.visible = false; ghost.renderOrder = 998; ghost.frustumCulled = false;
+scene.add(ghost);
+const ghostEdge = outlineBox(1.0, 0xfff27a, .95);
+ghostEdge.renderOrder = 999;
 
 function playerBoxOverlaps(x,y,z){
   return (player.x+PW > x && player.x-PW < x+1) &&
          (player.y+PH > y && player.y      < y+1) &&
          (player.z+PW > z && player.z-PW < z+1);
+}
+
+/* 지금 E 를 누르면 블록이 "정확히 어디에" 생기는지 — 미리보기와 놓기가 같은 답을 쓴다 */
+function placeTarget(){
+  if(!aimed) return null;
+  const x = aimed.x + aimed.nx, y = aimed.y + aimed.ny, z = aimed.z + aimed.nz;
+  if(!inside(x,y,z)) return null;
+  const cur = getBlock(x,y,z);
+  if(cur !== AIR && cur !== WATER) return null;
+  if(playerBoxOverlaps(x,y,z)){
+    /* 아이들이 제일 많이 하는 "발밑에 놓고 위로 솟기" — 되도록 성공시켜 준다.
+       이때도 발밑 칸을 미리보기로 보여 주니까 엉뚱한 데 생긴 것처럼 보이지 않는다. */
+    const fx = Math.floor(player.x), fy = Math.floor(player.y), fz = Math.floor(player.z);
+    const headRoom = !solidAt(fx, fy+2, fz) && !solidAt(fx, fy+3, fz);
+    if(player.onGround && headRoom && getBlock(fx,fy,fz) === AIR)
+      return {x:fx, y:fy, z:fz, feet:true};
+    return null;
+  }
+  return {x, y, z};
+}
+
+/* 광선을 쏘기 시작할 자리를 고른다.
+   카메라가 땅이나 벽에 박혀 있으면(아래를 내려다볼 때 자주 그렇다) 그 자리에서
+   쏜 광선은 첫 칸에서 바로 막혀 버린다. 그래서 카메라에서 도도 머리 쪽으로
+   조금씩 나아가며 뻥 뚫린 첫 칸을 찾아 거기서 쏜다. */
+function aimOrigin(){
+  camera.getWorldDirection(_dir);
+  const limit = camState.curDist + 0.5;
+  for(let d=0; d<=limit; d+=0.2){
+    const x = camera.position.x + _dir.x*d;
+    const y = camera.position.y + _dir.y*d;
+    const z = camera.position.z + _dir.z*d;
+    if(!solidAt(Math.floor(x), Math.floor(y), Math.floor(z)))
+      return {x:x + _dir.x*0.06, y:y + _dir.y*0.06, z:z + _dir.z*0.06,
+              dist:(limit - d) + REACH};
+  }
+  /* 카메라부터 머리까지 전부 막혔으면 머리에서 쏜다 */
+  return {x:player.x, y:player.y + 1.5, z:player.z, dist:REACH};
+}
+
+function updateAim(){
+  /* 3인칭이라 머리에서 쏘면 도도 몸에 가려 안 보이는 칸이 잡힌다.
+     카메라에서 화면 한가운데로 쏘면 "보이는 것 = 잡히는 것" 이 된다. */
+  const o = aimOrigin();
+  aimed = raycastVoxel(o.x,o.y,o.z, _dir.x,_dir.y,_dir.z, o.dist);
+
+  /* 혹시라도 첫 칸에서 바로 막히면 면(어느 쪽에 쌓을지)을 모른다.
+     그럴 땐 카메라를 바라보는 면에 쌓는 걸로 친다 — 미리보기가 안 뜨는 일이 없게. */
+  if(aimed && aimed.nx===0 && aimed.ny===0 && aimed.nz===0){
+    const ax = Math.abs(_dir.x), ay = Math.abs(_dir.y), az = Math.abs(_dir.z);
+    if(ax>=ay && ax>=az)      aimed.nx = _dir.x>0 ? -1 : 1;
+    else if(ay>=az)           aimed.ny = _dir.y>0 ? -1 : 1;
+    else                      aimed.nz = _dir.z>0 ? -1 : 1;
+  }
+
+  highlight.visible = highlight2.visible = !!aimed;
+  if(aimed){
+    highlight.position.set(aimed.x+0.5, aimed.y+0.5, aimed.z+0.5);
+    highlight2.position.copy(highlight.position);
+  }
+
+  placeAt = placeTarget();
+  if(placeAt){
+    const HB = hotbarList();
+    const t = HB[Math.min(selectedSlot, HB.length-1)];
+    ghost.material.color.setHex(BLOCK_COLOR[t] || 0xffffff);
+    ghost.position.set(placeAt.x+0.5, placeAt.y+0.5, placeAt.z+0.5);
+    ghostEdge.position.copy(ghost.position);
+    /* 살짝 숨 쉬듯 깜빡여서 "여기 생겨요" 가 눈에 들어오게 */
+    const pulse = 0.30 + 0.12 * Math.sin(performance.now() * 0.006);
+    ghost.material.opacity = pulse;
+    ghost.visible = ghostEdge.visible = true;
+  } else {
+    ghost.visible = ghostEdge.visible = false;
+  }
+  $('#crosshair').style.transform = aimed ? 'scale(1.3)' : 'scale(1)';
 }
 
 function breakBlock(){
@@ -2546,31 +2632,27 @@ function placeBlock(){
     showHint('🔨 ' + BLOCKS[t].name + ' 블록을 다 썼어요. 제작대(C)에서 더 만들어요!', 2200);
     Sound.deny(); buildHotbar(); return false;
   }
-  const x = aimed.x + aimed.nx, y = aimed.y + aimed.ny, z = aimed.z + aimed.nz;
-  if(!inside(x,y,z)) return false;
-  const cur = getBlock(x,y,z);
-  if(cur !== AIR && cur !== WATER) return false;
-  if(playerBoxOverlaps(x,y,z)){
-    // 아이들이 제일 많이 하는 "발밑에 놓고 위로 솟기" — 되도록 성공시켜 준다
-    const fx = Math.floor(player.x), fy = Math.floor(player.y), fz = Math.floor(player.z);
-    const headRoom = !solidAt(fx, fy+2, fz) && !solidAt(fx, fy+3, fz);
-    if(player.onGround && headRoom && getBlock(fx,fy,fz) === AIR){
-      setBlock(fx,fy,fz,t);
-      recordEdit(fx,fy,fz,t);
-      player.y = fy + 1; player.vy = 0;
-      Particles.burst(fx+.5, fy+.5, fz+.5, BLOCK_COLOR[t] || 0xffffff, 10, 3);
-      Sound.placeBlock();
-      state.placed++;
-      afterPlace(fx,fy,fz,t);
-      tut.placed = true; tutAdvance();
-      if(t === RAINBOW) state.rainbowPlaced++;
-      addExp(2);
-      checkQuests();
-      return true;
-    }
+  /* 화면에 미리 보여 준 바로 그 칸에 놓는다 */
+  const spot = placeAt || placeTarget();
+  if(!spot){
     showHint('🙅 여기는 좁아서 못 놓아요. 조금 앞을 보고 놓아 보세요', 1800);
     Sound.deny();
     return false;
+  }
+  const x = spot.x, y = spot.y, z = spot.z;
+  if(spot.feet){
+    setBlock(x,y,z,t);
+    recordEdit(x,y,z,t);
+    player.y = y + 1; player.vy = 0;
+    Particles.burst(x+.5, y+.5, z+.5, BLOCK_COLOR[t] || 0xffffff, 10, 3);
+    Sound.placeBlock();
+    state.placed++;
+    afterPlace(x,y,z,t);
+    tut.placed = true; tutAdvance();
+    if(t === RAINBOW) state.rainbowPlaced++;
+    addExp(2);
+    checkQuests();
+    return true;
   }
   setBlock(x,y,z,t);
   recordEdit(x,y,z,t);
@@ -3828,6 +3910,7 @@ function buildHelp(){
     ['T  또는 깃털 단추','도도 장로에게 말하기 — "무지개 미끄럼틀 만들어 줘"'],
     ['I','🏝️ 내 섬 — 꾸미기 · 섬 테마 · 오르골 · 사진 벽화 · 보물 숨기기'],
     ['K','🎨 도도 꾸미기 — 깃털색 · 부리색 · 모자'],
+    ['👀','화면 한가운데 조준점이 가리키는 칸에 쌓고 부숴요. 노란 테두리가 새 블록이 생길 자리예요'],
     ['Shift + R  또는 🎥','녹화 시작 / 멈추기 (쇼츠 모양 세로 영상)'],
     ['B','청사진 건축학교'],
     ['V','내 배지'],
@@ -7178,6 +7261,7 @@ window.BW = {player, setBlock, getBlock, scene, camera, renderer, voxels, W,H,D,
   pressJump(){ jumpBuffer=0.14; },
   state, updateAim, breakBlock, placeBlock, selectSlot, addExp,
   aim(){ return aimed; }, hotbarSlot(){ return selectedSlot; },
+  placeSpot(){ return placeAt; }, placeTarget, ghost, highlight, camState,
   OBBIES, Collect, finishObby, remaining(){ return Collect.remaining(); },
   QUEST_POOL, checkQuests, refillQuests, gainCoins, hasUnlock, UNLOCKS,
   comboOn(){ return comboOn; }, registerCoinForCombo,
