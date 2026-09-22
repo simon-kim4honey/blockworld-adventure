@@ -9,7 +9,8 @@
 #    아무도 안 보는 미리보기 자리에 올라간다.
 #    지금 이 프로젝트의 production branch 는 claude/project-thread-md739t 다.
 #
-# 게임(index.html) 하나만 올린다. server/ 나 README 는 안 올라간다.
+# 게임(index.html) 과 시작 화면 동영상(media/) 만 올린다.
+# server/ 나 README 는 안 올라간다.
 # 처음 한 번은 Cloudflare 로그인이 필요하다:  npx wrangler login
 set -e
 cd "$(dirname "$0")"
@@ -19,6 +20,7 @@ BRANCH="${1:-$(git rev-parse --abbrev-ref HEAD)}"
 rm -rf .site
 mkdir .site
 cp index.html .site/index.html
+cp -R media .site/media          # 🎬 시작 화면 배경 동영상
 
 echo "🌿 올리는 가지: $BRANCH"
 npx wrangler pages deploy .site \

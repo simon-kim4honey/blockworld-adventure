@@ -49,6 +49,23 @@
     background:radial-gradient(circle at 50% 30%, #9fe0ff 0%, #5bb6f0 55%, #2e86c8 100%);
     pointer-events:auto;
   }
+  /* 시작 화면 배경 동영상.
+     media/start.mp4 가 index.html 옆에 있을 때만 나온다. 없으면(파일 하나만
+     따로 열었을 때) 그냥 위의 하늘색 배경이 그대로 보인다 — 게임은 똑같이 된다. */
+  #startvid{
+    position:absolute; inset:0; width:100%; height:100%;
+    object-fit:cover; z-index:0; pointer-events:none;
+    opacity:0; transition:opacity .6s ease;
+  }
+  #startvid.on{opacity:1;}
+  /* 동영상 위에 얇은 어둠 — 글씨가 어떤 장면에서도 읽히게 */
+  #startdim{
+    position:absolute; inset:0; z-index:1; pointer-events:none; display:none;
+    background:linear-gradient(rgba(0,0,0,.42), rgba(0,0,0,.2) 40%, rgba(0,0,0,.55));
+  }
+  body.hasvid #startdim{display:block;}
+  /* 글·단추는 동영상 위로 */
+  #start h1, #start .sub, #start .bigbtn, #start .keys{position:relative; z-index:2;}
   #start h1{
     font-size:clamp(34px,8vw,72px); margin:0; color:#fff; letter-spacing:2px;
     text-shadow:0 5px 0 #2a6ea8, 0 10px 22px rgba(0,0,0,.3);
@@ -1252,6 +1269,10 @@
 <div id="resume"><div class="card">🖱️ 마우스로 둘러보려면 화면을 클릭 · 키보드만 쓸 거면 그냥 하세요</div></div>
 
 <div id="start">
+  <video id="startvid" src="media/start.mp4" poster="media/start.jpg"
+         autoplay muted loop playsinline preload="auto"
+         disablepictureinpicture disableremoteplayback></video>
+  <div id="startdim"></div>
   <h1>🦤 도도블록</h1>
   <div class="sub">멸종된 도도새들이 모여 사는 신비의 블록섬</div>
   <button class="bigbtn" id="startbtn">▶ 섬으로 가기</button>
@@ -9539,8 +9560,50 @@ if(inIsland()){
 addEventListener('beforeunload', saveNow);
 requestAnimationFrame(frame);
 
+/* 🎬 시작 화면 배경 동영상.
+   media/start.mp4 가 index.html 옆에 있어야 나온다. 없거나 브라우저가 못 틀면
+   조용히 포기하고 예전 하늘색 배경으로 둔다 — 게임은 그대로 된다. */
+const StartVid = (function(){
+  const v = $('#startvid');
+  if(!v) return {stop(){}};
+  let dead = false;
+  function give_up(){
+    if(dead) return; dead = true;
+    v.classList.remove('on');
+    document.body.classList.remove('hasvid');
+    try{ v.removeAttribute('src'); v.load(); }catch(e){}
+  }
+  function show(){
+    if(dead) return;
+    v.classList.add('on');
+    document.body.classList.add('hasvid');
+  }
+  /* 브라우저가 소리 없는 동영상도 막을 때가 있어서, 처음 누를 때 한 번 더 시도한다 */
+  function nudge(){
+    if(dead || !v.paused) return;
+    const p = v.play();
+    if(p && p.catch) p.catch(()=>{});
+  }
+  v.addEventListener('loadeddata', show);
+  v.addEventListener('playing', show);
+  v.addEventListener('error', give_up);
+  v.addEventListener('stalled', ()=>{ if(!v.readyState) give_up(); });
+  /* 이 코드는 화면 글보다 한참 아래에 있어서, 동영상이 벌써 준비됐을 수도 있다.
+     그러면 위의 소식(loadeddata)은 이미 지나가 버렸으니 지금 상태를 직접 본다. */
+  if(v.error) give_up();
+  else if(v.readyState >= 2) show();
+  addEventListener('pointerdown', nudge, {once:true});
+  addEventListener('keydown', nudge, {once:true});
+  /* 15초 안에 아무것도 안 나오면 포기 (느린 곳에서 계속 까맣게 두지 않는다) */
+  setTimeout(()=>{ if(!v.readyState) give_up(); }, 15000);
+  nudge();
+  return {stop(){ try{ v.pause(); v.removeAttribute('src'); v.load(); }catch(e){} dead = true;
+                  document.body.classList.remove('hasvid'); }};
+})();
+
 $('#startbtn').addEventListener('click', ()=>{
   $('#start').style.display='none';
+  StartVid.stop();                            // 놀기 시작하면 동영상은 끈다 (배터리·속도)
   started = true;
   document.body.classList.add('ingame');      // 🪶 아래 프롬프트 줄은 놀기 시작하면 나온다
   layoutUI();                                 // 줄이 생겼으니 자리를 다시 잡는다
