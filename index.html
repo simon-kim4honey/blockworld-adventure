@@ -1192,6 +1192,9 @@
   #tools .foldbtn{width:38px; height:38px; min-width:38px; font-size:15px;}
   body.fold-tools #tools .tool{display:none;}
   body.fold-tools #tools #btnBag{display:block;}
+  /* 휴대폰은 자판이 없어 M키로 대화창을 못 연다. 그래서 단추 칸을 접어도
+     💬 대화 단추는 남겨 둔다 (자판 없이 손가락으로 열 수 있게). */
+  body.phone.fold-tools #tools #btnChat{display:block;}
 
   /* 🎥 녹화 */
   #recdot{
@@ -3473,9 +3476,11 @@ function loadFold(){
   let d = null;
   try{ d = JSON.parse(localStorage.getItem(FOLD_KEY) || 'null'); }catch(e){}
   if(d) for(const k in fold) fold[k] = d[k] ? 1 : 0;
-  /* 휴대폰은 화면이 좁다. 퀘스트 칸을 펼쳐 두면 오른쪽 단추가 설 자리가 없어
-     💬 대화 단추까지 화면 밖으로 밀린다. 그래서 처음엔 접어 둔다(▾ 로 펼 수 있다). */
-  else if(innerWidth <= 560) fold.q = 1;
+  /* 휴대폰은 화면이 좁다. 처음부터 다 펼쳐 두면 놀 화면이 안 보인다.
+     그래서 처음엔 조이스틱·부수기·놓기·점프만 남기고 나머지는 접어 둔다
+     — 블록 바·퀘스트·도도AI 줄·단추 칸 전부 ▾ 로 접힌 채로 시작하고,
+     아이가 필요할 때 ▾/▸ 를 눌러 펼 수 있다. */
+  else if(innerWidth <= 560){ fold.q = 1; fold.bar = 1; fold.ai = 1; fold.tools = 1; }
   applyFold();
 }
 
@@ -4815,6 +4820,9 @@ function updateGold(dt){
    ═══════════════════════════════════════════════════ */
 const _proj = new THREE.Vector3();
 function placeLabel(el, x, y, z, maxDist){
+  /* 휴대폰은 화면이 좁아 말풍선이 크게 떠서 화면을 다 덮는다. 그래서
+     정말 코앞(4칸)까지 가야 뜨게 한다. 넓은 화면은 원래대로. */
+  if(innerWidth <= 560) maxDist = Math.min(maxDist, 4);
   const dx = x-player.x, dy = y-(player.y+1), dz = z-player.z;
   const dist = Math.sqrt(dx*dx+dy*dy+dz*dz);
   if(dist > maxDist){ el.style.display='none'; return false; }
