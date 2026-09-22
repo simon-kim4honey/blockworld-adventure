@@ -11,6 +11,21 @@
 `index.html` 을 더블클릭하거나 브라우저에 끌어다 놓으면 끝!
 (인터넷 연결 필요 — 3D 엔진 Three.js를 CDN에서 불러옵니다.)
 
+## 웹에 올리기
+
+친구에게 파일을 보내는 대신 **주소 하나만** 보내고 싶다면, Cloudflare Pages 에 올립니다.
+
+```bash
+npx wrangler login     # 처음 한 번만
+./publish.sh
+```
+
+끝나면 `https://dodoblock.pages.dev` 같은 주소가 나옵니다. 그 주소를 아는 사람은
+누구나 들어올 수 있으니, 공개해도 되는지 먼저 생각하고 올리세요.
+`publish.sh` 는 `index.html` 하나만 올립니다 (`server/` 는 안 올라갑니다).
+
+💬 대화 서버는 따로입니다 — `server/README.md` 를 보세요.
+
 ## 조작법
 
 마우스 없이 **키보드만으로도** 전부 할 수 있습니다.
