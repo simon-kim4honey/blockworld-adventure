@@ -1827,6 +1827,10 @@ if(!window.THREE){
   return;
 }
 
+/* 색을 섞기 전에 켜야 한다 — 아래에서 만드는 모든 색이 영향을 받는다.
+   화면에 뿌리는 색(sRGB)과 빛을 계산하는 색(선형)을 three 가 알아서 바꿔 준다. */
+if(THREE.ColorManagement) THREE.ColorManagement.enabled = true;
+
 /* ═══════════════════════════════════════════════════
    0. 작은 도구들
    ═══════════════════════════════════════════════════ */
@@ -2301,117 +2305,161 @@ const isSolidType = t => t!==AIR && !isLiquid(t) && !(PLAY_MODE && PASS_THRU.has
 /* ═══════════════════════════════════════════════════
    2. 블록 그림(텍스처)을 코드로 그리기
    ═══════════════════════════════════════════════════ */
-const TS = 16;
+/* 블록 그림 한 칸의 크기. 16 → 32 로 올려서 무늬를 네 배 촘촘하게 그린다.
+   U 는 "예전 1칸"에 해당하는 단위 — 예전 좌표를 그대로 쓰되 U 를 곱하면 된다. */
+const TS = 32;
+const U  = TS / 16;
+
+/* 그림 가장자리를 살짝 어둡게 구워 둔다. 블록 하나하나의 테두리가 보여서
+   쌓아 놓았을 때 덩어리가 또렷해진다(키이미지의 핵심). */
+function bakeEdge(g, strength){
+  const im = g.getImageData(0,0,TS,TS), d = im.data;
+  const band = TS * 0.18;
+  for(let y=0;y<TS;y++) for(let x=0;x<TS;x++){
+    const e = Math.min(x, y, TS-1-x, TS-1-y);
+    if(e >= band) continue;
+    const k = 1 - strength * (1 - e/band);
+    const i = (y*TS+x)*4;
+    d[i]*=k; d[i+1]*=k; d[i+2]*=k;
+  }
+  g.putImageData(im,0,0);
+}
+
 function pixelTexture(draw, key){
   const c = document.createElement('canvas'); c.width=c.height=TS;
   const g = c.getContext('2d');
   draw(g, makeRng(key));
+  if(!draw.noAO) bakeEdge(g, 0.26);
   const t = new THREE.CanvasTexture(c);
   t.magFilter = THREE.NearestFilter;
   t.minFilter = THREE.NearestMipmapLinearFilter;
   t.anisotropy = 1;
+  t.encoding = THREE.sRGBEncoding;     // 위에서 sRGB 로 내보내기로 했으니 그림도 sRGB 로 읽는다
   return t;
 }
+/* 점 뿌리기 — 개수는 예전 16칸 기준으로 적고, 칸이 커진 만큼 자동으로 늘린다 */
 function speckle(g,rng,colors,n){
-  for(let i=0;i<n;i++){
+  const N = (n * U * U)|0;
+  for(let i=0;i<N;i++){
     g.fillStyle = colors[(rng()*colors.length)|0];
     g.fillRect((rng()*TS)|0,(rng()*TS)|0,1,1);
   }
 }
+/* 굵은 점 — 촘촘해진 그림이 자글자글해 보이지 않게 덩어리를 섞는다 */
+function blobs(g,rng,colors,n){
+  for(let i=0;i<n;i++){
+    g.fillStyle = colors[(rng()*colors.length)|0];
+    g.fillRect((rng()*TS)|0,(rng()*TS)|0,U,U);
+  }
+}
 function flat(base, spots, n){
-  return (g,rng)=>{ g.fillStyle=base; g.fillRect(0,0,TS,TS); speckle(g,rng,spots,n||55); };
+  return (g,rng)=>{
+    g.fillStyle=base; g.fillRect(0,0,TS,TS);
+    speckle(g,rng,spots,n||55);
+    blobs(g,rng,spots,6);
+  };
 }
 function grassTop(g,rng){
-  g.fillStyle='#63c64d'; g.fillRect(0,0,TS,TS);
-  speckle(g,rng,['#78d95f','#55b043','#8ae56e'],90);
+  g.fillStyle='#79c44c'; g.fillRect(0,0,TS,TS);
+  speckle(g,rng,['#8ed95e','#67ad3f','#a0e870'],90);
+  blobs(g,rng,['#8ed95e','#67ad3f'],10);
 }
 function grassSide(g,rng){
-  g.fillStyle='#96653f'; g.fillRect(0,0,TS,TS);
-  speckle(g,rng,['#7d5433','#a97a4d'],60);
-  for(let x=0;x<TS;x++){
-    const h = 4 + ((rng()*3)|0);
-    g.fillStyle='#63c64d'; g.fillRect(x,0,1,h);
-    g.fillStyle='#78d95f'; g.fillRect(x,0,1,1+((rng()*2)|0));
+  g.fillStyle='#8f6139'; g.fillRect(0,0,TS,TS);
+  speckle(g,rng,['#7a5030','#a67548'],60);
+  blobs(g,rng,['#70492c'],4);
+  /* 잔디가 흙 위로 흘러내린 자리 — 키이미지처럼 들쭉날쭉하게 */
+  for(let x=0;x<TS;x+=U){
+    const h = U*4 + ((rng()*U*3)|0);
+    g.fillStyle='#79c44c'; g.fillRect(x,0,U,h);
+    g.fillStyle='#8ed95e'; g.fillRect(x,0,U,U+((rng()*U*2)|0));
+    g.fillStyle='#5fa338'; g.fillRect(x,h-1,U,1);
   }
 }
 function woodSide(g,rng){
-  g.fillStyle='#9c6b3f'; g.fillRect(0,0,TS,TS);
-  for(let x=0;x<TS;x+=2){ g.fillStyle = rng()<.5?'#8a5c34':'#ad7a4c'; g.fillRect(x,0,1,TS); }
-  speckle(g,rng,['#734a28'],25);
+  g.fillStyle='#8b6431'; g.fillRect(0,0,TS,TS);
+  for(let x=0;x<TS;x+=U*2){ g.fillStyle = rng()<.5?'#795428':'#9d7644'; g.fillRect(x,0,U,TS); }
+  speckle(g,rng,['#5f4120'],25);
 }
 function woodTop(g,rng){
-  g.fillStyle='#c79a63'; g.fillRect(0,0,TS,TS);
-  g.strokeStyle='#8a5c34'; g.lineWidth=1;
-  for(let r=2;r<8;r+=2){ g.beginPath(); g.arc(8,8,r,0,7); g.stroke(); }
+  g.fillStyle='#bd9058'; g.fillRect(0,0,TS,TS);
+  g.strokeStyle='#795428'; g.lineWidth=1;
+  for(let r=U*2;r<TS/2;r+=U*2){ g.beginPath(); g.arc(TS/2,TS/2,r,0,7); g.stroke(); }
 }
 function glassTex(g,rng){
   g.clearRect(0,0,TS,TS);
   g.fillStyle='rgba(190,235,255,.30)'; g.fillRect(0,0,TS,TS);
   g.fillStyle='rgba(255,255,255,.85)';
-  g.fillRect(0,0,TS,1); g.fillRect(0,TS-1,TS,1); g.fillRect(0,0,1,TS); g.fillRect(TS-1,0,1,TS);
-  g.fillStyle='rgba(255,255,255,.6)'; g.fillRect(3,3,4,1); g.fillRect(3,3,1,4);
+  g.fillRect(0,0,TS,U); g.fillRect(0,TS-U,TS,U); g.fillRect(0,0,U,TS); g.fillRect(TS-U,0,U,TS);
+  g.fillStyle='rgba(255,255,255,.6)'; g.fillRect(U*3,U*3,U*4,U); g.fillRect(U*3,U*3,U,U*4);
 }
+glassTex.noAO = true;
 function rainbowTex(g){
   const cols=['#ff5d5d','#ffa53d','#ffe93d','#6ee86e','#4fc3ff','#9a7dff','#ff7ddb'];
-  for(let i=0;i<TS;i++){ g.fillStyle=cols[i%cols.length]; g.fillRect(0,i,TS,1); }
-  g.fillStyle='rgba(255,255,255,.35)'; g.fillRect(0,0,TS,2);
+  for(let i=0;i<TS;i++){ g.fillStyle=cols[((i/U)|0)%cols.length]; g.fillRect(0,i,TS,1); }
+  g.fillStyle='rgba(255,255,255,.35)'; g.fillRect(0,0,TS,U*2);
 }
+rainbowTex.noAO = true;
 function goldTex(g,rng){
   g.fillStyle='#ffc82e'; g.fillRect(0,0,TS,TS);
   speckle(g,rng,['#ffe97a','#e0a200','#fff3b0'],80);
-  g.fillStyle='#fff8d0'; g.fillRect(4,4,3,3);
+  g.fillStyle='#fff8d0'; g.fillRect(U*4,U*4,U*3,U*3);
 }
 
 /* ---- 제작 블록 3종 ---- */
 function trampTex(g,rng){
   g.fillStyle='#3fb95a'; g.fillRect(0,0,TS,TS);
   g.fillStyle='#63e87e';
-  for(let i=2;i<TS;i+=4){ g.fillRect(i,0,2,TS); g.fillRect(0,i,TS,2); }
-  g.fillStyle='rgba(255,255,255,.55)'; g.fillRect(0,0,TS,2);
-  g.fillStyle='rgba(0,0,0,.18)'; g.fillRect(0,TS-2,TS,2);
+  for(let i=U*2;i<TS;i+=U*4){ g.fillRect(i,0,U*2,TS); g.fillRect(0,i,TS,U*2); }
+  g.fillStyle='rgba(255,255,255,.55)'; g.fillRect(0,0,TS,U*2);
+  g.fillStyle='rgba(0,0,0,.18)'; g.fillRect(0,TS-U*2,TS,U*2);
 }
 function lampTex(g,rng){
   g.fillStyle='#c98a2e'; g.fillRect(0,0,TS,TS);
-  g.fillStyle='#ffe9a0'; g.fillRect(2,2,TS-4,TS-4);
-  g.fillStyle='#fffbe0'; g.fillRect(5,5,TS-10,TS-10);
+  g.fillStyle='#ffe9a0'; g.fillRect(U*2,U*2,TS-U*4,TS-U*4);
+  g.fillStyle='#fffbe0'; g.fillRect(U*5,U*5,TS-U*10,TS-U*10);
   speckle(g,rng,['#fff6c8','#ffdc7a'],24);
 }
 function iceTex(g,rng){
   g.fillStyle='#a8e4ff'; g.fillRect(0,0,TS,TS);
   speckle(g,rng,['#cdf1ff','#8ad3f5'],40);
   g.fillStyle='rgba(255,255,255,.85)';
-  g.fillRect(0,0,TS,1); g.fillRect(0,0,1,TS);
-  g.fillStyle='rgba(255,255,255,.55)'; g.fillRect(3,9,7,1); g.fillRect(9,3,1,7);
+  g.fillRect(0,0,TS,U); g.fillRect(0,0,U,TS);
+  g.fillStyle='rgba(255,255,255,.55)'; g.fillRect(U*3,U*9,U*7,U); g.fillRect(U*9,U*3,U,U*7);
 }
 
 /* ---- 마법 블록 그림 — 바탕색 + 글자(이모지) 한 개 ---- */
 function iconTex(base, ch, edge){
-  return (g,rng)=>{
+  const fn = (g,rng)=>{
     g.fillStyle = base; g.fillRect(0,0,TS,TS);
     if(edge){
       g.fillStyle = edge;
-      g.fillRect(0,0,TS,1); g.fillRect(0,TS-1,TS,1); g.fillRect(0,0,1,TS); g.fillRect(TS-1,0,1,TS);
+      g.fillRect(0,0,TS,U); g.fillRect(0,TS-U,TS,U); g.fillRect(0,0,U,TS); g.fillRect(TS-U,0,U,TS);
     }
     g.textAlign='center'; g.textBaseline='middle';
-    g.font = "12px 'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',system-ui,sans-serif";
-    g.fillText(ch, TS/2, TS/2 + 1);
+    g.font = Math.round(TS*0.72) + "px 'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',system-ui,sans-serif";
+    g.fillText(ch, TS/2, TS/2 + U);
   };
+  fn.noAO = true;               // 마법 블록은 테두리를 스스로 그린다
+  return fn;
 }
 function goalTex(g,rng){                       // 🏁 골인 — 체크무늬
-  for(let y=0;y<TS;y+=4) for(let x=0;x<TS;x+=4){
-    g.fillStyle = ((x+y)/4) % 2 ? '#1d1d24' : '#ffffff';
-    g.fillRect(x,y,4,4);
+  const cell = TS/4;
+  for(let y=0;y<TS;y+=cell) for(let x=0;x<TS;x+=cell){
+    g.fillStyle = ((x+y)/cell) % 2 ? '#1d1d24' : '#ffffff';
+    g.fillRect(x,y,cell,cell);
   }
 }
+goalTex.noAO = true;
 
 const TEX = {};
 function buildTextures(){
-  TEX[GRASS]   = [grassSide, grassSide, grassTop, flat('#96653f',['#7d5433','#a97a4d']), grassSide, grassSide];
-  TEX[DIRT]    = flat('#96653f',['#7d5433','#a97a4d','#855a38']);
-  TEX[STONE]   = flat('#9aa0a8',['#868d96','#b2b8bf','#7b828a']);
+  TEX[GRASS]   = [grassSide, grassSide, grassTop, flat('#8f6139',['#7a5030','#a67548']), grassSide, grassSide];
+  TEX[DIRT]    = flat('#8f6139',['#7a5030','#a67548','#7e5432']);
+  TEX[STONE]   = flat('#a2a8ae',['#8d949c','#b8bec5','#808790']);
   TEX[WOOD]    = [woodSide,woodSide,woodTop,woodTop,woodSide,woodSide];
-  TEX[LEAF]    = flat('#4fbf52',['#3fa445','#6ad46d','#2f8a38'],110);
-  TEX[SAND]    = flat('#f0dfa8',['#e2cd8e','#fbefc4'],70);
+  TEX[LEAF]    = flat('#4fac34',['#3f9129','#6cc94e','#2f7a24'],110);
+  TEX[SAND]    = flat('#e9d69e',['#dbc484','#f6ebbe'],70);
   TEX[GLASS]   = glassTex;
   TEX[RAINBOW] = rainbowTex;
   TEX[GOLD]    = goldTex;
@@ -2440,6 +2488,33 @@ function buildTextures(){
   TEX[M_AMMO]  = iconTex('#5fc9ff','🎈','#2b8fc4');
 }
 
+/* 물결 무늬 — 물 블록 위로 천천히 흘러간다.
+   무늬를 또렷하게 그리면 멀리서 볼 때 줄무늬가 지글지글 튀므로, 부드럽게 번지게
+   그리고 필터도 Nearest 가 아니라 Linear 로 둔다(블록 무늬와 반대). */
+let waterMap = null;
+function waterTexture(){
+  const S = 64;
+  const c = document.createElement('canvas'); c.width=c.height=S;
+  const g = c.getContext('2d'), rng = makeRng(9091);
+  g.fillStyle='#3aa4da'; g.fillRect(0,0,S,S);
+  for(let i=0;i<26;i++){
+    const y = rng()*S, w = 10+rng()*22, h = 3+rng()*4;
+    const grd = g.createLinearGradient(0, y, 0, y+h);
+    const up = rng()<.55;
+    grd.addColorStop(0,   up ? 'rgba(255,255,255,0)'   : 'rgba(26,96,144,0)');
+    grd.addColorStop(0.5, up ? 'rgba(255,255,255,.17)' : 'rgba(26,96,144,.15)');
+    grd.addColorStop(1,   up ? 'rgba(255,255,255,0)'   : 'rgba(26,96,144,0)');
+    g.fillStyle = grd;
+    g.fillRect(rng()*S - w/2, y, w, h);
+  }
+  const t = new THREE.CanvasTexture(c);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  t.magFilter = THREE.LinearFilter;
+  t.minFilter = THREE.LinearMipmapLinearFilter;
+  t.encoding = THREE.sRGBEncoding;
+  return t;
+}
+
 const MATS = {};
 function buildMaterials(){
   for(const t of RENDER_TYPES){
@@ -2448,7 +2523,7 @@ function buildMaterials(){
     if(def.prop){ MATS[t] = new THREE.MeshLambertMaterial({vertexColors:true}); continue; }
     const mk = (drawFn, i) => {
       const map = pixelTexture(drawFn, t*17+i*7+3);
-      const o = {map:map};
+      const o = {map:map, vertexColors:true};   // 면마다 밝기 → boxGeo 에 구워 둔 색
       if(def.transparent){ o.transparent=true; o.opacity=0.72; o.depthWrite=true; }
       if(def.glow){ o.emissive = new THREE.Color(0x553311); o.emissiveIntensity=0.55; o.emissiveMap=map; }
       if(t===LAMP){ o.emissive = new THREE.Color(0xffd98a); o.emissiveIntensity=0.5; o.emissiveMap=map; }
@@ -2457,9 +2532,12 @@ function buildMaterials(){
     };
     MATS[t] = Array.isArray(spec) ? spec.map(mk) : mk(spec,0);
   }
-  // 물은 살짝 파랗고 반투명
-  MATS[WATER] = new THREE.MeshLambertMaterial({
-    color:0x49aee0, transparent:true, opacity:0.62, depthWrite:false
+  /* 물: 물결 무늬가 흐르고 햇빛이 반짝 반사된다 */
+  waterMap = waterTexture();
+  MATS[WATER] = new THREE.MeshPhongMaterial({
+    map:waterMap, color:0x9fd8f2, vertexColors:true,
+    transparent:true, opacity:0.78, depthWrite:false,
+    shininess:90, specular:0xffffff
   });
 }
 
@@ -2596,6 +2674,11 @@ const renderer = new THREE.WebGLRenderer({canvas, antialias:false, powerPreferen
 renderer.setPixelRatio(Math.min(devicePixelRatio||1, 2));
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+/* 아래 세 줄은 한 묶음이다 — 하나만 켜면 화면이 뿌옇거나 새까매진다.
+   sRGB: 색을 사람 눈에 맞게 내보낸다. 톤매핑: 밝은 곳이 하얗게 타지 않게 눌러 준다. */
+renderer.outputEncoding = THREE.sRGBEncoding;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.14;
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x87ceeb);
@@ -2603,7 +2686,7 @@ scene.fog = new THREE.Fog(0xbfe8ff, 55, 110);
 
 const camera = new THREE.PerspectiveCamera(70, 1, 0.1, 400);
 
-const hemi = new THREE.HemisphereLight(0xffffff, 0x9dd48a, 0.62);
+const hemi = new THREE.HemisphereLight(0xffffff, 0x6f8f52, 0.52);
 scene.add(hemi);
 const sun = new THREE.DirectionalLight(0xfff3d0, 0.72);
 sun.castShadow = true;
@@ -2613,20 +2696,28 @@ sun.shadow.camera.far = 120;
 const SH = 16;
 sun.shadow.camera.left=-SH; sun.shadow.camera.right=SH;
 sun.shadow.camera.top=SH;  sun.shadow.camera.bottom=-SH;
-sun.shadow.bias = -0.0015;
-sun.shadow.normalBias = 0.04;
+sun.shadow.bias = -0.0012;
+sun.shadow.normalBias = 0.035;
+/* ⚠ three.js 는 그림자를 그릴 때 이 줄을 대신 불러 주지 않는다. 빠뜨리면 위에서
+   정한 ±16 범위가 통째로 무시되고 기본값 ±5 에 갇혀서 그림자가 거의 안 보인다. */
+sun.shadow.camera.updateProjectionMatrix();
 scene.add(sun); scene.add(sun.target);
 
 /* ---- 하늘 + 구름 ---- */
 let skyMesh = null;
 function buildSky(){
-  const c=document.createElement('canvas'); c.width=8; c.height=128;
+  const c=document.createElement('canvas'); c.width=16; c.height=160;
   const g=c.getContext('2d');
-  const grad=g.createLinearGradient(0,0,0,128);
-  grad.addColorStop(0,'#3ba2e8'); grad.addColorStop(.45,'#87ceeb');
-  grad.addColorStop(.78,'#cfefff'); grad.addColorStop(1,'#eaf8ff');
-  g.fillStyle=grad; g.fillRect(0,0,8,128);
+  const grad=g.createLinearGradient(0,0,0,160);
+  grad.addColorStop(0,'#2f86dd'); grad.addColorStop(.42,'#68b4ea');
+  grad.addColorStop(.76,'#b8ddf6'); grad.addColorStop(1,'#f2e6ce');
+  g.fillStyle=grad; g.fillRect(0,0,16,160);
+  /* 지평선 가까이 해 둘레가 뽀얗게 밝아지는 빛무리 */
+  const glow=g.createRadialGradient(8,122,0,8,122,48);
+  glow.addColorStop(0,'rgba(255,243,212,.80)'); glow.addColorStop(1,'rgba(255,243,212,0)');
+  g.fillStyle=glow; g.fillRect(0,62,16,98);
   const tex=new THREE.CanvasTexture(c);
+  tex.encoding = THREE.sRGBEncoding;
   const sky=new THREE.Mesh(
     new THREE.SphereGeometry(190,20,14),
     new THREE.MeshBasicMaterial({map:tex, side:THREE.BackSide, fog:false, depthWrite:false})
@@ -2635,35 +2726,34 @@ function buildSky(){
   scene.add(sky);
   skyMesh = sky;
 
-  // 구름: 박스 하나짜리 InstancedMesh 로 전부 그린다 (드로우콜 1번)
+  /* 구름: 네모 상자 대신 가장자리가 부드러운 동그란 그림을 여러 장 겹쳐 몽실하게.
+     화면 밖 구름은 three 가 알아서 건너뛰므로(frustumCulled) 한꺼번에 다 그리지 않는다. */
   const rng = makeRng(SEED+321);
-  const puffs = [];
-  for(let i=0;i<22;i++){
-    const gx = (rng()-.5)*260, gy = 44+rng()*26, gz = (rng()-.5)*260;
-    const parts = 3 + ((rng()*4)|0);
+  const cc = document.createElement('canvas'); cc.width=cc.height=64;
+  const cg = cc.getContext('2d');
+  const rg = cg.createRadialGradient(32,32,2,32,32,31);
+  rg.addColorStop(0,'rgba(255,255,255,.95)');
+  rg.addColorStop(.55,'rgba(255,255,255,.72)');
+  rg.addColorStop(1,'rgba(255,255,255,0)');
+  cg.fillStyle=rg; cg.fillRect(0,0,64,64);
+  const ctex = new THREE.CanvasTexture(cc);
+  ctex.encoding = THREE.sRGBEncoding;
+  const cmat = new THREE.SpriteMaterial({map:ctex, transparent:true, depthWrite:false, fog:false, opacity:0.92});
+  const clouds = new THREE.Group();
+  clouds.userData.mat = cmat;      // 밤에는 구름도 같이 어두워지게 (DayNight 에서 색을 준다)
+  /* 구름 한 장 = 그리기 1번이다. 뭉게구름 느낌은 살리되 장수는 아껴서
+     휴대폰에서 그리기 횟수가 확 늘지 않게 한다(12덩이 × 3~4장). */
+  for(let i=0;i<12;i++){
+    const gx = (rng()-.5)*260, gy = 44+rng()*24, gz = (rng()-.5)*260;
+    const parts = 3 + ((rng()*2)|0);
     for(let p=0;p<parts;p++){
-      puffs.push({
-        x: gx + (rng()-.5)*14, y: gy + (rng()-.5)*2, z: gz + (rng()-.5)*12,
-        sx: 6+rng()*10, sy: 2.5+rng()*2, sz: 5+rng()*8
-      });
+      const sp = new THREE.Sprite(cmat);
+      sp.position.set(gx + (rng()-.5)*20, gy + (rng()-.5)*4, gz + (rng()-.5)*20);
+      const w = 14 + rng()*16;
+      sp.scale.set(w, w*(0.46 + rng()*0.20), 1);
+      clouds.add(sp);
     }
   }
-  const cloudMesh = new THREE.InstancedMesh(
-    new THREE.BoxGeometry(1,1,1),
-    new THREE.MeshLambertMaterial({color:0xffffff, emissive:0x777777, fog:false}),
-    puffs.length
-  );
-  cloudMesh.frustumCulled = false;
-  cloudMesh.castShadow = false; cloudMesh.receiveShadow = false;
-  const cm = new THREE.Matrix4();
-  puffs.forEach((p,i)=>{
-    cm.makeScale(p.sx, p.sy, p.sz);
-    cm.setPosition(p.x, p.y, p.z);
-    cloudMesh.setMatrixAt(i, cm);
-  });
-  cloudMesh.instanceMatrix.needsUpdate = true;
-  const clouds = new THREE.Group();
-  clouds.add(cloudMesh);
   scene.add(clouds);
   return clouds;
 }
@@ -2672,7 +2762,19 @@ const clouds = buildSky();
 /* ═══════════════════════════════════════════════════
    5. 블록 렌더링 (InstancedMesh, 보이는 면만)
    ═══════════════════════════════════════════════════ */
-const boxGeo = new THREE.BoxGeometry(1,1,1);
+/* 면마다 밝기를 정점 색으로 구워 둔다. 윗면은 밝고 옆면·아랫면은 어둡게 —
+   빛이 어디서 오든 블록 덩어리가 또렷하게 보인다. 드로우콜은 하나도 안 늘어난다.
+   BoxGeometry 면 차례: +X, -X, +Y(위), -Y(아래), +Z, -Z */
+const boxGeo = (function(){
+  const g = new THREE.BoxGeometry(1,1,1);
+  const k = [0.83, 0.79, 1.00, 0.58, 0.93, 0.87];
+  const col = new Float32Array(24*3);
+  for(let f=0; f<6; f++) for(let v=0; v<4; v++){
+    const i = (f*4+v)*3; col[i]=col[i+1]=col[i+2]=k[f];
+  }
+  g.setAttribute('color', new THREE.BufferAttribute(col,3));
+  return g;
+})();
 const ALL_RENDER = RENDER_TYPES.concat([WATER]);
 
 /* 청크마다 박스 지오메트리를 하나씩 복제해 둔다. 모양은 같지만 경계구(bounding
@@ -2956,19 +3058,44 @@ function boxMesh(w,h,d,color){
   m.castShadow = true;
   return m;
 }
-/* 도도새 얼굴 — 머리 상자의 앞면(+Z)에 붙는다 */
-function faceTexture(){
-  return pixelTexture((g)=>{
-    g.fillStyle='#e8e2ea'; g.fillRect(0,0,TS,TS);
-    g.fillStyle='#2f2530';
-    g.fillRect(3,5,3,4); g.fillRect(10,5,3,4);                     // 큰 눈
-    g.fillStyle='#ffffff'; g.fillRect(4,6,1,1); g.fillRect(11,6,1,1);
-    g.fillStyle='rgba(255,150,160,.55)'; g.fillRect(1,10,3,2); g.fillRect(12,10,3,2);  // 볼터치
-  }, 777);
+/* 모서리를 살짝 깎은 상자 — 도도 몸에만 쓴다.
+   지형 블록에 쓰면 블록 사이가 벌어져 보이므로 절대 쓰지 말 것. */
+function softBox(w,h,d,color,r){
+  const g = new THREE.BoxGeometry(w,h,d,3,3,3);
+  roundCorners(g, w,h,d, r===undefined ? 0.04 : r);
+  const m = new THREE.Mesh(g, new THREE.MeshLambertMaterial({color:color}));
+  m.castShadow = true; m.receiveShadow = true;
+  return m;
+}
+function roundCorners(g, w,h,d, r){
+  const p = g.attributes.position;
+  const hw = Math.max(0, w/2-r), hh = Math.max(0, h/2-r), hd = Math.max(0, d/2-r);
+  for(let i=0;i<p.count;i++){
+    const x=p.getX(i), y=p.getY(i), z=p.getZ(i);
+    const cx=Math.min(hw,Math.max(-hw,x)), cy=Math.min(hh,Math.max(-hh,y)), cz=Math.min(hd,Math.max(-hd,z));
+    const dx=x-cx, dy=y-cy, dz=z-cz, len=Math.hypot(dx,dy,dz);
+    if(len>1e-6){ const s=r/len; p.setXYZ(i, cx+dx*s, cy+dy*s, cz+dz*s); }
+  }
+  g.computeVertexNormals();
 }
 
-/* 기본 도도: 민트빛 깃털 + 노란 부리 + 주황 발 */
-const SKIN = {body:0x8fd9cf, legs:0xf3a03d, arms:0xd9efe9, head:0xd9efe9};
+/* 도도새 얼굴 — 머리 상자의 앞면(+Z)에 붙는다.
+   바탕을 하얗게 두면 머리 색을 그대로 곱해 쓸 수 있어서, 어떤 깃털색을 골라도
+   얼굴이 머리와 따로 놀지 않는다. 까만 눈은 무슨 색을 곱해도 까맣게 남는다. */
+function faceTexture(){
+  const draw = (g)=>{
+    g.fillStyle='#ffffff'; g.fillRect(0,0,TS,TS);
+    g.fillStyle='#241f28';
+    g.fillRect(U*3,U*5,U*3,U*4); g.fillRect(U*10,U*5,U*3,U*4);      // 까만 네모 눈
+    g.fillStyle='#ffffff';
+    g.fillRect(U*3+1,U*5+1,U,U); g.fillRect(U*10+1,U*5+1,U,U);      // 눈에 반짝
+  };
+  draw.noAO = true;
+  return pixelTexture(draw, 777);
+}
+
+/* 기본 도도: 하얀 깃털 + 주황 부리 · 발 (키이미지의 도도) */
+const SKIN = {body:0xf6f7f9, legs:0xeda02c, arms:0xf6f7f9, head:0xf6f7f9};
 
 function buildAvatar(colors){
   const g = new THREE.Group();
@@ -2976,37 +3103,39 @@ function buildAvatar(colors){
   const headMats = [];
   for(let i=0;i<6;i++){
     headMats.push(new THREE.MeshLambertMaterial(
-      i===4 ? {map:face} : {color:colors.head}));
+      i===4 ? {map:face, color:colors.head} : {color:colors.head}));
   }
-  // 머리는 작고 동글, 몸은 뚱뚱 — 도도새 비율
-  const head = new THREE.Mesh(new THREE.BoxGeometry(.56,.50,.50), headMats);
+  // 머리를 키이미지처럼 큼직한 네모로. 모자는 y 1.60 부터라 머리 위(1.59)와 딱 맞는다.
+  const headGeo = new THREE.BoxGeometry(.62,.58,.56,3,3,3);
+  roundCorners(headGeo, .62,.58,.56, .045);
+  const head = new THREE.Mesh(headGeo, headMats);
   head.castShadow=true; head.position.set(0, 1.30, .02);
 
   // 큼직한 부리 (도도새의 상징)
-  const beak    = boxMesh(.22,.20,.30, 0xffc043); beak.position.set(0, 1.23, .34);
-  const beakTip = boxMesh(.17,.13,.13, 0xe08a20); beakTip.position.set(0, 1.16, .52);
+  const beak    = softBox(.26,.20,.30, 0xf0a11f, .035); beak.position.set(0, 1.22, .36);
+  const beakTip = softBox(.20,.13,.16, 0xd8801a, .035); beakTip.position.set(0, 1.16, .55);
 
   // 머리 깃털 세 가닥 (모자를 쓰면 숨는다)
   const hair = new THREE.Group();
-  [[-.14,1.60,-.04,.10],[0,1.65,-.02,.12],[.14,1.60,-.04,.10]].forEach(([x,y,z,h])=>{
-    const f = boxMesh(.09,h,.09, 0xbfe9e0); f.position.set(x,y,z); hair.add(f);
+  [[-.14,1.62,-.04,.10],[0,1.68,-.02,.13],[.14,1.62,-.04,.10]].forEach(([x,y,z,h])=>{
+    const f = softBox(.09,h,.09, 0xe6e9ef, .03); f.position.set(x,y,z); hair.add(f);
   });
   g.add(hair);
 
   // 뚱뚱한 몸통 + 뽀얀 배
-  const body  = boxMesh(.80,.72,.66, colors.body); body.position.set(0,.82,0);
-  const belly = boxMesh(.52,.46,.16, 0xfdf6ef);    belly.position.set(0,.76,.30);
-  const tail  = boxMesh(.34,.28,.20, colors.body); tail.position.set(0,1.02,-.42);
+  const body  = softBox(.78,.70,.62, colors.body, .06); body.position.set(0,.82,0);
+  const belly = softBox(.54,.44,.14, 0xffffff, .05);    belly.position.set(0,.78,.28);
+  const tail  = softBox(.32,.26,.22, colors.body, .05); tail.position.set(0,1.04,-.40);
 
   // 날지 못하는 짧은 날개
-  const armL = boxMesh(.15,.44,.42, colors.arms); armL.position.set(-.46,.92,0);
-  const armR = boxMesh(.15,.44,.42, colors.arms); armR.position.set( .46,.92,0);
+  const armL = softBox(.14,.42,.40, colors.arms, .05); armL.position.set(-.45,.94,0);
+  const armR = softBox(.14,.42,.40, colors.arms, .05); armR.position.set( .45,.94,0);
 
   // 가늘고 긴 다리 + 넓적한 발
-  const legL = boxMesh(.15,.44,.15, colors.legs); legL.position.set(-.18,.24,0);
-  const legR = boxMesh(.15,.44,.15, colors.legs); legR.position.set( .18,.24,0);
-  const footL = boxMesh(.24,.10,.34, colors.legs); footL.position.set(-.18,.05,.07);
-  const footR = boxMesh(.24,.10,.34, colors.legs); footR.position.set( .18,.05,.07);
+  const legL = softBox(.14,.42,.14, colors.legs, .03); legL.position.set(-.17,.25,0);
+  const legR = softBox(.14,.42,.14, colors.legs, .03); legR.position.set( .17,.25,0);
+  const footL = softBox(.24,.10,.32, colors.legs, .03); footL.position.set(-.17,.05,.07);
+  const footR = softBox(.24,.10,.32, colors.legs, .03); footR.position.set( .17,.05,.07);
 
   // 팔/다리는 위쪽을 중심으로 흔들리게 pivot 그룹 사용
   const pv = (meshes, x, y) => {
@@ -3015,8 +3144,8 @@ function buildAvatar(colors){
     g.add(p); return p;
   };
   g.add(head, beak, beakTip, body, belly, tail);
-  const pArmL = pv([armL], -.46, 1.12), pArmR = pv([armR], .46, 1.12);
-  const pLegL = pv([legL, footL], -.18, .48), pLegR = pv([legR, footR], .18, .48);
+  const pArmL = pv([armL], -.45, 1.14), pArmR = pv([armR], .45, 1.14);
+  const pLegL = pv([legL, footL], -.17, .48), pLegR = pv([legR, footR], .17, .48);
 
   g.userData = {head, hair, body, belly, tail, beak, beakTip, pArmL, pArmR, pLegL, pLegR};
   return g;
@@ -4725,8 +4854,8 @@ function npcLine(){
    10.14 상점 (캐릭터 꾸미기)
    ═══════════════════════════════════════════════════ */
 const SKINS = [
-  {id:'basic',  name:'민트 도도',    icon:'🦤', price:0,
-   body:0x8fd9cf, legs:0xf3a03d, skin:0xd9efe9, hat:null},
+  {id:'basic',  name:'하얀 도도',    icon:'🦤', price:0,
+   body:0xf6f7f9, legs:0xeda02c, skin:0xf6f7f9, hat:null},
   {id:'explor', name:'탐험가 도도',  icon:'🧢', price:60,
    body:0xf0b070, legs:0x8a5a2b, skin:0xffe6c4, hat:{color:0xe63946, tall:false}},
   {id:'ninja',  name:'밤하늘 도도',  icon:'🌙', price:150,
@@ -4753,7 +4882,7 @@ function applySkin(id){
   ud.pArmL.children[0].material.color.setHex(sk.skin);
   ud.pArmR.children[0].material.color.setHex(sk.skin);
   ud.tail.material.color.setHex(sk.body);        // 꼬리도 같이 (예전엔 민트색 그대로였다)
-  for(let i=0;i<6;i++) if(i!==4) ud.head.material[i].color.setHex(sk.skin);
+  for(let i=0;i<6;i++) ud.head.material[i].color.setHex(sk.skin);   // 4번은 얼굴 — 하얀 바탕이라 색을 곱하면 머리와 같아진다
   // 모자 (친구 3명을 모으면 황금 왕관이 스킨 모자를 이긴다)
   if(ud.hatMesh){ avatar.remove(ud.hatMesh); ud.hatMesh = null; }
   if(giftLevel() >= 3) sk = Object.assign({}, sk, {hat:{color:0xffd93d, tall:true}});
@@ -5638,14 +5767,14 @@ const DayNight = (function(){
   const CYCLE = 300;                 // 하루 = 5분
   /* 시간대별 하늘색 · 빛 세기. t: 0=자정, 0.5=정오 */
   const KEYS = [
-    {t:0.00, sky:0x101838, fog:0x1b2450, sun:0.05, hemi:0.30, sunCol:0x8fa6ff},
-    {t:0.21, sky:0x2b3f72, fog:0x455184, sun:0.10, hemi:0.34, sunCol:0x9fb0ff},
-    {t:0.27, sky:0xff9a5c, fog:0xffc49a, sun:0.46, hemi:0.50, sunCol:0xffb070},
-    {t:0.35, sky:0x87ceeb, fog:0xbfe8ff, sun:0.72, hemi:0.62, sunCol:0xfff3d0},
-    {t:0.65, sky:0x87ceeb, fog:0xbfe8ff, sun:0.72, hemi:0.62, sunCol:0xfff3d0},
-    {t:0.73, sky:0xff8a4c, fog:0xffbb8e, sun:0.44, hemi:0.48, sunCol:0xffa860},
-    {t:0.80, sky:0x2b3f72, fog:0x455184, sun:0.10, hemi:0.34, sunCol:0x9fb0ff},
-    {t:1.00, sky:0x101838, fog:0x1b2450, sun:0.05, hemi:0.30, sunCol:0x8fa6ff},
+    {t:0.00, sky:0x101838, fog:0x1b2450, sun:0.10, hemi:0.26, sunCol:0x8fa6ff},
+    {t:0.21, sky:0x2b3f72, fog:0x455184, sun:0.20, hemi:0.30, sunCol:0x9fb0ff},
+    {t:0.27, sky:0xff9a5c, fog:0xffc49a, sun:0.92, hemi:0.42, sunCol:0xffb070},
+    {t:0.35, sky:0x6fb9e8, fog:0xc6e2f3, sun:1.42, hemi:0.52, sunCol:0xfff1d2},
+    {t:0.65, sky:0x6fb9e8, fog:0xc6e2f3, sun:1.42, hemi:0.52, sunCol:0xfff1d2},
+    {t:0.73, sky:0xff8a4c, fog:0xffbb8e, sun:0.88, hemi:0.40, sunCol:0xffa860},
+    {t:0.80, sky:0x2b3f72, fog:0x455184, sun:0.20, hemi:0.30, sunCol:0x9fb0ff},
+    {t:1.00, sky:0x101838, fog:0x1b2450, sun:0.10, hemi:0.26, sunCol:0x8fa6ff},
   ];
   let t = 0.34;                      // 아침에 시작
   const cSky = new THREE.Color(), cFog = new THREE.Color(), cSun = new THREE.Color();
@@ -5718,6 +5847,8 @@ const DayNight = (function(){
 
     night = clamp(1 - (Math.sin(ang) + 0.18) * 2.4, 0, 1);
     if(skyMesh) skyMesh.material.color.copy(cSky).multiplyScalar(1.25);
+    /* 구름은 빛을 안 받는 그림이라, 하늘색을 섞어 줘야 밤에 혼자 하얗게 남지 않는다 */
+    if(clouds && clouds.userData.mat) clouds.userData.mat.color.copy(cSky).lerp(WHITE, 0.72);
     if(stars) stars.material.opacity = night * 0.95;
     if(sunDisc) sunDisc.visible = dir.y > -0.15;
     if(moon) moon.visible = dir.y < 0.15;
@@ -7331,6 +7462,7 @@ function buildSign(){
   signCanvas.width = 256; signCanvas.height = 96;
   signTex = new THREE.CanvasTexture(signCanvas);
   signTex.magFilter = THREE.LinearFilter;
+  signTex.encoding = THREE.sRGBEncoding;
   const board = new THREE.Mesh(new THREE.BoxGeometry(2.6,1.0,.14),
     [0,1,2,3].map(()=>new THREE.MeshLambertMaterial({color:0xd7a96b}))
       .concat([new THREE.MeshLambertMaterial({map:signTex}),
@@ -8935,6 +9067,9 @@ function frame(t){
   clouds.position.x += dt*0.6;
   if(clouds.position.x > 140) clouds.position.x = -140;
 
+  /* 물결 무늬가 천천히 흘러간다 (그림 한 장을 밀어 주기만 하므로 부담이 거의 없다) */
+  if(waterMap){ waterMap.offset.x += dt*0.035; waterMap.offset.y += dt*0.021; }
+
   fpsAcc += dt; fpsCount++;
   if(fpsAcc > 0.5){
     curFps = Math.round(fpsCount/fpsAcc);
@@ -8999,6 +9134,7 @@ function recolorTexture(base, hex, amt){
   t.magFilter = THREE.NearestFilter;
   t.minFilter = THREE.NearestMipmapLinearFilter;
   t.anisotropy = 1;
+  t.encoding = THREE.sRGBEncoding;
   return t;
 }
 function themedMap(themeId, type, face, base, hex, amt){
