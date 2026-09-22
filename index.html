@@ -676,8 +676,11 @@
     /* bottom 은 layoutUI() 가 블록 바 높이를 재서 정한다 (블록 바가 두 줄이 되기도 한다) */
     position:fixed; left:50%; bottom:108px; transform:translateX(-50%);
     z-index:24; pointer-events:auto; display:none;
-    width:min(620px, 96vw); max-width:min(96vw, calc(100vw - 240px));
+    /* 240px 은 넓은 화면에서 양옆 칸(퀘스트·단추)을 피하려고 비워 두는 자리다.
+       휴대폰에 그대로 적용하면 줄 폭이 150px 로 쪼그라들어 글칸이 사라진다. */
+    width:min(620px, 96vw); max-width:96vw;
   }
+  @media (min-width:900px){ #aibar{max-width:calc(100vw - 240px);} }
   body.ingame #aibar{display:block;}
   body.ingame.dodochat #aibar{display:none;}   /* 큰 창이 떠 있을 땐 숨긴다 */
   #airow{
@@ -687,6 +690,12 @@
     transition:box-shadow .15s ease;
   }
   body.aitalk #airow{box-shadow:0 0 0 3px #ffd84d, 0 5px 0 rgba(0,0,0,.16), 0 12px 28px rgba(0,0,0,.2);}
+  /* 접으면 🪶 와 펴기 단추만 남는다 */
+  body.fold-ai #aistack,
+  body.fold-ai #aiinput,
+  body.fold-ai #aisend,
+  body.fold-ai #aimore{display:none;}
+  body.fold-ai #aibar{width:auto; left:auto; right:14px; transform:none;}
   #aiicon{font-size:22px; line-height:1; padding-left:5px;}
   #aiinput{
     flex:1; min-width:0; border:none; outline:none; background:transparent;
@@ -1136,10 +1145,9 @@
   .foldbtn{
     border:none; width:24px; height:24px; min-width:24px; border-radius:50%; cursor:pointer;
     background:rgba(0,0,0,.09); color:#3b3350; font-family:inherit; font-weight:900;
-    font-size:12px; line-height:1; padding:0; display:none; align-items:center;
+    font-size:12px; line-height:1; padding:0; display:flex; align-items:center;
     justify-content:center; flex:none; pointer-events:auto;
   }
-  body.canfold .foldbtn{display:flex;}
   .foldbtn:active{transform:translateY(2px); background:rgba(0,0,0,.16);}
 
   /* 🪙 코인 · 레벨 */
@@ -1161,7 +1169,7 @@
     position:absolute; right:6px; top:50%; transform:translateY(-50%);
     background:rgba(0,0,0,.10);
   }
-  body.canfold #hotbar{padding-right:34px;}
+  #hotbar{padding-right:34px;}
 
   /* ⚙️ 오른쪽 동그란 단추들 — 접으면 🎒 가방만 남는다 */
   #tools .foldbtn{width:38px; height:38px; min-width:38px; font-size:15px;}
@@ -1226,6 +1234,7 @@
              placeholder="도도AI에게 말해 봐 — 무지개 미끄럼틀 만들어 줘">
       <button id="aisend">말하기</button>
       <button id="aimore" title="지난 이야기 다 보기 (T)">💬</button>
+      <button class="foldbtn" id="aifold" title="도도AI 줄 접기 / 펴기">▾</button>
     </div>
   </div>
   <div id="hotbar"></div>
@@ -1277,6 +1286,7 @@
   <button class="tool" id="btnTime"  title="밤낮 바꾸기">🌗</button>
   <button class="tool" id="btnSound" title="소리 켜기/끄기">🔊</button>
   <button class="tool" id="btnHelp"  title="조작법">❓</button>
+  <button class="tool" id="btnClean" title="화면 깨끗이 — 칸을 다 접었다 폈다 (H)">👁️</button>
   <button class="foldbtn" id="foldTools" title="단추 접기 / 펴기">▾</button>
 </div>
 
@@ -2140,6 +2150,8 @@ const Art = (function(){
       + '<path d="M20.5 12.5a5 5 0 0 1 0 7M24.5 9a10 10 0 0 1 0 14" fill="none" stroke="'+INK+'" stroke-width="2.3" stroke-linecap="round"/>'; },
     mute: function(){ return '<polygon points="4,12.5 9,12.5 14.5,7.5 14.5,24.5 9,19.5 4,19.5" fill="#c9c4d6" stroke="'+INK+'" stroke-width="2.3" stroke-linejoin="round"/>'
       + '<path d="M19.5 12.5 28 21M28 12.5l-8.5 8.5" stroke="'+INK+'" stroke-width="2.6" stroke-linecap="round"/>'; },
+    eye: function(){ return '<path d="M3 16q6.5-8 13-8t13 8q-6.5 8-13 8t-13-8z" fill="#fff4d9" stroke="'+INK+'" stroke-width="2.3" stroke-linejoin="round"/>'
+      + '<circle cx="16" cy="16" r="4.2" fill="#6ed6c8" stroke="'+INK+'" stroke-width="2.2"/>'; },
     help: function(){ return '<circle cx="16" cy="16" r="12" fill="#ffd93d" stroke="'+INK+'" stroke-width="2.3"/>'
       + '<path d="M12.3 12.6a3.8 3.8 0 1 1 4.2 4.3v2" fill="none" stroke="'+INK+'" stroke-width="2.6" stroke-linecap="round"/>'
       + '<circle cx="16.4" cy="23" r="1.8" fill="'+INK+'"/>'; },
@@ -2199,7 +2211,8 @@ function uiIc(key){ return Art.get(key); }
 /* 오른쪽 동그란 단추들에 그림을 넣는다 */
 (function paintToolIcons(){
   const map = {btnUndo:'undo', btnRec:'rec', btnDodo:'feather', btnChat:'chat',
-               btnStudio:'studio', btnBag:'bag', btnSound:'sound', btnHelp:'help'};
+               btnStudio:'studio', btnBag:'bag', btnSound:'sound', btnHelp:'help',
+               btnClean:'eye'};
   for(const id in map){
     const el = document.getElementById(id);
     if(el) el.innerHTML = uiIc(map[id]);
@@ -3410,12 +3423,13 @@ const SLOT_KEY = ['1','2','3','4','5','6','7','8','9','0','-'];
    칸을 아예 없애면 안 된다(아이가 못 찾는다). 접으면 제목이나 고른 블록
    하나는 남겨서 어디 있었는지 알 수 있게 한다. */
 const FOLD_KEY = 'dodo_fold';
-const fold = {hud:0, q:0, bar:0, tools:0};
+const fold = {hud:0, q:0, bar:0, tools:0, ai:0};
 function applyFold(){
   for(const k in fold) document.body.classList.toggle('fold-' + k, !!fold[k]);
   const mark = (id, on)=>{ const el = $(id); if(el) el.textContent = on ? '▸' : '▾'; };
   mark('#foldHud', fold.hud); mark('#foldQ', fold.q);
   mark('#barfold', fold.bar); mark('#foldTools', fold.tools);
+  mark('#aifold', fold.ai);
   if(typeof layoutUI === 'function') layoutUI();
 }
 function toggleFold(k){
@@ -3424,6 +3438,16 @@ function toggleFold(k){
   try{ localStorage.setItem(FOLD_KEY, JSON.stringify(fold)); }catch(e){}
   if(typeof Sound !== 'undefined') Sound.click();
 }
+/* 👁️ 한 번에 다 접기 / 다 펴기 — 화면이 복잡할 때 */
+function foldAll(){
+  const on = Object.keys(fold).some(k => !fold[k]) ? 1 : 0;   // 하나라도 펴져 있으면 다 접는다
+  for(const k in fold) fold[k] = on;
+  applyFold();
+  try{ localStorage.setItem(FOLD_KEY, JSON.stringify(fold)); }catch(e){}
+  if(typeof Sound !== 'undefined') Sound.click();
+  if(typeof showHint === 'function') showHint(on ? '👁️ 화면을 깨끗이 했어요 (다시 누르면 돌아와요)' : '👁️ 칸을 다시 폈어요', 2200);
+}
+
 function loadFold(){
   let d = null;
   try{ d = JSON.parse(localStorage.getItem(FOLD_KEY) || 'null'); }catch(e){}
@@ -4792,13 +4816,13 @@ function updateLabels(dt){
     const shown = placeLabel($('#npclabel'), npcGroup.position.x, npcGroup.position.y+2.7, npcGroup.position.z, 7);
     if(shown) $('#npclabel').textContent = npcLine();
   }
-  if(SHOP.sign) placeLabel($('#shoplabel'), SHOP.sign.x, SHOP.sign.y, SHOP.sign.z, 26) &&
+  if(SHOP.sign) placeLabel($('#shoplabel'), SHOP.sign.x, SHOP.sign.y, SHOP.sign.z, 9) &&
     ($('#shoplabel').textContent = '🛒 상점\n안으로 들어오세요!');
 
   // 아기 도도가 알려 주는 코인 위치
   const pl = $('#petlabel');
   if(petTarget && pets.dog && pets.dog.visible){
-    if(placeLabel(pl, pets.dog.position.x, pets.dog.position.y+1.5, pets.dog.position.z, 20))
+    if(placeLabel(pl, pets.dog.position.x, pets.dog.position.y+1.5, pets.dog.position.z, 8))
       pl.textContent = '🐣 삐약! 저쪽에 코인 있어!\n(' + Math.round(petTarget.d || 0 || Math.hypot(petTarget.c.x-player.x, petTarget.c.z-player.z)) + '칸쯤)';
   } else pl.style.display = 'none';
 
@@ -5077,7 +5101,9 @@ function buildHelp(){
     ['⏪ 단추','실수한 블록 되돌리기'],
     ['🎥 단추','녹화 시작 / 멈추기 — 유튜브 쇼츠 모양(세로)으로 저장돼요'],
     ['깃털 단추','도도 장로 — 말하면 만들어 줘요'],
-    ['M  또는 💬 단추','대화창 — 골라 쓰는 말로 친구와 이야기하기'],
+    ['M  또는 💬 단추','대화창 — 친구와 이야기하기'],
+    ['H  또는 👁️ 단추','화면 깨끗이 — 칸을 다 접었다 폈다'],
+    ['각 칸의 ▾','그 칸만 접기 / 펴기'],
     ['🎒 단추','도도 가방 — 내 섬 · 청사진 · 15초도전 · 친구 · 아이디어 · 제작대'],
     ['🎒 → 🏝️','내 섬 — 꾸미기 · 섬 이름 · 자랑 카드 · 섬 코드'],
     ['🎒 → 🛠️','도도 스튜디오 — 내 게임 만들기 · 친구 게임 하기'],
@@ -5092,6 +5118,8 @@ function buildHelp(){
     ['1 ~ 8','블록 고르기'],
     ['마우스','클릭하면 마우스로 둘러보기 (Esc 로 해제)'],
     ['가게 안으로','상점 열기'],
+    ['H  또는 👁️ 단추','화면 깨끗이 — 칸을 다 접었다 폈다'],
+    ['각 칸의 ▾','그 칸만 접기 / 펴기'],
     ['Z  또는 ⏪','실수한 블록 되돌리기 (80번까지)'],
     ['C','제작대 — 부순 재료로 특별 블록 만들기'],
     ['Tab 또는 🎒','도도 가방 — 내 섬 · 청사진 · 15초도전 · 친구 · 아이디어'],
@@ -9373,6 +9401,8 @@ $('#changenick').addEventListener('click', ()=>askNick(()=>renderFriends()));
 $('#ideago').addEventListener('click', sendIdea);
 $('#foldHud').addEventListener('click', ()=>toggleFold('hud'));
 $('#foldQ').addEventListener('click', ()=>toggleFold('q'));
+$('#aifold').addEventListener('click', ()=>toggleFold('ai'));
+$('#btnClean').addEventListener('click', foldAll);
 $('#foldTools').addEventListener('click', ()=>toggleFold('tools'));
 loadFold();
 $('#btnDodo').addEventListener('click', guard(openDodo));
@@ -9449,7 +9479,9 @@ addEventListener('keydown', e=>{
     if(!anyModal) guard(openBag)();
     return;
   }
-  if(e.code==='KeyM'){ Chat.toggle(); return; }     // 대화창은 섬·스튜디오·플레이 어디서나, 열려 있어도 닫히게
+  /* 이 둘은 섬·스튜디오·플레이 어디서나, 창이 열려 있어도 듣는다 */
+  if(e.code==='KeyM'){ Chat.toggle(); return; }      // 💬 대화창
+  if(e.code==='KeyH'){ foldAll(); return; }          // 👁️ 화면 깨끗이
   if(anyModal || shopOpen) return;
   if(e.code==='Enter'){ e.preventDefault(); aiFocus(); return; }
   /* 🛠️ 스튜디오 · 🎮 플레이 전용 키 — 섬 전용 키와 겹치지 않게 여기서 갈린다 */
@@ -11591,6 +11623,7 @@ window.BW = {player, setBlock, getBlock, scene, camera, renderer, voxels, W,H,D,
   comboOn(){ return comboOn; }, registerCoinForCombo,
   SKINS, buySkin, applySkin, openShop, closeShop, shopOpen(){ return shopOpen; },
   spawnGoldBlock, goldEvent, pets, SHOP, npc(){ return npcGroup; }, npcLine, leaveShop,
+  foldAll, toggleFold,
   tut, tutStart, tutSkip, TUT_STEPS, setTouchMode, touchMode(){ return touchMode; }, touch, Sound, setSoundOn,
   Bag, RECIPES, CRAFTED, craftOne, openCraft, closeCraft, hotbarList,
   Undo, DayNight, Lamps, cycleTimeMode,
