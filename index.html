@@ -828,7 +828,7 @@
   }
 
   /* 섬 꾸미기 단추 */
-  #decorgrid{display:grid; grid-template-columns:repeat(auto-fill,minmax(104px,1fr)); gap:9px;}
+  #decorgrid,#propgrid{display:grid; grid-template-columns:repeat(auto-fill,minmax(104px,1fr)); gap:9px;}
   .decor{
     border-radius:16px; padding:11px 6px; text-align:center; cursor:pointer;
     background:#f3eefc; box-shadow:0 4px 0 rgba(0,0,0,.12);
@@ -1558,6 +1558,9 @@
   </div>
   <div class="msub" style="margin:8px 0 0">마을 입구 간판에 이 이름이 걸려요.</div>
 
+  <div class="mlabel">🌷 하나씩 심기 — 고르면 블록 바 맨 끝에 들려요</div>
+  <div id="propgrid"></div>
+
   <div class="mlabel">✨ 한 번에 꾸미기 — 내가 보는 쪽에 만들어 줘요</div>
   <div id="decorgrid"></div>
 
@@ -1896,7 +1899,11 @@ const AIR=0, GRASS=1, DIRT=2, STONE=3, WOOD=4, LEAF=5, SAND=6, GLASS=7, RAINBOW=
       M_VANISH=27, M_BLINK=28, M_DODO=29, M_YES=30, M_NO=31,
       /* 🎈 물풍선 맞히기(슈팅) — 총이 아니라 물풍선이다.
          초등학생 게임이라 맞아서 아픈 것이 아니라 젖어서 터지는 쪽으로 갔다. */
-      M_TARGET=32, M_AMMO=33;
+      M_TARGET=32, M_AMMO=33,
+      /* 🌷 꾸미기 소품 — 네모 한 칸이 아니라 "진짜 모양"으로 서 있는 블록들.
+         지형 블록을 전부 조각내면 화면이 느려지지만, 소품은 수가 적어서
+         줄기·꽃잎처럼 여러 조각으로 세워도 괜찮다. 걸어서 지나갈 수 있다. */
+      FLOWER=34, SUNFLOW=35, TGRASS=36, MUSH=37, FENCE=38;
 
 const BLOCKS = {
   [GRASS]:  {name:'잔디',   icon:'🌱'},
@@ -1934,6 +1941,12 @@ const BLOCKS = {
   /* 과녁은 단단하다 — 걸어가서 닿는 게 아니라 물풍선을 맞혀야 터진다 */
   [M_TARGET]:{name:'과녁',       icon:'🎯', magic:true},
   [M_AMMO]: {name:'물풍선 상자', icon:'🎈', magic:true, pass:true, glow:true},
+  /* 🌷 소품 — prop:true 인 것은 네모가 아니라 제 모양대로 그려진다 */
+  [FLOWER]: {name:'꽃',     icon:'🌷', prop:true},
+  [SUNFLOW]:{name:'해바라기', icon:'🌻', prop:true},
+  [TGRASS]: {name:'풀',     icon:'🌿', prop:true},
+  [MUSH]:   {name:'버섯',   icon:'🍄', prop:true},
+  [FENCE]:  {name:'울타리', icon:'🪵', prop:true},
 };
 const BLOCK_COLOR = {
   [GRASS]:0x63c64d, [DIRT]:0x96653f, [STONE]:0x9aa0a8, [WOOD]:0x9c6b3f,
@@ -1945,11 +1958,16 @@ const BLOCK_COLOR = {
   [M_TRAP]:0xd2455c, [M_KEY]:0xffb03a, [M_DOOR]:0xa9722f, [M_SIGN]:0x7fc6ff,
   [M_CHECK]:0x4aa3ff,
   [M_VANISH]:0xc9b6ff, [M_BLINK]:0xff9f2e, [M_DODO]:0x8fd9cf, [M_YES]:0x4fd86a, [M_NO]:0xe4574f,
-  [M_TARGET]:0xff6b6b, [M_AMMO]:0x5fc9ff
+  [M_TARGET]:0xff6b6b, [M_AMMO]:0x5fc9ff,
+  [FLOWER]:0xff6d9e, [SUNFLOW]:0xffc82e, [TGRASS]:0x69b83f, [MUSH]:0xe4574f, [FENCE]:0xa9722f
 };
 const RENDER_TYPES = [GRASS,DIRT,STONE,WOOD,LEAF,SAND,GLASS,RAINBOW,GOLD,PATH_B,PATH_S,PATH_G,PLANK,TRAMP,LAMP,ICE,
   M_START,M_GOAL,M_COIN,M_STAR,M_TRAP,M_KEY,M_DOOR,M_SIGN,M_CHECK,
-  M_VANISH,M_BLINK,M_DODO,M_YES,M_NO,M_TARGET,M_AMMO];
+  M_VANISH,M_BLINK,M_DODO,M_YES,M_NO,M_TARGET,M_AMMO,
+  FLOWER,SUNFLOW,TGRASS,MUSH,FENCE];
+/* 🌷 소품 목록 — 꾸미기 창과 블록 바가 같이 쓴다 */
+const PROPS = [FLOWER, SUNFLOW, TGRASS, MUSH, FENCE];
+const isProp = t => t>=FLOWER && t<=FENCE;
 /* 마법 블록 가운데 "걸어 들어가서 닿는" 것들 (코인·함정·골인 …) */
 const MAGIC_LIST = [M_START,M_GOAL,M_COIN,M_STAR,M_TRAP,M_KEY,M_DOOR,M_SIGN,M_CHECK,
                     M_VANISH,M_BLINK,M_DODO,M_YES,M_NO,M_TARGET,M_AMMO];
@@ -2426,6 +2444,8 @@ const MATS = {};
 function buildMaterials(){
   for(const t of RENDER_TYPES){
     const def = BLOCKS[t], spec = TEX[t];
+    /* 🌷 소품은 무늬를 입히지 않는다 — 조각마다 색을 구워 넣어 놨다 */
+    if(def.prop){ MATS[t] = new THREE.MeshLambertMaterial({vertexColors:true}); continue; }
     const mk = (drawFn, i) => {
       const map = pixelTexture(drawFn, t*17+i*7+3);
       const o = {map:map};
@@ -2464,7 +2484,8 @@ const SPAWN = {x:32.5, y:0, z:36.5};
 
 function inside(x,y,z){ return x>=0&&x<W&&y>=0&&y<H&&z>=0&&z<D; }
 function getBlock(x,y,z){ return inside(x,y,z) ? voxels[IDX(x,y,z)] : AIR; }
-function solidAt(x,y,z){ return isSolidType(getBlock(x,y,z)); }
+/* 소품(꽃·풀…)은 몸이 부딪히지 않는다 — 꽃밭 한가운데로 걸어 들어갈 수 있게 */
+function solidAt(x,y,z){ const t = getBlock(x,y,z); return isSolidType(t) && !isProp(t); }
 
 function markDirty(x,z){
   if(x<0||x>=W||z<0||z>=D) return;
@@ -2668,13 +2689,29 @@ for(let ci=0; ci<NCH; ci++){
   chunkCap.push({});
 }
 
+/* 소품은 네모가 아니라 제 모양으로 그려야 하니, 청크마다 그 모양을 하나씩
+   복제해 둔다(화면 밖 판정을 청크 단위로 하려면 경계구가 청크마다 달라야 한다). */
+const chunkPropGeo = [];
+for(let ci=0; ci<NCH; ci++) chunkPropGeo.push({});
+function geoForChunk(ci, t){
+  const def = BLOCKS[t];
+  if(!def || !def.prop || !PROP_SHAPE[t]) return chunkGeo[ci];
+  let g = chunkPropGeo[ci][t];
+  if(!g){
+    g = PROP_SHAPE[t].clone();
+    g.boundingSphere = chunkGeo[ci].boundingSphere.clone();
+    chunkPropGeo[ci][t] = g;
+  }
+  return g;
+}
+
 const _m4 = new THREE.Matrix4();
 
 function opaqueAt(x,y,z){
   const t = getBlock(x,y,z);
   if(t===AIR) return false;
   const d = BLOCKS[t];
-  return !(d && d.transparent);
+  return !(d && (d.transparent || d.prop));   // 소품은 칸을 꽉 채우지 않으니 옆면을 가리지 않는다
 }
 /* 6면 중 하나라도 바깥에 드러나면 그린다 */
 function isExposed(x,y,z){
@@ -2719,7 +2756,7 @@ function rebuildChunk(ci){
     if(!mesh || chunkCap[ci][t] < n){
       if(mesh){ scene.remove(mesh); mesh.dispose(); }
       const cap = Math.max(32, Math.ceil(n*1.35) + 32);
-      mesh = new THREE.InstancedMesh(chunkGeo[ci], MATS[t], cap);
+      mesh = new THREE.InstancedMesh(geoForChunk(ci, t), MATS[t], cap);
       mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
       mesh.receiveShadow = t !== WATER;
       mesh.matrixAutoUpdate = false;
@@ -2744,6 +2781,11 @@ function rebuildChunk(ci){
     const g = chunkGeo[ci];
     g.boundingSphere.center.y = cy;
     g.boundingSphere.radius = Math.sqrt(2*(CH/2+1)*(CH/2+1) + hy*hy);
+    for(const k in chunkPropGeo[ci]){
+      const pg = chunkPropGeo[ci][k];
+      pg.boundingSphere.center.copy(g.boundingSphere.center);
+      pg.boundingSphere.radius = g.boundingSphere.radius;
+    }
   }
 
   visibleCount += total - chunkCount[ci];
@@ -2786,6 +2828,122 @@ function updateChunkShadows(){
       const want = near && +t !== WATER && !BLOCKS[t].transparent;
       if(mesh.castShadow !== want) mesh.castShadow = want;
     }
+  }
+}
+
+/* ═══════════════════════════════════════════════════
+   5.5 🌷 소품 모양 만들기 (꽃·풀·버섯·울타리)
+   ───────────────────────────────────────────────────
+   블록 하나를 네모 한 개로 그리면 색칠한 상자로만 보인다. 꽃은 꽃처럼
+   보여야 하니, 소품만 작은 네모 여러 개를 붙여 "진짜 모양"으로 세운다.
+   지형 블록까지 이렇게 하면 화면이 몇 배로 느려지지만, 소품은 수가 적다.
+   조각마다 색을 구워 넣어(vertexColors) 재료 하나로 여러 색을 낸다.
+   ═══════════════════════════════════════════════════ */
+/* 조각 하나 = 작은 네모. (가로,높이,세로, 놓을 자리 x,y,z, 색, 세워서 돌린 각도) */
+function propPiece(w,h,d, x,y,z, color, rotY){
+  const g = new THREE.BoxGeometry(w,h,d);
+  if(rotY) g.rotateY(rotY);
+  g.translate(x,y,z);
+  const n = g.attributes.position.count;
+  const arr = new Float32Array(n*3);
+  const c = new THREE.Color(color);
+  for(let i=0;i<n;i++){ arr[i*3]=c.r; arr[i*3+1]=c.g; arr[i*3+2]=c.b; }
+  g.setAttribute('color', new THREE.BufferAttribute(arr,3));
+  return g;
+}
+/* 조각들을 한 덩어리로 합친다 (three 기본 파일엔 합치는 도구가 없어서 직접 만든다) */
+function propMerge(parts){
+  let nv = 0, ni = 0;
+  for(const g of parts){ nv += g.attributes.position.count; ni += g.index.count; }
+  const pos = new Float32Array(nv*3), nor = new Float32Array(nv*3),
+        col = new Float32Array(nv*3), uv  = new Float32Array(nv*2);
+  const idx = new Uint16Array(ni);
+  let vo = 0, io = 0;
+  for(const g of parts){
+    pos.set(g.attributes.position.array, vo*3);
+    nor.set(g.attributes.normal.array,   vo*3);
+    col.set(g.attributes.color.array,    vo*3);
+    uv .set(g.attributes.uv.array,       vo*2);
+    const gi = g.index.array;
+    for(let k=0;k<gi.length;k++) idx[io+k] = gi[k] + vo;
+    vo += g.attributes.position.count; io += gi.length;
+    g.dispose();
+  }
+  const out = new THREE.BufferGeometry();
+  out.setAttribute('position', new THREE.BufferAttribute(pos,3));
+  out.setAttribute('normal',   new THREE.BufferAttribute(nor,3));
+  out.setAttribute('color',    new THREE.BufferAttribute(col,3));
+  out.setAttribute('uv',       new THREE.BufferAttribute(uv,2));
+  out.setIndex(new THREE.BufferAttribute(idx,1));
+  return out;
+}
+
+/* 한 칸의 속은 -0.5 ~ +0.5 이다. 바닥이 -0.5 라서 거기서부터 세운다. */
+const PROP_SHAPE = {};
+function buildPropShapes(){
+  const B = -0.5;                                   // 발밑
+  const STEM = 0x4f9e3a, STEM2 = 0x69b83f;
+
+  /* 🌷 꽃 — 초록 줄기에 잎 두 장, 위에 분홍 꽃잎 네 장과 노란 꽃술 */
+  {
+    const p = [propPiece(.10,.52,.10, 0, B+.26, 0, STEM)];
+    p.push(propPiece(.22,.05,.08,  .13, B+.22,  0, STEM2, 0.5));
+    p.push(propPiece(.22,.05,.08, -.13, B+.36,  0, STEM2, -0.5));
+    for(const [dx,dz] of [[.14,0],[-.14,0],[0,.14],[0,-.14]])
+      p.push(propPiece(.18,.30,.18, dx, B+.68, dz, 0xff6d9e));
+    p.push(propPiece(.15,.15,.15, 0, B+.86, 0, 0xffe45c));
+    PROP_SHAPE[FLOWER] = propMerge(p);
+  }
+  /* 🌻 해바라기 — 키가 크고, 해를 보느라 고개를 든 노란 얼굴.
+     얼굴은 따로 만들어 통째로 젖혀 준다. 누워 있으면 옆에서 볼 때
+     노란 막대로만 보여서 해바라기인 줄 모른다(실제로 그랬다). */
+  {
+    const p = [propPiece(.12,.84,.12, 0, B+.42, 0, STEM)];
+    p.push(propPiece(.28,.06,.09,  .17, B+.32, 0, STEM2, 0.45));
+    p.push(propPiece(.28,.06,.09, -.17, B+.54, 0, STEM2, -0.45));
+    const face = [propPiece(.32,.11,.32, 0,0,0, 0x7a4a24)];
+    for(let k=0;k<8;k++){
+      const a = k*Math.PI/4;
+      face.push(propPiece(.24,.07,.15, Math.cos(a)*.27, 0, Math.sin(a)*.27,
+                          k%2 ? 0xffb300 : 0xffc82e, -a));
+    }
+    const fg = propMerge(face);
+    fg.rotateX(-1.0);
+    fg.translate(0, B+.93, .09);
+    PROP_SHAPE[SUNFLOW] = propMerge([...p, fg]);
+  }
+  /* 🌿 풀 — 제각각 휘어 선 잎 일곱 장. 낮으면 땅에 묻혀 안 보인다 */
+  {
+    const p = [];
+    const blades = [[   0,    0, .52, STEM ,  .2],
+                    [ .18,  .07, .44, STEM2, -.3],
+                    [-.16, -.10, .40, STEM2,  .5],
+                    [ .09, -.19, .34, STEM , -.6],
+                    [-.07,  .19, .37, STEM2,  .1],
+                    [ .20, -.14, .28, STEM ,  .8],
+                    [-.20,  .13, .30, STEM , -.8]];
+    for(const [dx,dz,h,c,r] of blades) p.push(propPiece(.09,h,.07, dx, B+h/2, dz, c, r));
+    PROP_SHAPE[TGRASS] = propMerge(p);
+  }
+  /* 🍄 버섯 — 하얀 기둥에 빨간 갓, 하얀 점 */
+  {
+    const p = [propPiece(.17,.30,.17, 0, B+.15, 0, 0xf6efe0)];
+    p.push(propPiece(.46,.13,.46, 0, B+.36, 0, 0xe4574f));
+    p.push(propPiece(.30,.11,.30, 0, B+.47, 0, 0xd33f38));
+    for(const [dx,dz] of [[.14,.05],[-.10,.14],[.02,-.14]])
+      p.push(propPiece(.10,.05,.10, dx, B+.53, dz, 0xfff6ec));
+    PROP_SHAPE[MUSH] = propMerge(p);
+  }
+  /* 🪵 울타리 — 기둥 하나에 가로대 두 줄. 네 방향 모두 이어진다 */
+  {
+    const W1 = 0xa9722f, W2 = 0xc08a44;
+    const p = [propPiece(.18,1.0,.18, 0, 0, 0, W1)];
+    for(const y of [B+.34, B+.66]){
+      p.push(propPiece(1.0,.10,.08, 0, y, 0, W2));
+      p.push(propPiece(.08,.10,1.0, 0, y, 0, W2));
+    }
+    p.push(propPiece(.24,.09,.24, 0, B+.98, 0, W2));            // 기둥 모자
+    PROP_SHAPE[FENCE] = propMerge(p);
   }
 }
 
@@ -3351,6 +3509,7 @@ function saveNow(){
       island:state.island, decor:state.decor, clips:state.clips, aiDone:state.aiDone,
       theme:state.theme, look:state.look, tune:state.tune, tuneAt:state.tuneAt,
       hunt:state.hunt, huntLog:state.huntLog,
+      prop:propPick,
       pos:{x:player.x, y:player.y, z:player.z}, slot:selectedSlot
     }));
   }catch(e){ /* 저장 공간이 없어도 게임은 계속 */ }
@@ -3385,6 +3544,7 @@ function loadSave(){
   state.timeMode = d.timeMode || 'auto';
   state.lampNight = d.lampNight|0; state.undos = d.undos|0; state.shared = d.shared|0;
   state.nick = d.nick || ''; state.uid = d.uid || '';
+  propPick = (d.prop && isProp(d.prop)) ? d.prop : null;   // 🌷 지난번에 들고 있던 소품
   state.friends = d.friends || {}; state.invitedBy = d.invitedBy || '';
   state.thanksCode = d.thanksCode || ''; state.giftsFromInvite = d.giftsFromInvite|0;
   state.ideas = Array.isArray(d.ideas) ? d.ideas : [];
@@ -3475,7 +3635,10 @@ let selectedSlot = 0;
 
 function blockUnlocked(t){ if(!inIsland()) return true; return (UNLOCK_LEVEL[t] || 1) <= state.level; }
 
-const SLOT_KEY = ['1','2','3','4','5','6','7','8','9','0','-'];
+const SLOT_KEY = ['1','2','3','4','5','6','7','8','9','0','-','='];
+/* 🌷 지금 심기로 고른 소품. 꾸미기 창에서 고르면 블록 바 맨 끝에 한 칸이 생긴다.
+   소품 다섯 개를 블록 바에 늘 세워 두면 바가 너무 길어져 휴대폰에서 안 보인다. */
+let propPick = null;
 /* ── 📱 메뉴 접기 ──
    사헌 님 요청: "모바일에서 볼 때 메뉴들 접었다 폈다 할 수 있게 해 줘."
    칸을 아예 없애면 안 된다(아이가 못 찾는다). 접으면 제목이나 고른 블록
@@ -5387,7 +5550,21 @@ function closeCraft(){ craftOpen = false; $('#craft').style.display = 'none'; }
 /* 하단 블록 바 = 기본 8칸 + (한 번이라도 만들어 본) 제작 블록 */
 function hotbarList(){
   if(inStudio()) return Studio.bar();      // 단계(판 짓기 / 규칙 / 꾸미기)에 따라 다르다
-  return HOTBAR.concat(CRAFTED.filter(t=>state.seen[t]));
+  const base = HOTBAR.concat(CRAFTED.filter(t=>state.seen[t]));
+  return propPick ? base.concat([propPick]) : base;
+}
+/* 꾸미기 창에서 소품을 고르면 바로 그 칸이 잡힌다 */
+function pickProp(t){
+  propPick = t;
+  state.prop = t;
+  buildHotbar();
+  const HB = hotbarList();
+  selectedSlot = HB.length - 1;
+  buildHotbar();
+  closeIsland();
+  showHint('🌷 ' + BLOCKS[t].name + ' 을(를) 손에 들었어요. 땅을 보고 놓으면(E) 심어져요', 3200);
+  Sound.click();
+  saveSoon();
 }
 
 /* ═══════════════════════════════════════════════════
@@ -6741,6 +6918,18 @@ function closeBag(){ bagOpen = false; $('#bag').style.display = 'none'; }
 /* ── 🏝️ 내 섬 창 ── */
 let islandOpen = false;
 function islandMsg(t){ const el = $('#islandmsg'); if(el) el.textContent = t || ''; }
+function renderIslandProps(){
+  const grid = $('#propgrid');
+  if(!grid) return;
+  grid.innerHTML = '';
+  PROPS.forEach(t=>{
+    const el = document.createElement('div');
+    el.className = 'decor' + (propPick === t ? ' on' : '');
+    el.innerHTML = '<div class="cic">' + BLOCKS[t].icon + '</div><div class="cnm">' + BLOCKS[t].name + '</div>';
+    el.addEventListener('click', ()=>pickProp(t));
+    grid.appendChild(el);
+  });
+}
 function renderIslandDecor(){
   const grid = $('#decorgrid');
   grid.innerHTML = '';
@@ -6767,6 +6956,7 @@ function openIsland(){
   if(document.pointerLockElement) document.exitPointerLock();
   $('#islandname').value = state.island || '';
   $('#islandname').placeholder = islandName();
+  renderIslandProps();
   renderIslandDecor();
   renderThemes();
   renderHunt();
@@ -6953,6 +7143,7 @@ function wrapText(g, text, cx, y, maxW, lh, maxLines){
 /* ---- 섬 꾸미기: 발 앞에 한 번에 지어 주는 장식들 ---- */
 const DECOR = [
   {id:'flower', icon:'🌷', name:'꽃밭',      size:5},
+  {id:'sunny',  icon:'🌻', name:'해바라기밭', size:5},
   {id:'fount',  icon:'⛲', name:'분수',      size:5},
   {id:'camp',   icon:'🔥', name:'모닥불',    size:3},
   {id:'pillar', icon:'🌈', name:'무지개 기둥', size:3},
@@ -7008,9 +7199,19 @@ function buildDecor(id){
   Undo.begin();                     // 여기서 놓는 블록은 ⏪ 한 번에 전부 지워진다
 
   if(id === 'flower'){
+    /* 예전엔 분홍 네모를 바둑판으로 깔아서 꽃인지 알아볼 수 없었다.
+       이제 진짜 모양으로 선 꽃·해바라기·풀·버섯을 섞어 심는다. */
+    const PLANT = [FLOWER, FLOWER, FLOWER, TGRASS, TGRASS, SUNFLOW, MUSH];
+    const r = makeRng(x0*31 + z0*17 + 7);
     for(let x=0;x<s;x++) for(let z=0;z<s;z++){
       put(x0+x, gy-1, z0+z, GRASS);
-      if((x+z) % 2 === 0) put(x0+x, gy, z0+z, RAINBOW);
+      if(r() < 0.78) put(x0+x, gy, z0+z, PLANT[(r()*PLANT.length)|0]);
+    }
+  } else if(id === 'sunny'){
+    /* 키 큰 해바라기가 줄지어 선 밭. 사이사이에 풀을 깔아 땅이 비지 않게 */
+    for(let x=0;x<s;x++) for(let z=0;z<s;z++){
+      put(x0+x, gy-1, z0+z, GRASS);
+      put(x0+x, gy, z0+z, (x % 2 === 0 && z % 2 === 0) ? SUNFLOW : TGRASS);
     }
   } else if(id === 'fount'){
     for(let x=0;x<s;x++) for(let z=0;z<s;z++){
@@ -7020,6 +7221,11 @@ function buildDecor(id){
     put(x0+mid, gy+1, z0+mid, STONE);
     put(x0+mid, gy+2, z0+mid, GLASS);
     put(x0+mid, gy+3, z0+mid, WATER);
+    /* 돌 테두리 위에 꽃을 한 바퀴 — 분수 둘레가 허전하지 않게 */
+    for(let x=0;x<s;x++) for(let z=0;z<s;z++){
+      const edge = (x===0||z===0||x===s-1||z===s-1);
+      if(edge && (x+z) % 2 === 0) put(x0+x, gy+1, z0+z, FLOWER);
+    }
   } else if(id === 'camp'){
     for(let x=0;x<s;x++) for(let z=0;z<s;z++)
       if(x===0||z===0||x===s-1||z===s-1) put(x0+x, gy, z0+z, STONE);
@@ -7034,6 +7240,8 @@ function buildDecor(id){
       put(x0+mid+dx, gy+5, z0+mid+dz, LEAF);
     put(x0+mid, gy+6, z0+mid, LEAF);
     put(x0+mid+1, gy+4, z0+mid, GOLD);            // 코코넛
+    for(const [dx,dz] of [[-1,0],[1,0],[0,-1],[0,1]])
+      put(x0+mid+dx, gy, z0+mid+dz, TGRASS);       // 밑동 둘레 풀
   } else if(id === 'heart'){
     const ROWS = ['.XX.XX.','XXXXXXX','XXXXXXX','.XXXXX.','..XXX..','...X...'];
     ROWS.forEach((row, ry)=>{
@@ -7041,13 +7249,17 @@ function buildDecor(id){
         if(row[x]==='X') put(x0+x, gy + (ROWS.length-1-ry), z0+mid, RAINBOW);
     });
   } else if(id === 'fence'){
+    /* 예전엔 통나무 네모를 둘러 세워서 담벼락처럼 보였다.
+       이제 기둥과 가로대가 있는 진짜 울타리다 — 걸어서 지나갈 수도 있다. */
     for(let x=0;x<s;x++) for(let z=0;z<s;z++){
       const edge = (x===0||z===0||x===s-1||z===s-1);
       if(!edge) continue;
       const corner = (x===0||x===s-1) && (z===0||z===s-1);
-      put(x0+x, gy, z0+z, WOOD);
+      put(x0+x, gy, z0+z, corner ? WOOD : FENCE);
       if(corner) put(x0+x, gy+1, z0+z, LAMP);
     }
+    for(let x=2;x<s-2;x++) for(let z=2;z<s-2;z++)
+      if((x+z) % 2 === 0) put(x0+x, gy, z0+z, TGRASS);      // 울타리 안쪽 풀밭
   } else if(id === 'slide'){
     /* 🌈 무지개 미끄럼틀 — 계단으로 올라가서 얼음으로 주욱 내려온다 */
     const top = 9;
@@ -9350,6 +9562,7 @@ function drawHat(g, color, tall){
    13. 시작!
    ═══════════════════════════════════════════════════ */
 buildTextures();
+buildPropShapes();          // 🌷 꽃·풀·버섯·울타리 모양 만들기
 buildMaterials();
 loadSave();
 modeBoot();                  // 🚪 어느 방으로 들어왔는지 제일 먼저 본다 (섬 / 스튜디오 / 플레이)
@@ -9841,6 +10054,7 @@ const DO_BUILD = [
   {k:['무지개 기둥','무지개기둥','기둥'],  decor:'pillar'},
   {k:['전망대','타워','탑'],              decor:'tower'},
   {k:['꽃밭','꽃'],                       decor:'flower'},
+  {k:['해바라기밭','해바라기'],           decor:'sunny'},
   {k:['분수'],                            decor:'fount'},
   {k:['모닥불','캠프파이어','캠프'],       decor:'camp'},
   {k:['야자수','야자'],                   decor:'palm'},
@@ -11775,6 +11989,7 @@ window.BW = {player, setBlock, getBlock, scene, camera, renderer, voxels, W,H,D,
   encodeWorld, decodeWorld, openShare, TRAMP, LAMP, ICE,
   BAG_ITEMS, openBag, closeBag,
   DECOR, buildDecor, openIsland, closeIsland, islandName, islandCode, decodeIsland,
+  FLOWER, SUNFLOW, TGRASS, MUSH, FENCE, PROPS, isProp, PROP_SHAPE, solidAt, heightMap,
   visitIsland, goHome, makeBragCard, savePhoto, paintSign, saveIslandName,
   isVisiting(){ return !!VISIT; }, visitInfo(){ return VISIT; },
   THEMES, themeById, applyTheme, renderThemes,
