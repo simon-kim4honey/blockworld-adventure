@@ -746,8 +746,12 @@
      로블록스 스튜디오는 AI Assistant 를 오른쪽에 '늘 떠 있는 창'으로 둔다.
      창을 열고 닫는 순간 아이는 "AI에게 물어본다"는 생각을 잊어버린다.
      그래서 여기서는 왼쪽에 붙박이로 두고, 가운데 화면은 절대 가리지 않는다. */
+  /* 예전엔 top·bottom 을 둘 다 못박아서 말이 두 줄뿐이어도 칸이 화면 높이를
+     꽉 채웠다(왼쪽이 통째로 가려졌다). 이제는 말한 만큼만 커지고, 길어지면
+     그때 안에서 스스로 넘긴다. */
   #aidock{
-    position:fixed; left:12px; top:76px; bottom:100px; z-index:31; display:none;
+    position:fixed; left:12px; top:76px; z-index:31; display:none;
+    max-height:calc(100vh - 190px);
     flex-direction:column; width:min(300px,30vw);
     background:linear-gradient(#fffdf7,#f1ecff); border-radius:18px; padding:10px;
     box-shadow:0 5px 0 rgba(0,0,0,.16), 0 12px 26px rgba(0,0,0,.28); pointer-events:auto;
@@ -762,7 +766,8 @@
   }
   #adchat{
     background:#f3eefc; border-radius:14px; padding:10px; margin-bottom:8px;
-    flex:1; min-height:0; overflow-y:auto; display:flex; flex-direction:column; gap:8px;
+    flex:0 1 auto; min-height:0; max-height:44vh;
+    overflow-y:auto; display:flex; flex-direction:column; gap:8px;
   }
   #adchat .dobub{font-size:14px; padding:7px 11px; max-width:94%;}
   #adchips{display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px; flex:none;
@@ -893,6 +898,16 @@
     max-width:96vw; pointer-events:auto;
   }
   body.studio #stbar{display:flex;}
+  /* 📱 휴대폰에서는 이 띠가 제 폭을 못 찾아 단추가 세로로 8줄까지 쌓였다
+     (화면 높이의 절반을 먹었다). 가로를 꽉 쓰게 하고 글씨를 줄여 두 줄에
+     들어가게 한다. 게임 이름은 만드는 동안 필요 없어서 뺀다. */
+  body.phone #stbar{
+    left:8px; right:8px; transform:none; width:auto; max-width:none;
+    gap:5px; padding:6px 8px;
+  }
+  body.phone #stname{display:none;}
+  body.phone .stbtn{font-size:12.5px; padding:6px 8px; border-radius:10px;}
+  body.phone .stchip{font-size:12px; padding:6px 8px; border-radius:10px;}
   #stname{font-size:17px; font-weight:900; cursor:pointer; padding:3px 8px; border-radius:10px;}
   #stname:hover{background:rgba(0,0,0,.06);}
   #ststeps{display:flex; gap:6px;}
@@ -917,6 +932,14 @@
     flex-direction:column; gap:6px; align-items:flex-end; pointer-events:auto; max-width:40vw;
   }
   body.studio #stside{display:flex;}
+  /* 오른쪽 동그란 단추들이 이 칸 밑에 깔려 안 눌리던 것 —
+     차례표를 단추 줄 왼쪽으로 옮겨 서로 안 겹치게 한다. */
+  body.studio #stside{right:120px; max-width:min(40vw, 260px);}
+  body.phone.studio #stside{right:104px; max-width:52vw;}
+  /* 왼쪽으로 옮기면 가운데 위 띠 밑에 깔린다 — 띠 높이만큼 내려 준다.
+     띠는 화면에 따라 한 줄이 되기도 두 줄이 되기도 해서 layoutUI 가 실제
+     높이를 재서 --stbarh 에 넣어 준다. */
+  body.studio #stside{top:calc(var(--stbarh, 76px) + 14px);}
   /* 🎯 만들기 차례표 — 게임이 완성되기까지 뭘 해야 하는지 늘 보이게 */
   #stquest{
     background:rgba(255,253,247,.94); border-radius:16px; padding:10px 11px;
@@ -924,6 +947,14 @@
   }
   #stqhead{font-weight:900; font-size:14px; display:flex; align-items:center; gap:6px;}
   #stqhead span{margin-left:auto; font-size:12px; opacity:.6;}
+  /* 🎯 만들기 차례표를 접으면 제목 줄만 남는다 */
+  body.fold-stq #stqbar,
+  body.fold-stq #stquest .stq,
+  body.fold-stq #stqdone{display:none;}
+  body.fold-stq #stquest{padding:8px 10px;}
+  /* 접었을 때도 "지금 할 일" 한 줄은 남겨 둔다 — 그게 이 칸의 쓸모다 */
+  body.fold-stq #stquest .stq.now{display:flex;}
+  body.fold-stq #stquest .stq.now .qtip{display:none;}
   #stqbar{height:7px; border-radius:99px; background:#e7e1f5; margin:7px 0 8px; overflow:hidden;}
   #stqfill{height:100%; background:linear-gradient(90deg,#ffcf3f,#ff9f1a); width:0; transition:width .3s ease;}
   .stq{
@@ -1193,8 +1224,11 @@
   body.fold-tools #tools .tool{display:none;}
   body.fold-tools #tools #btnBag{display:block;}
   /* 휴대폰은 자판이 없어 M키로 대화창을 못 연다. 그래서 단추 칸을 접어도
-     💬 대화 단추는 남겨 둔다 (자판 없이 손가락으로 열 수 있게). */
-  body.phone.fold-tools #tools #btnChat{display:block;}
+     💬 대화 단추는 남겨 둔다 (자판 없이 손가락으로 열 수 있게).
+     🛠 스튜디오도 남긴다 — 게임 만들기는 이 게임의 큰 기둥이라
+     접어 두면 아이가 찾지를 못한다. */
+  body.phone.fold-tools #tools #btnChat,
+  body.phone.fold-tools #tools #btnStudio{display:block;}
 
   /* 🎥 녹화 */
   #recdot{
@@ -3447,13 +3481,17 @@ const SLOT_KEY = ['1','2','3','4','5','6','7','8','9','0','-'];
    칸을 아예 없애면 안 된다(아이가 못 찾는다). 접으면 제목이나 고른 블록
    하나는 남겨서 어디 있었는지 알 수 있게 한다. */
 const FOLD_KEY = 'dodo_fold';
-const fold = {hud:0, q:0, bar:0, tools:0, ai:0};
+/* stq = 🎯 만들기 차례표, dock = 🪶 도도AI 붙박이 칸 (둘 다 스튜디오 전용) */
+const fold = {hud:0, q:0, bar:0, tools:0, ai:0, stq:0, dock:0};
 function applyFold(){
   for(const k in fold) document.body.classList.toggle('fold-' + k, !!fold[k]);
   const mark = (id, on)=>{ const el = $(id); if(el) el.textContent = on ? '▸' : '▾'; };
   mark('#foldHud', fold.hud); mark('#foldQ', fold.q);
   mark('#barfold', fold.bar); mark('#foldTools', fold.tools);
-  mark('#aifold', fold.ai);
+  mark('#aifold', fold.ai);   mark('#stqfold', fold.stq);
+  /* 🪶 붙박이 칸은 예전부터 ➖/➕ 를 쓰던 자리라 그 모양을 지킨다 */
+  const ad = $('#adfold'); if(ad) ad.textContent = fold.dock ? '➕' : '➖';
+  document.body.classList.toggle('adfold', !!fold.dock);
   if(typeof layoutUI === 'function') layoutUI();
 }
 function toggleFold(k){
@@ -3481,6 +3519,9 @@ function loadFold(){
      — 블록 바·퀘스트·도도AI 줄·단추 칸 전부 ▾ 로 접힌 채로 시작하고,
      아이가 필요할 때 ▾/▸ 를 눌러 펼 수 있다. */
   else if(innerWidth <= 560){ fold.q = 1; fold.bar = 1; fold.ai = 1; fold.tools = 1; }
+  /* 스튜디오의 글 많은 두 칸(🎯 만들기 차례표 · 🪶 도도AI)은 화면이 넉넉하지
+     않으면 접은 채로 시작한다. 펼쳐 두면 만들 자리가 가운데 조금밖에 안 남는다. */
+  if(!d && (innerWidth <= 1100 || innerHeight <= 700)){ fold.stq = 1; fold.dock = 1; }
   applyFold();
 }
 
@@ -8119,6 +8160,14 @@ const Studio = (function(){
     const head = document.createElement('div');
     head.id = 'stqhead';
     head.innerHTML = '🎯 만들기 차례<span>' + done + ' / ' + plan.length + '</span>';
+    /* 접기 단추 — 섬 화면의 다른 칸들과 같게. 접으면 제목 + 몇 개 했는지만 남는다 */
+    const fb = document.createElement('button');
+    fb.className = 'foldbtn';
+    fb.id = 'stqfold';
+    fb.textContent = fold.stq ? '▸' : '▾';
+    fb.title = '만들기 차례표 접기 / 펴기';
+    fb.addEventListener('click', (e)=>{ e.stopPropagation(); toggleFold('stq'); });
+    head.appendChild(fb);
     box.appendChild(head);
     const bar = document.createElement('div');
     bar.id = 'stqbar';
@@ -8582,6 +8631,14 @@ function layoutUI(){
 
   document.body.classList.remove('rowtools');
   tools.style.top = ''; tools.style.transform = '';
+
+  /* 스튜디오 위 띠는 화면 폭에 따라 한 줄이 되기도 두 줄이 되기도 한다.
+     실제 높이를 재 두면 오른쪽 차례표가 띠 밑에 깔리지 않는다. */
+  const stbar = $('#stbar');
+  if(stbar && document.body.classList.contains('studio')){
+    const b = stbar.getBoundingClientRect();
+    if(b.height) document.documentElement.style.setProperty('--stbarh', Math.round(b.bottom) + 'px');
+  }
 
   const qb = quests ? quests.getBoundingClientRect().bottom : 0;
   const hbr = hotbar ? hotbar.getBoundingClientRect() : null;
@@ -9469,11 +9526,24 @@ $('#adinput').addEventListener('keydown', e=>{
   /* 글을 쓰는 중에 Esc 를 누르면 스튜디오가 꺼지면 안 된다 */
   if(e.code==='Escape'){ e.stopPropagation(); e.target.blur(); }
 });
-$('#adfold').addEventListener('click', ()=>{
-  const f = document.body.classList.toggle('adfold');
-  $('#adfold').textContent = f ? '➕' : '➖';
-  Sound.click();
-});
+/* 🪶 붙박이 칸 접기 — 섬 화면의 다른 칸들과 같은 장치(fold)를 쓴다.
+   그래야 👁️ 단추 한 번에 스튜디오 칸들도 같이 접힌다. */
+$('#adfold').addEventListener('click', ()=>toggleFold('dock'));
+
+/* 위 띠는 화면 폭에 따라 한 줄이 됐다 두 줄이 됐다 한다. 한 번만 재 두면
+   처음 잰 값(한 줄)에 묶여서 두 줄이 됐을 때 차례표가 띠 밑에 깔린다.
+   그래서 띠 크기가 바뀔 때마다 다시 재 준다. */
+(function watchStBar(){
+  const bar = $('#stbar');
+  if(!bar) return;
+  const set = ()=>{
+    const b = bar.getBoundingClientRect();
+    if(b.height) document.documentElement.style.setProperty('--stbarh', Math.round(b.bottom) + 'px');
+  };
+  if(window.ResizeObserver) new ResizeObserver(set).observe(bar);
+  addEventListener('resize', set);
+  set();
+})();
 $('#ideawhere').addEventListener('keydown', e=>{ if(e.code==='Enter') $('#ideawhy').focus(); });
 $('#ideawhy').addEventListener('keydown', e=>{ if(e.code==='Enter') sendIdea(); });
 $('#ideainput').addEventListener('keydown', e=>{ if(e.code==='Enter') sendIdea(); });
@@ -10103,7 +10173,9 @@ function doHello(){
 function openDodo(){
   /* 붙박이가 켜져 있으면 창을 또 띄우지 않는다 — 이미 옆에 떠 있으니까 */
   if(aiDock){
-    document.body.classList.remove('adfold');
+    /* 아이가 🪶 를 눌러 말을 걸었으니 접혀 있었으면 펴 준다 */
+    if(fold.dock){ fold.dock = 0; applyFold();
+      try{ localStorage.setItem(FOLD_KEY, JSON.stringify(fold)); }catch(e){} }
     /* 마우스가 화면에 붙잡혀 있으면 글자를 칠 수 없다 */
     if(document.pointerLockElement) document.exitPointerLock();
     doFocus();
@@ -10132,7 +10204,7 @@ function setAiDock(on){
   aiDock = !!on;
   if(aiDock){
     closeDodo();
-    document.body.classList.remove('adfold');
+    /* 여기서 펴 버리면 좁은 화면에서 접어 둔 뜻이 없어진다 — 접힘 상태는 그대로 둔다 */
     doHello();
     doDrawAll();
     doChips();
