@@ -10652,8 +10652,13 @@ function aiSend(){
    🪶 를 누르면 그 방에 도도AI 를 부른다. 두 사람이 동시에 부르면 같은 대답이
    두 번 뜨기 때문에, "지금 도도AI 를 맡은 사람" 을 서버가 한 명으로 정해 준다.
 
-   서버 주소를 안 넣으면 🧪 혼자 시험 모드로 돈다(같은 컴퓨터의 창끼리만).
+   대화 서버 주소는 게임에 미리 적어 둔다(CHAT_URL_DEFAULT). 아이가 주소를
+   치게 하면 아무도 대화창을 못 쓴다 — 켜면 바로 되는 게 맞다. ⚙️ 는 다른
+   서버를 쓰고 싶은 사람(어른)을 위한 것이지 아이가 볼 곳이 아니다.
+   ⚙️ 에서 "혼자" 라고 치면 🧪 혼자 시험 모드(같은 컴퓨터의 창끼리만)로 간다.
    ═══════════════════════════════════════════════════ */
+const CHAT_URL_DEFAULT = 'https://dodoblock-chat.kim4honey.workers.dev';
+const CHAT_URL_SOLO    = '-';     // 혼자 시험 모드를 골랐다는 표시
 const CHAT_URL_KEY  = 'dodo_chat_url';
 const CHAT_MUTE_KEY = 'dodo_chat_mute';
 const CHAT_DEMO_KEY = 'dodo_chat_demo:';
@@ -10797,11 +10802,24 @@ function chatAiReply(t, info){
 
 /* ── 말과 게임 코드를 나르는 부분. 서버가 있으면 서버로, 없으면 이 컴퓨터 안에서만 ── */
 const ChatNet = {
-  url(){ try{ return localStorage.getItem(CHAT_URL_KEY) || ''; }catch(e){ return ''; } },
+  /* 아무것도 안 정했으면 게임에 적어 둔 주소를 쓴다 — 아이는 아무것도 안 해도 된다 */
+  url(){
+    let u = null;
+    try{ u = localStorage.getItem(CHAT_URL_KEY); }catch(e){ return CHAT_URL_DEFAULT; }
+    if(u === null) return CHAT_URL_DEFAULT;
+    return u === CHAT_URL_SOLO ? '' : (u || CHAT_URL_DEFAULT);
+  },
+  isDefault(){
+    try{ return localStorage.getItem(CHAT_URL_KEY) === null; }catch(e){ return true; }
+  },
   setUrl(u){
     u = (u||'').trim().replace(/\/+$/,'');
-    try{ u ? localStorage.setItem(CHAT_URL_KEY, u) : localStorage.removeItem(CHAT_URL_KEY); }catch(e){}
+    try{
+      if(!u) localStorage.removeItem(CHAT_URL_KEY);            // 비우면 기본 서버로
+      else   localStorage.setItem(CHAT_URL_KEY, u);
+    }catch(e){}
   },
+  setSolo(){ try{ localStorage.setItem(CHAT_URL_KEY, CHAT_URL_SOLO); }catch(e){} },
   live(){ return !!this.url(); },
 
   async poll(room, since, aiUid){
@@ -11096,17 +11114,24 @@ const Chat = {
   },
 
   gear(){
-    const now = ChatNet.url();
+    const now = ChatNet.isDefault() ? '' : ChatNet.url();
     const v = prompt(
-      '대화 서버 주소를 넣어 주세요.\n' +
-      '비워 두면 🧪 혼자 시험 모드로 돌아요(같은 컴퓨터의 다른 창끼리만).\n\n' +
-      '예) https://dodoblock-chat.내계정.workers.dev', now);
+      '대화 서버 주소 (어른용)\n' +
+      '그냥 두면 도도블록 서버를 씁니다 — 아이는 아무것도 안 해도 돼요.\n' +
+      '"혼자" 라고 치면 🧪 혼자 시험 모드(같은 컴퓨터의 창끼리만)로 가요.\n\n' +
+      '지금: ' + (ChatNet.url() || '🧪 혼자 시험'), now);
     if(v === null) return;
-    if(v.trim() && !/^https:\/\//.test(v.trim())){
-      showHint('😢 https:// 로 시작하는 주소여야 해요', 2600); return;
+    const t = v.trim();
+    if(t === '혼자' || t.toLowerCase() === 'solo'){
+      ChatNet.setSolo();
+      showHint('🧪 혼자 시험 모드로 바꿨어요', 2400);
+    }else{
+      if(t && !/^https:\/\//.test(t)){
+        showHint('😢 https:// 로 시작하는 주소여야 해요', 2600); return;
+      }
+      ChatNet.setUrl(t);
+      showHint(ChatNet.isDefault() ? '✅ 도도블록 서버를 씁니다' : '✅ 대화 서버를 바꿨어요', 2400);
     }
-    ChatNet.setUrl(v);
-    showHint(ChatNet.url() ? '✅ 대화 서버를 연결했어요' : '🧪 혼자 시험 모드로 바꿨어요', 2400);
     this.go(this.room === 'plaza' ? 'plaza' : 'island');
   }
 };
