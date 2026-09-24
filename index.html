@@ -1056,14 +1056,19 @@
   #cave.on{display:block;}
   #cavecv{position:absolute; inset:0; width:100%; height:100%; display:block; image-rendering:pixelated;}
   #cavehud{
-    position:absolute; top:10px; left:50%; transform:translateX(-50%);
-    display:flex; gap:7px; flex-wrap:wrap; justify-content:center; pointer-events:none;
+    position:absolute; top:8px; left:8px; right:58px;
+    display:flex; gap:5px; justify-content:center; pointer-events:none;
   }
   #cavehud .cv{
-    background:rgba(255,255,255,.92); border-radius:14px; padding:6px 12px;
-    font-size:16px; font-weight:900; color:#3b3350; box-shadow:0 3px 0 rgba(0,0,0,.16);
+    background:rgba(255,255,255,.92); border-radius:13px; padding:5px 9px;
+    font-size:15px; font-weight:900; color:#3b3350; box-shadow:0 3px 0 rgba(0,0,0,.16);
+    white-space:nowrap;
   }
-  #cavehud .cvbtn{pointer-events:auto; cursor:pointer; border:0; font-family:inherit;}
+  #cvout{
+    position:absolute; top:8px; right:8px; width:42px; height:42px; border-radius:50%;
+    border:0; font-family:inherit; font-size:20px; cursor:pointer;
+    background:rgba(255,255,255,.92); box-shadow:0 3px 0 rgba(0,0,0,.16);
+  }
   #cavepad{
     position:absolute; left:0; right:0; bottom:14px; display:none;
     justify-content:space-between; padding:0 16px; pointer-events:none;
@@ -1098,7 +1103,7 @@
   }
   .cstg.on{background:linear-gradient(#ffe6a8,#ffcf66); box-shadow:0 3px 0 #d9a63a;}
   @media (max-width:700px){
-    #cavehud .cv{font-size:14px; padding:5px 10px;}
+    #cavehud .cv{font-size:12px; padding:4px 6px; border-radius:10px;}
     #covic{font-size:44px;} #covtitle{font-size:21px;} #covsub{font-size:14px;}
   }
   .gtitle{font-size:18px; font-weight:900;}
@@ -1472,9 +1477,10 @@
   <div id="cavehud">
     <div class="cv" id="cvstage">1단계</div>
     <div class="cv" id="cvcoin">🪙 0</div>
-    <div class="cv" id="cvlife">❤️❤️❤️</div>
-    <button class="cv cvbtn" id="cvout">🏝️ 나가기</button>
+    <div class="cv" id="cvlife">🧗 0</div>
+    <div class="cv" id="cvtime">⏱️ -</div>
   </div>
+  <button id="cvout" title="섬으로 나가기 (Esc)">🏝️</button>
   <div id="cavepad">
     <div class="cpgrp">
       <button class="cpad" id="cpL">◀</button>
@@ -4461,9 +4467,9 @@ function petHowNext(){
   const left = PETS.filter(p => !hasPet(p.id));
   if(!left.length) return '친구를 다 모았어요! 게임을 하나 지우면 그 친구가 새 게임을 맡아 줘요.';
   const p = left[0];
-  if(p.how === 'level')  return p.icon + ' ' + p.name + ' 은(는) 레벨 ' + p.lv + '이 되면 와요. (지금 레벨 ' + state.level + ')';
-  if(p.how === 'friend') return p.icon + ' ' + p.name + ' 은(는) 친구 1명을 초대하면 와요. 🎁 단추를 눌러 보세요.';
-  return p.icon + ' ' + p.name + ' 의 🥚 알은 🛒 상점에서 코인 ' + p.price + '개로 살 수 있어요. (지금 ' + state.coins + '개)';
+  if(p.how === 'level')  return p.icon + ' ' + p.name + ' — 레벨 ' + p.lv + '이 되면 와요. (지금 레벨 ' + state.level + ')';
+  if(p.how === 'friend') return p.icon + ' ' + p.name + ' — 친구 1명을 초대하면 와요. 🎁 단추를 눌러 보세요.';
+  return p.icon + ' ' + p.name + ' — 🥚 알을 🛒 상점에서 코인 ' + p.price + '개로 살 수 있어요. (지금 ' + state.coins + '개)';
 }
 
 /* ---- 퀘스트 목록 ---- */
@@ -4854,7 +4860,7 @@ function buyEgg(id){
   state.eggs = state.eggs || {};
   state.eggs[id] = 1;
   Sound.fanfare();
-  popText('🥚 ' + p.icon + ' ' + p.name + ' 가 깨어났어요!', '#7ae582');
+  popText('🥚 ' + p.icon + ' ' + p.name + ' 깨어났어요!', '#7ae582');
   showHint(p.icon + ' ' + p.name + ' 가 게임 한 칸을 맡아 줘요. 🛠️ 에서 새 게임을 만들어 보세요!', 4200);
   updateHud(); renderShop(); saveSoon();
 }
@@ -8806,7 +8812,7 @@ function renderStudioHome(){
     el.innerHTML =
       '<div class="gtitle">' + kindDef(g.kind).icon + ' ' + escapeHtml(g.title) + '</div>' +
       '<div class="gsub">' +
-        (g.pet && petDef(g.pet) ? petDef(g.pet).icon + ' ' + petDef(g.pet).name + '가 맡았어요 · '
+        (g.pet && petDef(g.pet) ? petDef(g.pet).icon + ' ' + petDef(g.pet).name + ' 담당 · '
                                 : '👫 친구에게 받은 게임 · ') +
         kindDef(g.kind).name + ' · ' +
         goalDef(g.rules.goal).icon + ' ' + goalDef(g.rules.goal).name +
@@ -8855,7 +8861,7 @@ function renderStudioHome(){
       Games.del(g.id);
       Sound.click();
       $('#shmsg').style.color = '#38b862';
-      $('#shmsg').textContent = p ? '🗑️ 지웠어요. ' + p.icon + ' ' + p.name + ' 가 다시 비었어요!'
+      $('#shmsg').textContent = p ? '🗑️ 지웠어요. ' + p.icon + ' ' + p.name + ' 가 다시 쉬고 있어요!'
                                   : '🗑️ 지웠어요.';
       renderStudioHome();
     });
@@ -8893,7 +8899,7 @@ function renderStudioHome(){
       }
       const g = newGame(k.name + ' ' + (Games.all().length + 1), shGround || k.ground, k.id, pet.id);
       Games.put(g);
-      popText(pet.icon + ' ' + pet.name + '가 맡았어요!', '#7ae582');
+      popText(pet.icon + ' ' + pet.name + ' 담당!', '#7ae582');
       modeGo('studio', g);
     });
     nb.appendChild(el);
@@ -9056,6 +9062,7 @@ function frame(t){
 
   if(jumpBuffer>0) jumpBuffer -= dt;
 
+  if(caveOpen){ lastT = now; return; }   // 🚪 코인 게임이 떠 있으면 블록 화면은 쉰다
   if(started) stepGame(dt);
   Particles.update(dt);
   sparkles.update(dt);
@@ -12093,27 +12100,31 @@ setTimeout(bootShortCode, 1200);
    섬의 코인은 한 번 먹으면 없어진다. 그래서 코인을 계속 벌 곳이 필요했고,
    그 코인이 🥚 알 값이 되어 🐣 친구가 되고, 친구가 게임 한 칸이 된다.
 
-   이 방만 화면이 다르다. 블록 세상(Three.js)이 아니라 납작한 2D 판이고,
-   마리오처럼 옆에서 본다. 그래서 블록 쪽 코드를 한 줄도 안 건드린다 —
-   화면 위에 canvas 를 한 장 덮고, 그 위에서만 돈다.
+   ★ 세로형이다 (사헌 님 결정). 옆으로 가는 판이 아니라 위로 올라가는 탑이라
+   휴대폰을 눕히지 않아도 된다. 판이 길쭉하고 화면도 길쭉해서 딱 맞는다.
 
-   조작: ← → 달리기 · ↑/스페이스 점프 · ↓ 사다리 내려가기 · Esc 나가기
-   칸 번호: 0 빈칸 · 1 땅 · 2 나무 발판(위에서만 밟힌다) · 3 사다리 ·
-            4 물(빠지면 목숨 하나) · 5 코인 · 6 깃발
+   이 방만 화면이 다르다. 블록 세상(Three.js)이 아니라 납작한 2D 판이라,
+   블록 쪽 코드를 건드리지 않는다 — 화면 위에 canvas 를 한 장 덮고 그 위에서만 돈다.
+
+   조작: ◀ ▶ 옆으로 · ▲/스페이스 점프 · ▼ 덩굴 내려가기 · Esc 나가기
+   칸 번호: 0 빈칸 · 1 돌(벽·쉼터) · 2 나무 발판(아래에서 뚫고 올라간다) ·
+            3 덩굴 · 4 물 · 5 코인 · 6 깃발 · 7 구름 발판(밟으면 사라졌다 돌아온다) ·
+            8 쉼터 선반(탑을 가로지른다 — 떨어져도 여기서 멈춘다)
    ═══════════════════════════════════════════════════ */
 const Cave = (function(){
-  const CH = 13;                 // 세로 칸 수 (하늘이 너무 넓지 않게)
-  const GRAV = 34, RUN = 7.2, JUMP = 13.2, CLIMB = 5.2;
+  const CW = 11;                 // 탑 너비 (양쪽 한 칸은 벽)
+  const GRAV = 32, RUN = 6.4, JUMP = 15.6, CLIMB = 5.4;   // 3.8칸까지 뛴다 (발판은 2~3칸 간격)
   const PW = 0.62, PH = 0.92;    // 도도 크기 (칸 단위)
+  const REST = 9;                // 쉼터 간격 (칸) — 떨어져도 여기서 다시 시작
 
   let on = false, lv = null, stage = 1, raf = 0, last = 0;
   let px=0, py=0, vx=0, vy=0, onGround=false, onLadder=false;
-  let lives = 3, got = 0, safeX = 2, hurt = 0, cleared = false, dead = false;
-  let camX = 0, camY = 0, walkT = 0, face = 1;
+  let timeLeft = 0, got = 0, restY = 0, cleared = false, dead = false, splash = 0;
+  let camY = 0, walkT = 0, face = 1, best = 0;
   const key = {l:false, r:false, u:false, d:false};
   let jumpHeld = false, coyote = 0, buf = 0;
 
-  /* 단계마다 같은 판이 나온다 — 아이가 외워서 더 잘하게 된다 */
+  /* 단계마다 같은 탑이 나온다 — 아이가 외워서 더 잘하게 된다 */
   function rng(seed){
     let t = seed >>> 0;
     return function(){
@@ -12124,103 +12135,107 @@ const Cave = (function(){
     };
   }
 
-  /* ── 판 만들기 ── */
+  /* ── 탑 짓기 (아래에서 위로) ──
+     y 는 위가 0. 그래서 "올라간다" 는 y 가 줄어든다는 뜻이다. */
   function make(st){
     const r = rng(st * 7919 + 13);
-    const W = 54 + st * 10;
+    const H = 44 + Math.min(st, 10) * 14;     // 탑 높이 (10단계에서 더 안 길어진다)
     const g = [];
-    for(let y=0;y<CH;y++) g.push(new Array(W).fill(0));
-    const top = new Array(W).fill(CH - 3);      // 땅 윗면 줄 번호
-    let coins = 0;
+    for(let y=0;y<H;y++) g.push(new Array(CW).fill(0));
 
-    let x = 0, h = CH - 3;
-    while(x < W){
-      if(x < 6 || x > W - 8){                   // 시작과 끝은 평평하게
-        top[x] = h; x++; continue;
-      }
-      const roll = r();
-      if(roll < 0.20 + st*0.015){               // 구멍 (아래는 물)
-        const gap = 2 + Math.floor(r() * Math.min(3, 1 + st*0.4));
-        for(let i=0;i<gap && x<W;i++, x++) top[x] = -1;
+    // 양쪽 벽
+    for(let y=0;y<H;y++){ g[y][0] = 1; g[y][CW-1] = 1; }
+    // 맨 아래는 물 — 떨어지면 풍덩
+    for(let y=H-2;y<H;y++) for(let x=1;x<CW-1;x++) g[y][x] = 4;
+    // 시작 발판
+    const startY = H - 3;
+    for(let x=4;x<=6;x++) g[startY][x] = 1;
+
+    let coins = 0, y = startY, lastX = 5, put = 0, lastCloud = false;
+    const rests = [];
+    while(y > 5){
+      // 2~3칸씩 올라간다. 3칸은 최대 점프(3.8칸)에 가까우니 가끔만,
+      // 구름 발판(곧 사라진다) 바로 위는 반드시 2칸으로 — 안 그러면 못 올라간다.
+      const step = (lastCloud || r() >= 0.28) ? 2 : 3;
+      y -= step;
+      put++;
+
+      // 쉼터 — 탑을 가로지르는 돌 선반. 떨어져도 여기서 멈춘다.
+      if(put % REST === 0){
+        for(let x=1;x<CW-1;x++) g[y][x] = 8;
+        rests.push(y);
+        lastX = 5; lastCloud = false;
+        for(let i=3;i<=7;i+=2) if(g[y-1][i] === 0){ g[y-1][i] = 5; coins++; }
         continue;
       }
-      if(roll < 0.44){                          // 계단 오르내리기
-        h += (r() < 0.5 ? -1 : 1) * (1 + (r() < 0.3 ? 1 : 0));
-        h = Math.max(3, Math.min(CH - 2, h));
+
+      const w = 2 + Math.floor(r() * 3);                       // 발판 길이 2~4
+      // 높이 뛸수록 옆으로 갈 여유가 없다 — 3칸 위로 갈 땐 옆으로 덜 옮긴다
+      const win = step === 3 ? 2 : 4;
+      const lo = Math.max(1, lastX - win), hi = Math.min(CW-1-w, lastX + win);
+      const x0 = lo >= hi ? lo : lo + Math.floor(r() * (hi - lo + 1));
+      // 구름 발판(밟으면 사라짐)은 잇달아 놓지 않는다. 두 개가 이어지면
+      // 앞의 것이 사라진 뒤 되돌아갈 곳이 없어져서 탑이 끊긴다 (10단계에서 실제로 끊겼다).
+      const cloudy = put > 6 && !lastCloud && r() < Math.min(0.22, 0.08 + st * 0.015);
+      lastCloud = cloudy;
+      for(let i=0;i<w;i++) g[y][x0+i] = cloudy ? 7 : 2;
+      lastX = x0 + Math.floor(w/2);
+
+      // 발판 위 코인
+      if(r() < 0.75){
+        const cx = x0 + Math.floor(r()*w);
+        if(g[y-1][cx] === 0){ g[y-1][cx] = 5; coins++; }
       }
-      const run = 2 + Math.floor(r() * 4);
-      for(let i=0;i<run && x<W;i++, x++) top[x] = h;
-    }
-
-    // 땅과 물 채우기
-    for(let x2=0;x2<W;x2++){
-      if(top[x2] < 0){
-        for(let y=CH-2;y<CH;y++) g[y][x2] = 4;       // 물
-      } else {
-        for(let y=top[x2]; y<CH; y++) g[y][x2] = 1;  // 땅
+      // 덩굴 — ▲ ▼ 로 오르내리는 자리
+      if(r() < 0.12 && y > 8){
+        const vx2 = x0 + Math.floor(w/2);
+        const topY = Math.max(4, y - (3 + Math.floor(r()*3)));
+        let free = true;
+        for(let k=topY;k<y;k++) if(g[k][vx2] !== 0) free = false;
+        if(free){
+          for(let k=topY;k<y;k++) g[k][vx2] = 3;
+          for(let i=-1;i<=1;i++) if(g[topY][vx2+i] === 0) g[topY][vx2+i] = 2;
+          if(g[topY-1] && g[topY-1][vx2] === 0){ g[topY-1][vx2] = 5; coins++; }
+        }
       }
     }
 
-    // 공중 발판 + 그 위 코인 (구멍 위에 놓아 건너갈 길을 만든다)
-    for(let x2=8; x2<W-8; x2++){
-      if(r() > 0.14) continue;
-      const base = top[x2] > 0 ? top[x2] : CH - 3;
-      const py2 = Math.max(2, base - (3 + Math.floor(r()*2)));
-      const wdt = 2 + Math.floor(r()*3);
-      for(let i=0;i<wdt && x2+i<W-3;i++){
-        if(g[py2][x2+i] === 0) g[py2][x2+i] = 2;
-        if(g[py2-1][x2+i] === 0) g[py2-1][x2+i] = 5, coins++;
-      }
-      x2 += wdt + 2;
-    }
+    // 꼭대기 — 깃발이 선 돌 선반
+    const topRow = Math.max(2, y - 2);
+    for(let x=1;x<CW-1;x++) g[topRow][x] = 8;
+    g[topRow-1][5] = 6;
+    for(const x of [3,7]) if(g[topRow-1][x] === 0){ g[topRow-1][x] = 5; coins++; }
 
-    // 사다리 — ↑ ↓ 로 오르내리는 자리 (위에는 코인 세 개)
-    for(let x2=12; x2<W-10; x2++){
-      if(r() > 0.10) continue;
-      if(top[x2] < 0 || top[x2-1] < 0) continue;
-      const bot = top[x2] - 1, topY = Math.max(1, bot - (3 + Math.floor(r()*3)));
-      let blocked = false;
-      for(let y=topY; y<=bot; y++) if(g[y][x2] !== 0) blocked = true;
-      if(blocked) continue;
-      for(let y=topY; y<=bot; y++) g[y][x2] = 3;
-      for(let i=0;i<3;i++) if(x2+i < W-3 && g[topY][x2+i] === 0) g[topY][x2+i] = 2;
-      for(let i=0;i<3;i++) if(x2+i < W-3 && g[topY-1][x2+i] === 0) g[topY-1][x2+i] = 5, coins++;
-      x2 += 6;
-    }
-
-    // 땅 위에 흩뿌린 코인
-    for(let x2=4; x2<W-4; x2++){
-      if(top[x2] < 0 || r() > 0.26) continue;
-      const y = top[x2] - 1;
-      if(g[y][x2] === 0){ g[y][x2] = 5; coins++; }
-    }
-
-    // 🏁 깃발 — 오른쪽 끝
-    const fx = W - 4, fy = (top[fx] > 0 ? top[fx] : CH - 3) - 1;
-    g[fy][fx] = 6;
-
-    return {g:g, W:W, top:top, coins:coins, flag:{x:fx, y:fy}};
+    return {g:g, H:H, coins:coins, startY:startY, topRow:topRow,
+            rests:rests, flag:{x:5, y:topRow-1}, fade:{}};
   }
 
-  const tile = (x,y) => (!lv || y<0 || y>=CH || x<0 || x>=lv.W) ? (y>=CH ? 0 : 1) : lv.g[y][x];
+  const tile = (x,y) => (!lv || y<0 || y>=lv.H || x<0 || x>=CW) ? 1 : lv.g[y][x];
   const solid = t => (t === 1);
 
   /* ── 한 판 시작 ── */
   function start(st){
     stage = Math.max(1, st|0);
     lv = make(stage);
-    px = 2.5; py = (lv.top[2] > 0 ? lv.top[2] : CH-3) - PH - 0.05;
+    px = 5.2; py = lv.startY - PH - 0.05;
+    restY = lv.startY;
     vx = vy = 0; onGround = false; onLadder = false;
-    lives = 3; got = 0; safeX = px; hurt = 0; cleared = false; dead = false;
-    camX = 0; camY = 0; walkT = 0; face = 1; coyote = 0; buf = 0;
+    timeLeft = 70 + Math.min(stage, 10) * 15;
+    got = 0; cleared = false; dead = false; splash = 0;
+    camY = 0; walkT = 0; face = 1; coyote = 0; buf = 0; best = 0;
     hud();
     $('#caveover').classList.remove('on');
   }
 
+  /* 바닥에서 몇 칸 올라왔나 */
+  const heightNow = () => Math.max(0, Math.round(lv.startY - py));
+  const heightAll = () => Math.max(1, lv.startY - (lv.topRow - 1));
+
   function hud(){
     $('#cvstage').textContent = stage + '단계';
     $('#cvcoin').textContent  = '🪙 ' + got;
-    $('#cvlife').textContent  = lives > 0 ? '❤️'.repeat(lives) : '💧';
+    $('#cvlife').textContent  = '🧗 ' + heightNow() + ' / ' + heightAll();
+    $('#cvtime').textContent  = '⏱️ ' + Math.max(0, Math.ceil(timeLeft));
   }
 
   /* ── 움직임 한 걸음 ── */
@@ -12228,16 +12243,29 @@ const Cave = (function(){
     if(cleared || dead) return;
     dt = Math.min(dt, 0.05);
     walkT += dt;
-    if(hurt > 0) hurt -= dt;
     if(buf > 0) buf -= dt;
+    if(splash > 0) splash -= dt;
 
-    // 사다리에 닿아 있나
-    const cx = Math.floor(px + PW/2), cyTop = Math.floor(py + 0.15), cyBot = Math.floor(py + PH - 0.05);
-    const onL = tile(cx, cyTop) === 3 || tile(cx, cyBot) === 3;
-    if(onL && (key.u || key.d)) onLadder = true;
-    if(!onL) onLadder = false;
+    timeLeft -= dt;
+    if(timeLeft <= 0){ timeLeft = 0; dead = true; hud(); setTimeout(over, 500); return; }
 
-    // 좌우
+    // 구름 발판이 사라지고 다시 돌아오는 것
+    for(const k in lv.fade){
+      const f = lv.fade[k];
+      f.t -= dt;
+      if(f.t <= 0){
+        const a = k.split(',');
+        if(f.gone){ lv.g[+a[1]][+a[0]] = 7; delete lv.fade[k]; }       // 돌아옴
+        else { lv.g[+a[1]][+a[0]] = 0; f.gone = true; f.t = 2.6; }     // 사라짐
+      }
+    }
+
+    // 덩굴에 붙어 있나
+    const cx = Math.floor(px + PW/2);
+    const onVine = tile(cx, Math.floor(py + 0.15)) === 3 || tile(cx, Math.floor(py + PH - 0.05)) === 3;
+    if(onVine && (key.u || key.d)) onLadder = true;
+    if(!onVine) onLadder = false;
+
     const want = (key.r ? 1 : 0) - (key.l ? 1 : 0);
     if(want) face = want;
     vx = want * RUN;
@@ -12251,22 +12279,38 @@ const Cave = (function(){
       if(buf > 0 && (onGround || coyote > 0)){
         vy = -JUMP; buf = 0; coyote = 0; onGround = false; Sound.jump();
       }
-      if(!jumpHeld && vy < -4) vy = -4;      // 짧게 누르면 조금만 뛴다
+      if(!jumpHeld && vy < -5) vy *= 0.45;   // 짧게 누르면 조금만 뛴다 (뚝 끊지 않고 줄인다)
     }
 
     moveX(vx * dt);
     const wasAir = !onGround;
     moveY(vy * dt);
     if(onGround){
-      coyote = 0.11;
+      coyote = 0.12;
       if(wasAir && vy > 6) Sound.land();
+      touchCloud();
+      // 지나온 쉼터를 기억해 둔다
+      const row = Math.round(py + PH);
+      for(const ry of lv.rests) if(Math.abs(ry - row) < 1 && ry < restY) restY = ry;
     } else if(coyote > 0) coyote -= dt;
 
     pickups();
+    if(heightNow() > best){ best = heightNow(); hud(); }
 
-    // 물에 빠지거나 판 아래로 떨어지면
-    const fx2 = Math.floor(px + PW/2), fy2 = Math.floor(py + PH/2);
-    if(py > CH || tile(fx2, fy2) === 4) drown();
+    // 물에 빠지면 쉼터에서 다시
+    const fy = Math.floor(py + PH/2);
+    if(py > lv.H || tile(Math.floor(px + PW/2), fy) === 4) fall();
+  }
+
+  /* 밟은 구름 발판은 잠깐 뒤에 사라진다 */
+  function touchCloud(){
+    const row = Math.round(py + PH);
+    for(let x=Math.floor(px); x<=Math.floor(px+PW-0.001); x++){
+      if(tile(x, row) === 7){
+        const k = x + ',' + row;
+        if(!lv.fade[k]) lv.fade[k] = {t:0.65, gone:false};
+      }
+    }
   }
 
   function hits(nx, ny){
@@ -12283,15 +12327,16 @@ const Cave = (function(){
     vx = 0;
   }
   function moveY(d){
-    if(!d){ return; }
+    if(!d) return;
     const ny = py + d;
-    // 나무 발판은 위에서 내려올 때만 밟힌다 (아래에서 뛰어 올라갈 수 있게)
+    // 나무·구름 발판은 위에서 내려올 때만 밟힌다 (아래에서 뚫고 올라간다)
     if(d > 0 && !key.d){
       const footNow = py + PH, footNext = ny + PH;
       const row = Math.floor(footNext);
-      if(Math.floor(footNow) < row || footNow <= row){
+      if(footNow <= row){
         for(let x=Math.floor(px); x<=Math.floor(px+PW-0.001); x++){
-          if(tile(x, row) === 2 && footNow <= row + 0.02){
+          const t = tile(x, row);
+          if(t === 2 || t === 7 || t === 8){
             py = row - PH; vy = 0; onGround = true; return;
           }
         }
@@ -12315,18 +12360,15 @@ const Cave = (function(){
       if(t === 5){ lv.g[y][x] = 0; got++; Sound.coin(); hud(); }
       else if(t === 6 && !cleared) clear();
     }
-    if(onGround && Math.floor(px) < lv.W && lv.top[Math.floor(px)] > 0) safeX = px;
   }
 
-  function drown(){
-    if(hurt > 0.9) return;
-    lives--;
-    hurt = 1.2;
+  function fall(){
+    if(splash > 0) return;
+    splash = 1.0;
     Sound.deny();
-    if(lives <= 0){ dead = true; hud(); setTimeout(over, 600); return; }
-    px = safeX;
-    const t = lv.top[Math.floor(px)] > 0 ? lv.top[Math.floor(px)] : CH - 3;
-    py = t - PH - 0.05; vx = vy = 0;
+    px = 5.2; py = restY - PH - 0.05;
+    vx = vy = 0; onLadder = false;
+    timeLeft = Math.max(3, timeLeft - 3);      // 벌은 시간 3초뿐 — 아이가 좌절하지 않게
     hud();
   }
 
@@ -12347,16 +12389,16 @@ const Cave = (function(){
     if(stage > (state.cave.best|0)) state.cave.best = stage;
     const bonus = 20 + stage * 10;
     const total = payout(bonus);
-    panel('🏁', stage + '단계 깼어요!',
-      '주운 코인 🪙 ' + got + '개 + 깃발 선물 🪙 ' + bonus + '개<br>' +
+    panel('🏁', stage + '단계 꼭대기!',
+      '주운 코인 🪙 ' + got + '개 + 꼭대기 선물 🪙 ' + bonus + '개<br>' +
       '<b>모두 🪙 ' + total + '개</b>를 가방에 넣었어요!',
       stage + 1, '▶ ' + (stage+1) + '단계 하기');
   }
   function over(){
     const total = payout(0);
-    panel('💧', '물에 빠졌어요',
-      total > 0 ? '그래도 주운 코인 🪙 <b>' + total + '개</b>는 그대로예요!'
-                : '괜찮아요, 다시 해 봐요!',
+    panel('⏱️', '시간이 다 됐어요',
+      '🧗 ' + best + '칸까지 올라갔어요.<br>' +
+      (total > 0 ? '주운 코인 🪙 <b>' + total + '개</b>는 그대로예요!' : '괜찮아요, 다시 해 봐요!'),
       stage, '↻ ' + stage + '단계 다시');
   }
 
@@ -12370,8 +12412,8 @@ const Cave = (function(){
     $('#covgo').textContent = goLabel;
     const box = $('#covstages');
     box.innerHTML = '';
-    const best = (state.cave && state.cave.best|0) || 0;
-    for(let i=1; i<=best+1; i++){
+    const bst = (state.cave && state.cave.best|0) || 0;
+    for(let i=1; i<=bst+1; i++){
       const b = document.createElement('button');
       b.className = 'cstg' + (i === goStage ? ' on' : '');
       b.textContent = i + '단계';
@@ -12389,17 +12431,22 @@ const Cave = (function(){
     if(document.pointerLockElement) document.exitPointerLock();
     $('#cave').classList.add('on');
     const coarse = (typeof touchMode !== 'undefined' && touchMode) ||
-                   (window.matchMedia && matchMedia('(pointer: coarse)').matches);
+                   ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) ||
+                   (window.matchMedia && matchMedia('(pointer: coarse)').matches) ||
+                   innerWidth < 760;
     $('#cavepad').classList.toggle('on', !!coarse);
     resize();
-    const best = (state.cave && state.cave.best|0) || 0;
-    lv = null; got = 0; lives = 3; stage = best + 1;
-    hud();
-    panel('🪙', '코인 게임',
-      '오른쪽 끝 🏁 깃발까지 가면서 코인을 주워요.<br>' +
-      '<b>◀ ▶</b> 달리기 · <b>▲ / 스페이스</b> 점프 · <b>▼</b> 사다리 내려가기<br>' +
-      '물에 빠지면 ❤️ 를 하나 잃어요.',
-      best + 1, '▶ ' + (best+1) + '단계 시작');
+    const bst = (state.cave && state.cave.best|0) || 0;
+    lv = null; got = 0; stage = bst + 1; timeLeft = 0;
+    $('#cvstage').textContent = stage + '단계';
+    $('#cvcoin').textContent = '🪙 0';
+    $('#cvlife').textContent = '🧗 0';
+    $('#cvtime').textContent = '⏱️ -';
+    panel('🗼', '코인 탑',
+      '위로 올라가면서 코인을 주워요. 꼭대기 🏁 까지 가면 선물이 있어요!<br>' +
+      '<b>◀ ▶</b> 옆으로 · <b>▲ / 스페이스</b> 점프 · <b>▼</b> 덩굴 내려가기<br>' +
+      '☁️ 구름 발판은 밟으면 사라졌다가 돌아와요. 물에 빠지면 아래 쉼터에서 다시 시작해요.',
+      bst + 1, '▶ ' + (bst+1) + '단계 시작');
     last = performance.now();
     loop();
     Sound.shop();
@@ -12426,7 +12473,7 @@ const Cave = (function(){
 
   /* ── 그리기 ── */
   const cv = () => $('#cavecv');
-  let ctx2 = null, ts = 34, vw = 0, vh = 0;
+  let ctx2 = null, ts = 34, vw = 0, vh = 0, ox = 0;
   function resize(){
     const c = cv();
     const dpr = Math.min(2, window.devicePixelRatio || 1);
@@ -12435,138 +12482,151 @@ const Cave = (function(){
     ctx2 = c.getContext('2d');
     ctx2.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx2.imageSmoothingEnabled = false;
-    ts = Math.max(22, Math.min(vw / 16, vh / 9));   // 가로 16칸 · 세로 9칸쯤 보이게
+    // 탑 너비는 항상 다 보이게, 세로로는 16칸쯤
+    ts = Math.max(20, Math.min(vw / CW, vh / 16));
+    ox = (vw - CW * ts) / 2;
   }
   function draw(){
     if(!ctx2) return;
     const c = ctx2;
-    // 하늘
+    // 하늘 — 위로 갈수록 옅어진다
+    const up = lv ? 1 - Math.min(1, (py) / lv.H) : 0;
     const sky = c.createLinearGradient(0, 0, 0, vh);
-    sky.addColorStop(0, '#8fd8ff'); sky.addColorStop(1, '#d8f4ff');
+    sky.addColorStop(0, up > 0.6 ? '#bfe6ff' : '#7cc9f7');
+    sky.addColorStop(1, '#dff3ff');
     c.fillStyle = sky; c.fillRect(0, 0, vw, vh);
     if(!lv) return;
 
-    // 따라오는 화면 — 옆으로도, 위아래로도
-    const wantX = px * ts - vw / 2;
-    camX += (Math.max(0, Math.min(Math.max(0, lv.W * ts - vw), wantX)) - camX) * 0.16;
-    const spanY = CH * ts;
-    const wantY = spanY > vh ? Math.max(0, Math.min(spanY - vh, py * ts - vh * 0.58)) : 0;
-    camY += (wantY - camY) * 0.12;
+    // 위아래로 따라오는 화면
+    const spanY = lv.H * ts;
+    const bias = $('#cavepad').classList.contains('on') ? 0.46 : 0.58;
+    const wantY = Math.max(0, Math.min(Math.max(0, spanY - vh), py * ts - vh * bias));
+    camY += (wantY - camY) * 0.14;
     const oy = spanY > vh ? -camY : (vh - spanY) / 2;
+    const t = performance.now() / 1000;
 
-    // 구름 (천천히 흐른다)
-    c.fillStyle = 'rgba(255,255,255,.75)';
-    for(let i=0;i<9;i++){
-      const cx2 = ((i * 430 - camX * 0.18) % (vw + 500) + vw + 500) % (vw + 500) - 250;
-      const cy2 = oy + ts * (1.2 + (i % 3) * 1.5);
+    // 구름 (탑 바깥까지 흐른다)
+    c.fillStyle = 'rgba(255,255,255,.34)';
+    for(let i=0;i<10;i++){
+      const cy2 = ((i * 317 - camY * 0.35) % (vh + 460) + vh + 460) % (vh + 460) - 230;
+      const cx2 = (i % 2 ? vw * 0.16 : vw * 0.84) + Math.sin(t*0.2 + i)*ts*0.6;
       c.beginPath();
-      c.ellipse(cx2, cy2, ts*1.5, ts*0.55, 0, 0, 7);
-      c.ellipse(cx2 + ts*1.1, cy2 + ts*0.12, ts*1.0, ts*0.42, 0, 0, 7);
+      c.ellipse(cx2, cy2, ts*1.6, ts*0.55, 0, 0, 7);
+      c.ellipse(cx2 + ts*1.1, cy2 + ts*0.14, ts*1.05, ts*0.42, 0, 0, 7);
       c.fill();
     }
 
-    // 뒤쪽 언덕 (천천히 따라온다 — 깊이감)
-    const groundY = oy + (CH - 3) * ts;
-    c.fillStyle = '#bdeccb';
-    for(let i=0;i<20;i++){
-      const hx = ((i * 215 - camX * 0.25) % (vw + 430) + vw + 430) % (vw + 430) - 215;
-      c.beginPath(); c.arc(hx, groundY + ts*0.35, ts*1.35, Math.PI, 0); c.fill();
-    }
+    const y0 = Math.max(0, Math.floor(camY / ts) - 1);
+    const y1 = Math.min(lv.H - 1, Math.ceil((camY + vh) / ts) + 1);
 
-    c.fillStyle = '#8a5c39';
-    c.fillRect(0, oy + CH * ts, vw, Math.max(0, vh - (oy + CH * ts)));
-
-    const x0 = Math.max(0, Math.floor(camX / ts) - 1);
-    const x1 = Math.min(lv.W - 1, Math.ceil((camX + vw) / ts) + 1);
-    const t = performance.now() / 1000;
-
-    for(let x=x0; x<=x1; x++) for(let y=0; y<CH; y++){
+    for(let y=y0; y<=y1; y++) for(let x=0; x<CW; x++){
       const v = lv.g[y][x];
       if(!v) continue;
-      const sx = Math.round(x * ts - camX), sy = Math.round(oy + y * ts), S = Math.ceil(ts);
+      const sx = Math.round(ox + x * ts), sy = Math.round(oy + y * ts), S = Math.ceil(ts);
       if(v === 1){
-        const grassTop = (y === 0 || lv.g[y-1][x] !== 1);
-        c.fillStyle = '#9c6b43'; c.fillRect(sx, sy, S, S);
+        const wall = (x === 0 || x === CW-1);
+        c.fillStyle = wall ? '#8d8677' : '#a2794f';
+        c.fillRect(sx, sy, S, S);
         c.fillStyle = 'rgba(0,0,0,.10)'; c.fillRect(sx, sy + S - 3, S, 3);
-        if(grassTop){ c.fillStyle = '#6dbf5a'; c.fillRect(sx, sy, S, Math.max(4, S*0.3)); }
+        if(!wall){ c.fillStyle = '#6dbf5a'; c.fillRect(sx, sy, S, Math.max(4, S*0.26)); }
       } else if(v === 2){
-        c.fillStyle = '#c99a5b'; c.fillRect(sx, sy, S, Math.max(6, S*0.42));
-        c.fillStyle = '#8a6535'; c.fillRect(sx, sy + Math.max(6, S*0.42) - 3, S, 3);
+        c.fillStyle = '#c99a5b'; c.fillRect(sx, sy, S, Math.max(6, S*0.40));
+        c.fillStyle = '#8a6535'; c.fillRect(sx, sy + Math.max(6, S*0.40) - 3, S, 3);
+      } else if(v === 8){
+        c.fillStyle = '#9a9184'; c.fillRect(sx, sy, S, Math.max(7, S*0.46));
+        c.fillStyle = '#6dbf5a'; c.fillRect(sx, sy, S, Math.max(4, S*0.16));
+        c.fillStyle = 'rgba(0,0,0,.12)'; c.fillRect(sx, sy + Math.max(7, S*0.46) - 3, S, 3);
+      } else if(v === 7){
+        const f = lv.fade[x + ',' + y];
+        c.globalAlpha = f ? Math.max(0.25, f.t / 0.65) : 1;
+        c.beginPath();
+        c.ellipse(sx + S*0.5, sy + S*0.28, S*0.52, S*0.24, 0, 0, 7);
+        c.ellipse(sx + S*0.2, sy + S*0.33, S*0.3, S*0.19, 0, 0, 7);
+        c.ellipse(sx + S*0.8, sy + S*0.33, S*0.3, S*0.19, 0, 0, 7);
+        c.fillStyle = '#ffffff'; c.fill();
+        c.lineWidth = Math.max(2, S*0.07); c.strokeStyle = '#7cc0ee'; c.stroke();
+        c.globalAlpha = 1;
       } else if(v === 3){
-        c.fillStyle = '#b07a3a';
-        c.fillRect(sx + S*0.18, sy, Math.max(3,S*0.12), S);
-        c.fillRect(sx + S*0.70, sy, Math.max(3,S*0.12), S);
-        c.fillRect(sx + S*0.18, sy + S*0.42, S*0.64, Math.max(3,S*0.12));
+        c.fillStyle = '#4e9c3f';
+        c.fillRect(sx + S*0.42, sy, Math.max(3, S*0.16), S);
+        c.fillStyle = '#6dbf5a';
+        c.beginPath(); c.ellipse(sx + S*0.28, sy + S*0.3, S*0.16, S*0.10, 0, 0, 7); c.fill();
+        c.beginPath(); c.ellipse(sx + S*0.72, sy + S*0.72, S*0.16, S*0.10, 0, 0, 7); c.fill();
       } else if(v === 4){
         const wob = Math.sin(t*2.4 + x*0.7) * S*0.08;
-        c.fillStyle = 'rgba(70,170,255,.72)';
+        c.fillStyle = 'rgba(70,170,255,.75)';
         c.fillRect(sx, sy + wob, S, S - wob);
         c.fillStyle = 'rgba(255,255,255,.45)';
         c.fillRect(sx, sy + wob, S, 3);
       } else if(v === 5){
-        const bob = Math.sin(t*3 + x) * S*0.09;
-        const cxp = sx + S/2, cyp = sy + S/2 + bob, r = S*0.29;
+        const bob = Math.sin(t*3 + x + y) * S*0.09;
+        const cxp = sx + S/2, cyp = sy + S/2 + bob, rr = S*0.29;
         c.fillStyle = '#ffd93d';
-        c.beginPath(); c.ellipse(cxp, cyp, r*0.78, r, 0, 0, 7); c.fill();
+        c.beginPath(); c.ellipse(cxp, cyp, rr*0.78, rr, 0, 0, 7); c.fill();
         c.fillStyle = '#ffeea0';
-        c.beginPath(); c.ellipse(cxp - r*0.2, cyp - r*0.25, r*0.22, r*0.34, 0, 0, 7); c.fill();
+        c.beginPath(); c.ellipse(cxp - rr*0.2, cyp - rr*0.25, rr*0.22, rr*0.34, 0, 0, 7); c.fill();
       } else if(v === 6){
-        c.fillStyle = '#9c6b43'; c.fillRect(sx + S*0.42, sy - S*1.4, Math.max(4,S*0.14), S*2.4);
+        c.fillStyle = '#9c6b43'; c.fillRect(sx + S*0.42, sy - S*0.2, Math.max(4,S*0.14), S*1.2);
         c.fillStyle = '#ff5d5d';
         c.beginPath();
-        c.moveTo(sx + S*0.56, sy - S*1.35);
-        c.lineTo(sx + S*1.5,  sy - S*0.95);
-        c.lineTo(sx + S*0.56, sy - S*0.55);
+        c.moveTo(sx + S*0.56, sy - S*0.15);
+        c.lineTo(sx + S*1.35, sy + S*0.20);
+        c.lineTo(sx + S*0.56, sy + S*0.55);
         c.closePath(); c.fill();
       }
     }
 
     drawDodo(c, oy, t);
 
+    if(splash > 0){
+      c.fillStyle = 'rgba(80,180,255,' + (splash * 0.35) + ')';
+      c.fillRect(0, 0, vw, vh);
+    }
     if(cleared || dead) return;
-    // 남은 길 알려 주는 작은 띠
-    const prog = Math.max(0, Math.min(1, px / (lv.flag.x || 1)));
+
+    // 오른쪽에 세로 눈금 — 얼마나 올라왔는지
+    const bx = vw - 14, by0 = vh * 0.16, by1 = vh * 0.84;
     c.fillStyle = 'rgba(255,255,255,.55)';
-    c.fillRect(vw*0.18, vh - 16, vw*0.64, 8);
+    c.fillRect(bx, by0, 8, by1 - by0);
+    const prog = Math.max(0, Math.min(1, heightNow() / heightAll()));
     c.fillStyle = '#ffb03d';
-    c.fillRect(vw*0.18, vh - 16, vw*0.64*prog, 8);
+    c.fillRect(bx, by1 - (by1 - by0) * prog, 8, (by1 - by0) * prog);
+    c.fillStyle = '#e04b4b';
+    c.fillRect(bx - 3, by0 - 5, 14, 5);
   }
 
   /* 주인공 — 섬에서 입고 있는 옷 색을 그대로 쓴다 */
   function drawDodo(c, oy, t){
-    if(hurt > 0 && Math.floor(hurt * 12) % 2) return;
     const sk = (typeof skinById === 'function') ? skinById(state.skin) : null;
     const hex = n => '#' + (n|0).toString(16).padStart(6, '0');
     const body = hex(sk ? sk.body : 0x8fd9cf), legs = hex(sk ? sk.legs : 0xf3a03d),
           skin = hex(sk ? sk.skin : 0xd9efe9);
-    const sx = Math.round(px * ts - camX), sy = Math.round(oy + py * ts);
+    const sx = Math.round(ox + px * ts), sy = Math.round(oy + py * ts);
     const W2 = PW * ts, H2 = PH * ts;
-    const swing = onGround ? Math.sin(walkT * 13) * (Math.abs(vx) > 0.4 ? 1 : 0) : 0.4;
+    const climbing = onLadder;
+    const swing = climbing ? Math.sin(walkT * 9)
+                : onGround ? Math.sin(walkT * 13) * (Math.abs(vx) > 0.4 ? 1 : 0)
+                : 0.45;
     c.save();
     c.translate(sx + W2/2, sy + H2);
     c.scale(face, 1);
-    // 다리
     c.fillStyle = legs;
     c.fillRect(-W2*0.30 + swing*W2*0.18, -H2*0.22, W2*0.20, H2*0.22);
     c.fillRect( W2*0.10 - swing*W2*0.18, -H2*0.22, W2*0.20, H2*0.22);
-    // 몸
     c.fillStyle = body;
     c.fillRect(-W2*0.42, -H2*0.72, W2*0.84, H2*0.52);
-    // 배
     c.fillStyle = skin;
     c.fillRect(-W2*0.22, -H2*0.56, W2*0.42, H2*0.30);
-    // 머리
     c.fillStyle = skin;
     c.fillRect(-W2*0.36, -H2*1.02, W2*0.72, H2*0.34);
-    // 부리
     c.fillStyle = '#ffc043';
     c.fillRect(W2*0.30, -H2*0.90, W2*0.30, H2*0.16);
-    // 눈
     c.fillStyle = '#221a14';
     c.fillRect(W2*0.10, -H2*0.94, Math.max(2, W2*0.10), Math.max(2, H2*0.10));
-    // 날개
+    // 날개 — 뛰거나 오를 때 위로 든다
     c.fillStyle = body;
-    c.fillRect(-W2*0.50, -H2*0.66, W2*0.18, H2*0.26);
+    const wingUp = (!onGround || climbing) ? -H2*0.16 : 0;
+    c.fillRect(-W2*0.52, -H2*0.66 + wingUp, W2*0.18, H2*0.26);
     c.restore();
   }
 
@@ -12576,9 +12636,11 @@ const Cave = (function(){
     const now = performance.now();
     const dt = Math.min(0.05, (now - last) / 1000);
     last = now;
-    if(lv) step(dt);
+    if(lv){ step(dt); if(!cleared && !dead) hudTick(dt); }
     draw();
   }
+  let hudAcc = 0;
+  function hudTick(dt){ hudAcc += dt; if(hudAcc > 0.25){ hudAcc = 0; hud(); } }
 
   /* ── 자판 · 단추 ── */
   function down(code){
@@ -12628,9 +12690,10 @@ const Cave = (function(){
   }
 
   return {enter, leave, open(){ return on; }, wire, start,
-          stage(){ return stage; }, make, level(){ return lv; },
+          stage(){ return stage; }, make, level(){ return lv; }, CW,
           pos(){ return {x:px, y:py, vx:vx, vy:vy, onGround:onGround}; },
-          lives(){ return lives; }, got(){ return got; },
+          height(){ return heightNow(); }, goal(){ return heightAll(); },
+          time(){ return timeLeft; }, got(){ return got; },
           cleared(){ return cleared; }, dead(){ return dead; },
           press(c){ down(c); }, release(c){ up(c); },
           sim(dt, n){ for(let i=0;i<(n||1);i++) step(dt); }};
