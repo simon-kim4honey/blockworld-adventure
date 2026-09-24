@@ -1022,6 +1022,85 @@
   #shground{display:flex; flex-wrap:wrap; gap:7px;}
   #shlist{display:flex; flex-direction:column; gap:10px;}
   .gamecard{background:#f3eefc; border-radius:18px; padding:13px 14px; box-shadow:0 4px 0 rgba(0,0,0,.12);}
+
+  /* 🐣 도도 친구 줄 — 한 마리가 게임 한 칸 */
+  #shpets{display:flex; flex-wrap:wrap; gap:8px;}
+  .petchip{
+    display:flex; align-items:center; gap:7px; padding:7px 11px 7px 8px;
+    border-radius:16px; background:#f3eefc; box-shadow:0 3px 0 rgba(0,0,0,.12);
+    font-size:13px; font-weight:800; color:#3b3350; line-height:1.25;
+  }
+  .petchip .pic{font-size:25px; line-height:1;}
+  .petchip .psub{font-size:11px; opacity:.62; font-weight:700;}
+  .petchip.free{background:linear-gradient(#d8f7e0,#a9ebbd); box-shadow:0 3px 0 #63c483;}
+  .petchip.busy{background:linear-gradient(#ffeec2,#ffd98a); box-shadow:0 3px 0 #d9a63a;}
+  .petchip.lock{background:#eceaf2; opacity:.72;}
+  #shpethow{font-size:13px; line-height:1.5; margin-top:8px; opacity:.8;}
+
+  /* 🥚 알 가게 */
+  #egggrid{display:grid; grid-template-columns:repeat(auto-fill,minmax(122px,1fr)); gap:9px;}
+  #eggsub{font-size:13px; opacity:.7; margin:-2px 0 8px;}
+  .egg{
+    border-radius:16px; padding:11px 7px; text-align:center; cursor:pointer;
+    background:#f3eefc; box-shadow:0 4px 0 rgba(0,0,0,.12); transition:transform .12s ease;
+  }
+  .egg:hover{transform:translateY(-3px);}
+  .egg .eic{font-size:30px; line-height:1;}
+  .egg .enm{font-size:13px; font-weight:900; margin-top:4px;}
+  .egg .ep{font-size:12px; opacity:.72; margin-top:2px;}
+  .egg.owned{background:linear-gradient(#d8f7e0,#a9ebbd); box-shadow:0 4px 0 #63c483; cursor:default;}
+  .egg.cant{opacity:.5;}
+
+  /* 🚪 코인 게임 (옆에서 보는 화면) */
+  #cave{position:fixed; inset:0; display:none; z-index:60; background:#8fd8ff;}
+  #cave.on{display:block;}
+  #cavecv{position:absolute; inset:0; width:100%; height:100%; display:block; image-rendering:pixelated;}
+  #cavehud{
+    position:absolute; top:10px; left:50%; transform:translateX(-50%);
+    display:flex; gap:7px; flex-wrap:wrap; justify-content:center; pointer-events:none;
+  }
+  #cavehud .cv{
+    background:rgba(255,255,255,.92); border-radius:14px; padding:6px 12px;
+    font-size:16px; font-weight:900; color:#3b3350; box-shadow:0 3px 0 rgba(0,0,0,.16);
+  }
+  #cavehud .cvbtn{pointer-events:auto; cursor:pointer; border:0; font-family:inherit;}
+  #cavepad{
+    position:absolute; left:0; right:0; bottom:14px; display:none;
+    justify-content:space-between; padding:0 16px; pointer-events:none;
+  }
+  #cavepad.on{display:flex;}
+  .cpgrp{display:flex; gap:12px; align-items:flex-end; pointer-events:auto;}
+  .cpad{
+    width:66px; height:66px; border-radius:50%; border:0; font-family:inherit;
+    font-size:26px; font-weight:900; color:#3b3350;
+    background:rgba(255,255,255,.86); box-shadow:0 4px 0 rgba(0,0,0,.2);
+    touch-action:none; user-select:none; -webkit-user-select:none;
+  }
+  .cpad.big{width:84px; height:84px; font-size:32px; background:rgba(180,255,200,.92);}
+  .cpad:active{transform:translateY(3px); box-shadow:0 1px 0 rgba(0,0,0,.2);}
+  #caveover{
+    position:absolute; inset:0; display:none; align-items:center; justify-content:center;
+    background:rgba(30,22,50,.5); padding:18px;
+  }
+  #caveover.on{display:flex;}
+  #caveoverbox{
+    width:min(420px,92vw); background:#fff; border-radius:24px; padding:20px 18px 16px;
+    text-align:center; box-shadow:0 12px 0 rgba(0,0,0,.18); color:#3b3350;
+  }
+  #covic{font-size:56px; line-height:1;}
+  #covtitle{font-size:25px; margin:4px 0 6px;}
+  #covsub{font-size:15px; line-height:1.55; opacity:.8; margin-bottom:12px;}
+  #covstages{display:flex; flex-wrap:wrap; gap:7px; justify-content:center; margin-bottom:12px;}
+  .cstg{
+    border:0; font-family:inherit; font-size:14px; font-weight:900; color:#3b3350;
+    background:#f3eefc; border-radius:13px; padding:7px 13px; cursor:pointer;
+    box-shadow:0 3px 0 rgba(0,0,0,.13);
+  }
+  .cstg.on{background:linear-gradient(#ffe6a8,#ffcf66); box-shadow:0 3px 0 #d9a63a;}
+  @media (max-width:700px){
+    #cavehud .cv{font-size:14px; padding:5px 10px;}
+    #covic{font-size:44px;} #covtitle{font-size:21px;} #covsub{font-size:14px;}
+  }
   .gtitle{font-size:18px; font-weight:900;}
   .gsub{font-size:12px; opacity:.62; margin:3px 0 9px;}
   .grow{display:flex; gap:8px;}
@@ -1385,12 +1464,46 @@
 <div class="worldlabel" id="npclabel"></div>
 <div class="worldlabel bob" id="shoplabel"></div>
 <div class="worldlabel" id="petlabel"></div>
+<div class="worldlabel bob" id="gatelabel"></div>
+
+<!-- 🚪 코인 게임 — 옆에서 보는 납작한 화면 (지금 블록 화면과 아예 다른 방이다) -->
+<div id="cave">
+  <canvas id="cavecv"></canvas>
+  <div id="cavehud">
+    <div class="cv" id="cvstage">1단계</div>
+    <div class="cv" id="cvcoin">🪙 0</div>
+    <div class="cv" id="cvlife">❤️❤️❤️</div>
+    <button class="cv cvbtn" id="cvout">🏝️ 나가기</button>
+  </div>
+  <div id="cavepad">
+    <div class="cpgrp">
+      <button class="cpad" id="cpL">◀</button>
+      <button class="cpad" id="cpR">▶</button>
+    </div>
+    <div class="cpgrp">
+      <button class="cpad" id="cpD">▼</button>
+      <button class="cpad big" id="cpJ">▲</button>
+    </div>
+  </div>
+  <div id="caveover"><div id="caveoverbox">
+    <div id="covic">🪙</div>
+    <h2 id="covtitle">코인 게임</h2>
+    <div id="covsub"></div>
+    <div id="covstages"></div>
+    <button class="mbtn green" id="covgo">▶ 시작</button>
+    <button class="mbtn gray" id="covout">🏝️ 섬으로 돌아가기</button>
+  </div></div>
+</div>
 
 <div id="shop"><div id="shopbox">
   <div id="shophead"><h2>🛒 도도 상점</h2>
     <div id="shopcoins"><div class="coinicon"></div><span id="shopcoinnum">0</span></div></div>
   <div id="shopsub">코인으로 도도의 깃털 색과 모자를 바꿀 수 있어요. 한 번 사면 계속 쓸 수 있어요!</div>
+  <div class="mlabel">👕 도도 옷</div>
   <div id="shopgrid"></div>
+  <div class="mlabel">🥚 도도 알 — 깨어난 친구가 게임을 하나씩 맡아 줘요</div>
+  <div id="eggsub">친구 한 마리 = 🛠️ 스튜디오에서 만들 수 있는 게임 한 개</div>
+  <div id="egggrid"></div>
   <button class="bigclose" id="shopclose">닫기 · 가게에서 나가기</button>
 </div></div>
 
@@ -1451,9 +1564,12 @@
 <div class="modal" id="studiohome"><div class="mbox">
   <div class="mhead"><h2>🛠️ 도도 스튜디오</h2></div>
   <div class="msub">내 게임을 만들어서 친구에게 보낼 수 있어요. 친구가 보낸 게임도 여기서 할 수 있어요.</div>
+  <div class="mlabel">🐣 내 도도 친구 — 한 마리가 게임 하나를 맡아 줘요</div>
+  <div id="shpets"></div>
+  <div id="shpethow"></div>
   <div class="mlabel">내 게임</div>
   <div id="shlist"></div>
-  <div class="mlabel">➕ 새 게임 만들기 — 어떤 게임을 만들까요?</div>
+  <div class="mlabel" id="shnewlabel">➕ 새 게임 만들기 — 어떤 게임을 만들까요?</div>
   <div id="shnew"></div>
   <div class="mlabel">🟩 바닥 (안 고르면 게임에 어울리는 걸로 골라 줘요)</div>
   <div id="shground"></div>
@@ -3153,7 +3269,7 @@ const NO_SCROLL = {Space:1, ArrowUp:1, ArrowDown:1, ArrowLeft:1, ArrowRight:1};
 function panelOpen(){
   const el = document.activeElement;
   if(el && (el.tagName==='TEXTAREA' || el.tagName==='INPUT')) return true;
-  return shopOpen || craftOpen || plansOpen || friendsOpen || ideaOpen || shortsOpen || bagOpen || chatOpen ||
+  return caveOpen || shopOpen || craftOpen || plansOpen || friendsOpen || ideaOpen || shortsOpen || bagOpen || chatOpen ||
          islandOpen || dodoOpen || rulesOpen || studioHomeOpen ||
          $('#playres').style.display==='flex' ||
          $('#strename').style.display==='flex' ||
@@ -3322,6 +3438,8 @@ const state = {
   look:{},                 // 도도 꾸미기 — 깃털색 · 부리색 · 모자
   tune:null, tuneAt:null,  // 오르골 노래 8칸 + 세워 둔 자리
   hunt:null, huntLog:[],   // 보물찾기 — 숨긴 자리 3곳 + 친구들 기록
+  eggs:{},                 // 🥚 알로 깨운 도도 친구
+  cave:{best:0, runs:0},   // 🚪 코인 게임 — 깬 단계 · 다녀온 횟수
   edits:{},                // "x,y,z" -> 블록 번호 (0 = 부순 자리)
   collected:{},            // 이미 먹은 코인/별
   obbyDone:{}              // 완주한 코스
@@ -3351,6 +3469,7 @@ function saveNow(){
       island:state.island, decor:state.decor, clips:state.clips, aiDone:state.aiDone,
       theme:state.theme, look:state.look, tune:state.tune, tuneAt:state.tuneAt,
       hunt:state.hunt, huntLog:state.huntLog,
+      eggs:state.eggs, cave:state.cave,
       pos:{x:player.x, y:player.y, z:player.z}, slot:selectedSlot
     }));
   }catch(e){ /* 저장 공간이 없어도 게임은 계속 */ }
@@ -3395,6 +3514,8 @@ function loadSave(){
   state.look = d.look || {};
   state.tune = Array.isArray(d.tune) ? d.tune : null;
   state.tuneAt = Array.isArray(d.tuneAt) ? d.tuneAt : null;
+  state.eggs = d.eggs || {};
+  state.cave = d.cave || {best:0, runs:0};
   state.hunt = d.hunt || null;
   state.huntLog = Array.isArray(d.huntLog) ? d.huntLog : [];
   state.quality = d.quality || 'auto';
@@ -4298,13 +4419,51 @@ function showBanner(big, small){
 const UNLOCKS = [
   {lv:2,  icon:'🪟', name:'유리 블록'},
   {lv:3,  icon:'🌈', name:'무지개 블록'},
-  {lv:5,  icon:'🐣', name:'아기 도도'},
+  {lv:1,  icon:'🐣', name:'아기 도도'},   // 처음부터 — 첫 게임을 맡아 주는 친구
   {lv:7,  icon:'🚀', name:'로켓 점프'},
   {lv:10, icon:'🐱', name:'블록 고양이'},
 ];
 function hasUnlock(name){
   const u = UNLOCKS.find(u=>u.name===name);
   return u ? state.level >= u.lv : false;
+}
+
+/* ── 🐣 도도 친구(펫) — 한 마리가 게임 하나를 맡아 준다 ──
+   "스튜디오에서 게임을 무한정 만들 수 있다" 를 여기서 막는다.
+   친구를 데려오는 길이 셋이라 아이가 고를 수 있다:
+     레벨 올리기 · 친구 초대하기 · 코인 모아서 알 사기
+   코인은 섬 미션과 🚪 코인 게임에서 나오니, 결국
+   "코인 → 알 → 친구 → 게임 한 칸" 한 줄로 이어진다.
+   친구 수 = 만들 수 있는 게임 수이고, 저장 칸(GAME_MAX)과 같은 5마리다. */
+const PETS = [
+  {id:'dodo',   icon:'🐣', name:'아기 도도',   how:'free',            desc:'처음부터 같이 있는 첫 친구'},
+  {id:'cat',    icon:'🐱', name:'블록 고양이', how:'level', lv:10,    desc:'레벨 10이 되면 찾아와요'},
+  {id:'rabbit', icon:'🐰', name:'콩콩 토끼',   how:'friend',          desc:'친구 1명을 초대하면 와요'},
+  {id:'parrot', icon:'🦜', name:'무지개 앵무', how:'egg', price:300,  desc:'🥚 알을 사면 깨어나요'},
+  {id:'turtle', icon:'🐢', name:'느림보 거북', how:'egg', price:700,  desc:'🥚 알을 사면 깨어나요'},
+];
+const petDef = id => PETS.find(p=>p.id===id) || null;
+function hasPet(id){
+  const p = petDef(id);
+  if(!p) return false;
+  if(p.how === 'free')   return true;
+  if(p.how === 'level')  return state.level >= p.lv;
+  if(p.how === 'friend') return giftLevel() >= 1;
+  return !!(state.eggs && state.eggs[id]);          // 알을 사서 얻은 친구
+}
+function myPets(){ return PETS.filter(p=>hasPet(p.id)); }
+/* 이 친구가 지금 맡고 있는 게임 (없으면 null) */
+function petGame(id){ return Games.all().find(g => g.pet === id) || null; }
+/* 아직 아무 게임도 안 맡은 친구 — 새 게임은 이 친구가 맡는다 */
+function freePet(){ return myPets().find(p => !petGame(p.id)) || null; }
+/* 친구를 더 데려오는 방법 한 줄 — 게임 칸이 꽉 찼을 때 보여 준다 */
+function petHowNext(){
+  const left = PETS.filter(p => !hasPet(p.id));
+  if(!left.length) return '친구를 다 모았어요! 게임을 하나 지우면 그 친구가 새 게임을 맡아 줘요.';
+  const p = left[0];
+  if(p.how === 'level')  return p.icon + ' ' + p.name + ' 은(는) 레벨 ' + p.lv + '이 되면 와요. (지금 레벨 ' + state.level + ')';
+  if(p.how === 'friend') return p.icon + ' ' + p.name + ' 은(는) 친구 1명을 초대하면 와요. 🎁 단추를 눌러 보세요.';
+  return p.icon + ' ' + p.name + ' 의 🥚 알은 🛒 상점에서 코인 ' + p.price + '개로 살 수 있어요. (지금 ' + state.coins + '개)';
 }
 
 /* ---- 퀘스트 목록 ---- */
@@ -4514,6 +4673,33 @@ function buildShopHouse(){
   SHOP.inside = {x0:x0+1, x1:x1-1, z0:z0+1, z1:z1-1};
   SHOP.sign = {x:(x0+x1)/2 + 0.5, y:y+5.2, z:(z0+z1)/2 + 0.5};
   SHOP.door = {x:x1+1.5, y:y, z:dz+1.0};
+  buildGateHouse();
+}
+
+/* ═══ 🚪 게임문 — 상점 바로 옆, 코인 게임으로 들어가는 문 ═══
+   섬의 코인은 한 번 먹으면 없어져서 금방 바닥난다.
+   여기로 들어가면 코인을 계속 벌 수 있는 곳이 나온다. */
+const GATE = {x:32, z:30, y:10};       // 아래 buildGateHouse() 에서 제대로 채운다
+function buildGateHouse(){
+  const y = SHOP.y;
+  const gx = SHOP.x1 + 2;                    // 상점 문 옆 (문 앞 길에서 바로 보인다)
+  const gz = SHOP.z0 - 1;
+  GATE.x = gx; GATE.z = gz; GATE.y = y;
+  // 발판 (땅이 울퉁불퉁해도 평평하게)
+  for(let x=gx-1;x<=gx+1;x++) for(let z=gz-1;z<=gz+3;z++) setBlock(x, y-1, z, STONE, true);
+  // 기둥 둘 + 위 들보 — 가운데 두 칸이 지나가는 자리다
+  for(let k=0;k<3;k++){
+    setBlock(gx, y+k, gz,   WOOD, true);
+    setBlock(gx, y+k, gz+3, WOOD, true);
+    setBlock(gx, y+k, gz+1, AIR,  true);
+    setBlock(gx, y+k, gz+2, AIR,  true);
+  }
+  for(let z=gz;z<=gz+3;z++) setBlock(gx, y+3, z, PLANK, true);
+  // 문 안쪽을 금빛으로 — 멀리서도 "여기 뭔가 있다" 가 보인다
+  setBlock(gx, y+4, gz+1, GOLD, true);
+  setBlock(gx, y+4, gz+2, GOLD, true);
+  GATE.sign = {x:gx + 0.5, y:y + 5.0, z:gz + 2.0};
+  GATE.at   = {x:gx + 0.5, y:y, z:gz + 1.5};   // 이 자리를 밟으면 들어간다
 }
 
 /* 도도 장로 — 주인공보다 크고, 회색 깃털에 초록 밀짚모자 */
@@ -4628,6 +4814,49 @@ function renderShop(){
     el.addEventListener('click', ()=>buySkin(sk.id));
     grid.appendChild(el);
   });
+  renderEggs();
+}
+
+/* 🥚 알 가게 — 코인으로 도도 친구를 깨운다.
+   여기서 산 친구가 스튜디오의 게임 한 칸이 된다. */
+function renderEggs(){
+  const box = $('#egggrid');
+  if(!box) return;
+  box.innerHTML = '';
+  PETS.filter(p => p.how === 'egg').forEach(p=>{
+    const got = hasPet(p.id);
+    const can = got || state.coins >= p.price;
+    const el = document.createElement('div');
+    el.className = 'egg' + (got ? ' owned' : (can ? '' : ' cant'));
+    el.innerHTML = '<div class="eic">' + (got ? p.icon : '🥚') + '</div>' +
+                   '<div class="enm">' + p.name + '</div>' +
+                   '<div class="ep">' + (got ? '깨어났어요 ✅' : '🪙 ' + p.price) + '</div>';
+    if(!got) el.addEventListener('click', ()=>buyEgg(p.id));
+    box.appendChild(el);
+  });
+  // 레벨·친구로 오는 친구들은 여기서 파는 게 아니라 안내만 한다
+  PETS.filter(p => p.how !== 'egg' && !hasPet(p.id)).forEach(p=>{
+    const el = document.createElement('div');
+    el.className = 'egg cant';
+    el.innerHTML = '<div class="eic">🔒</div><div class="enm">' + p.name + '</div>' +
+                   '<div class="ep">' + (p.how === 'level' ? '레벨 ' + p.lv : '친구 1명 초대') + '</div>';
+    box.appendChild(el);
+  });
+}
+function buyEgg(id){
+  const p = petDef(id);
+  if(!p || p.how !== 'egg' || hasPet(id)) return;
+  if(state.coins < p.price){
+    showHint('🪙 코인이 ' + (p.price - state.coins) + '개 더 필요해요! 🚪 코인 게임에서 벌 수 있어요', 2600);
+    Sound.deny(); return;
+  }
+  state.coins -= p.price;
+  state.eggs = state.eggs || {};
+  state.eggs[id] = 1;
+  Sound.fanfare();
+  popText('🥚 ' + p.icon + ' ' + p.name + ' 가 깨어났어요!', '#7ae582');
+  showHint(p.icon + ' ' + p.name + ' 가 게임 한 칸을 맡아 줘요. 🛠️ 에서 새 게임을 만들어 보세요!', 4200);
+  updateHud(); renderShop(); saveSoon();
 }
 function buySkin(id){
   const sk = skinById(id);
@@ -4662,6 +4891,8 @@ function closeShop(){
 }
 /* 가게에서 확실히 빠져나오기 — 문 바깥으로 한 걸음 옮기고 잠시 다시 안 열리게 한다 */
 let shopCooldown = 0;
+let gateCooldown = 0;      // 🚪 게임문에서 나온 직후 바로 다시 안 열리게
+let caveOpen = false;     // 🚪 코인 게임이 떠 있는 동안엔 섬 조작을 멈춘다
 function leaveShop(){
   closeShop();
   player.x = SHOP.door.x + 1.4;
@@ -4682,28 +4913,39 @@ function buildPet(kind){
     ? {body:0xa8e3d8, head:0xc9efe7, ear:0xf3a03d, belly:0xfdf6ef}
     : kind==='rabbit'
     ? {body:0xfff1f6, head:0xffffff, ear:0xffb3d1, belly:0xffd9e8}
+    : kind==='parrot'
+    ? {body:0x4fc3ff, head:0xffe93d, ear:0xff7a3d, belly:0x7ae582}   // 🦜 알록달록
+    : kind==='turtle'
+    ? {body:0x6dbf5a, head:0x9ede8a, ear:0x3f7d33, belly:0xffe6a8}   // 🐢 초록 등딱지
     : {body:0x9e9e9e, head:0xb0b0b0, ear:0x707070, belly:0xe0e0e0};
   const g = new THREE.Group();
   const body = boxMesh(.42,.34,.62, c.body); body.position.set(0,.34,0);
   const belly = boxMesh(.3,.12,.5, c.belly); belly.position.set(0,.2,0);
   const head = boxMesh(.38,.36,.34, c.head); head.position.set(0,.6,-.4);
   // 아기 도도는 주둥이 대신 노란 부리
-  const snout = kind==='dodo' ? boxMesh(.16,.15,.22, 0xffc043) : boxMesh(.18,.14,.14, c.belly);
+  const beaky = (kind==='dodo' || kind==='parrot' || kind==='turtle');
+  const snout = beaky ? boxMesh(.16,.15,.22, kind==='parrot' ? 0xff7a3d : 0xffc043) : boxMesh(.18,.14,.14, c.belly);
   snout.position.set(0,.55,-.62);
-  const nose = kind==='dodo' ? boxMesh(.11,.09,.09, 0xe08a20) : boxMesh(.09,.08,.06, 0x332222);
-  nose.position.set(0, kind==='dodo' ? .50 : .57, -.74);
+  const nose = beaky ? boxMesh(.11,.09,.09, kind==='parrot' ? 0xe05a10 : 0xe08a20) : boxMesh(.09,.08,.06, 0x332222);
+  nose.position.set(0, beaky ? .50 : .57, -.74);
   const eyeL = boxMesh(.07,.09,.05, 0x221a14); eyeL.position.set(-.1,.66,-.58);
   const eyeR = boxMesh(.07,.09,.05, 0x221a14); eyeR.position.set(.1,.66,-.58);
   const earL = kind==='dodo' ? boxMesh(.07,.14,.07, 0xbfe9e0)   // 도도는 머리 깃털
              : kind==='rabbit' ? boxMesh(.11,.42,.09, c.ear)     // 토끼는 귀가 쫑긋 길다
+             : kind==='parrot' ? boxMesh(.08,.26,.08, 0xff7a3d)  // 앵무는 머리 위 볏
+             : kind==='turtle' ? boxMesh(.09,.08,.09, c.ear)     // 거북은 작은 혹
              : boxMesh(.12,.18,.08, c.ear);
   const earR = earL.clone();
-  const eh = kind==='rabbit' ? .95 : (kind==='dodo' ? .84 : .8);
+  const eh = kind==='rabbit' ? .95 : (kind==='parrot' ? .88 : (kind==='dodo' ? .84 : .8));
   earL.position.set(-.13,eh,-.4); earR.position.set(.13,eh,-.4);
   const tail = kind==='rabbit' ? boxMesh(.16,.16,.16, 0xffffff)
              : kind==='dodo' ? boxMesh(.2,.18,.14, c.body)
+             : kind==='parrot' ? boxMesh(.12,.1,.46, 0x7ae582)   // 앵무는 긴 꼬리깃
+             : kind==='turtle' ? boxMesh(.12,.1,.18, c.ear)
              : boxMesh(.09,.09,.5, c.body);
   tail.position.set(0,.5,.34);
+  // 🐢 거북은 등에 딱지를 하나 더 얹는다
+  if(kind==='turtle'){ const sh = boxMesh(.5,.22,.62, 0x3f7d33); sh.position.set(0,.5,0); g.add(sh); }
   const legs = [];
   for(const [lx,lz] of [[-.14,-.2],[.14,-.2],[-.14,.2],[.14,.2]]){
     const l = boxMesh(.12,.34,.12, c.ear); l.position.set(lx,.17,lz); legs.push(l); g.add(l);
@@ -4714,7 +4956,7 @@ function buildPet(kind){
   scene.add(g);
   return g;
 }
-const pets = {dodo:null, cat:null, rabbit:null};
+const pets = {dodo:null, cat:null, rabbit:null, parrot:null, turtle:null};
 let petBarkAt = 0, petTarget = null;
 
 function surfaceHeight(x, z, fromY){
@@ -4725,11 +4967,11 @@ function surfaceHeight(x, z, fromY){
 }
 
 function updatePets(dt){
-  // 토끼는 레벨이 아니라 "친구"로 열린다
-  const list = [['dodo','아기 도도'], ['cat','블록 고양이'], ['rabbit', null]];
+  // 어떤 친구가 곁에 있는지는 PETS 표 한 곳에서만 정한다
   let order = 0;
-  list.forEach(([kind, unlockName])=>{
-    const has = unlockName ? hasUnlock(unlockName) : giftLevel() >= 1;
+  PETS.forEach(def=>{
+    const kind = def.id;
+    const has = hasPet(kind);
     if(has && !pets[kind]) pets[kind] = buildPet(kind);
     const pet = pets[kind];
     if(!pet) return;
@@ -4743,8 +4985,8 @@ function updatePets(dt){
     ud.t += dt;
 
     // 플레이어 뒤쪽 옆자리를 따라다닌다
-    const back = order * 1.5;
-    const side = (order === 1 ? -0.9 : 0.9);
+    const back = 1.4 + Math.floor((order-1)/2) * 1.25;
+    const side = (order % 2 === 1 ? -0.95 : 0.95);
     const fx = Math.sin(avatar.rotation.y), fz = Math.cos(avatar.rotation.y);
     const tx = player.x - fx*back + fz*side;
     const tz = player.z - fz*back - fx*side;
@@ -4771,7 +5013,7 @@ function updatePets(dt){
   });
 
   // 아기 도도가 가까운 코인을 찾아 알려 준다
-  const dog = pets.dog;
+  const dog = pets.dodo;        // 🐣 아기 도도가 알려 준다 (예전엔 없는 이름이라 안 됐다)
   if(dog && dog.visible){
     const now = performance.now()/1000;
     if(now - petBarkAt > 4){
@@ -4889,10 +5131,14 @@ function updateLabels(dt){
   if(SHOP.sign) placeLabel($('#shoplabel'), SHOP.sign.x, SHOP.sign.y, SHOP.sign.z, 9) &&
     ($('#shoplabel').textContent = '🛒 상점\n안으로 들어오세요!');
 
+  // 🚪 게임문 — 상점 옆, 코인 게임으로
+  if(GATE.sign) placeLabel($('#gatelabel'), GATE.sign.x, GATE.sign.y, GATE.sign.z, 11) &&
+    ($('#gatelabel').textContent = '🚪 코인 게임\n들어가면 코인을 벌 수 있어요!');
+
   // 아기 도도가 알려 주는 코인 위치
   const pl = $('#petlabel');
-  if(petTarget && pets.dog && pets.dog.visible){
-    if(placeLabel(pl, pets.dog.position.x, pets.dog.position.y+1.5, pets.dog.position.z, 8))
+  if(petTarget && pets.dodo && pets.dodo.visible){
+    if(placeLabel(pl, pets.dodo.position.x, pets.dodo.position.y+1.5, pets.dodo.position.z, 8))
       pl.textContent = '🐣 삐약! 저쪽에 코인 있어!\n(' + Math.round(petTarget.d || 0 || Math.hypot(petTarget.c.x-player.x, petTarget.c.z-player.z)) + '칸쯤)';
   } else pl.style.display = 'none';
 
@@ -4905,6 +5151,16 @@ function updateLabels(dt){
     const inShop = inX && inZ && inY;
     if(inShop && shopCooldown <= 0) openShop();
     else if(!inShop) closeShop();
+  }
+
+  // 🚪 게임문 앞에 서면 코인 게임이 열린다
+  if(GATE.at && inIsland()){
+    if(gateCooldown > 0) gateCooldown -= dt;
+    const near = Math.abs(player.x - GATE.at.x) < 1.1 &&
+                 Math.abs(player.z - GATE.at.z) < 1.3 &&
+                 Math.abs(player.y - GATE.y)   < 2.6;
+    if(near && gateCooldown <= 0 && !Cave.open()) Cave.enter();
+    if(!near) gateCooldown = 0;
   }
 }
 
@@ -7414,10 +7670,11 @@ function newGameId(){
   for(let i=0;i<5;i++) s += C[(Math.random()*C.length)|0];
   return s;
 }
-function newGame(title, ground, kind){
+function newGame(title, ground, kind, pet){
   const k = kindDef(kind || 'free');
   return {
     v:1, id:newGameId(), title:title || '내 게임', author:state.nick || '', made:dayKey(new Date()),
+    pet: pet || '',                 // 이 게임을 맡은 도도 친구 (친구에게 받은 게임은 비어 있다)
     kind:k.id, ground:ground || k.ground,
     edits:{}, opt:{},
     rules:{goal:k.goal, time:60, lives:3, jump:1, need:0}
@@ -7432,6 +7689,7 @@ function fixGame(g){
   g.author = String(g.author || '').slice(0, 14);
   g.ground = GROUNDS.some(x=>x.id===g.ground) ? g.ground : 'flat';
   g.kind = KINDS.some(x=>x.id===g.kind) ? g.kind : 'free';
+  g.pet  = PETS.some(x=>x.id===g.pet) ? g.pet : '';   // 없는 친구 이름이면 비운다
   g.edits = g.edits || {};
   g.opt   = g.opt   || {};
   const r = g.rules || {};
@@ -8486,9 +8744,58 @@ function openStudioHome(){
 }
 function closeStudioHome(){ studioHomeOpen = false; $('#studiohome').style.display = 'none'; }
 
+/* 🐣 도도 친구 줄 — 누가 어느 게임을 맡았고, 몇 칸이 비었는지 한눈에 */
+/* 이 바뀜(친구 = 게임 한 칸) 전에 만들어 둔 게임에는 맡은 친구가 없다.
+   그냥 두면 아이가 "칸이 없다" 는 말만 듣고 이유를 모른다 — 있는 친구부터 붙여 준다. */
+function migrateGamePets(){
+  const list = Games.all();
+  const taken = {};
+  list.forEach(g=>{ if(g.pet) taken[g.pet] = 1; });
+  let changed = false;
+  list.forEach(g=>{
+    if(g.pet) return;
+    const p = myPets().find(x => !taken[x.id]);
+    if(!p) return;
+    g.pet = p.id; taken[p.id] = 1; changed = true;
+  });
+  if(changed) Games.save(list);
+}
+
+function renderPetSlots(){
+  const box = $('#shpets');
+  if(!box) return;
+  migrateGamePets();
+  box.innerHTML = '';
+  PETS.forEach(p=>{
+    const got = hasPet(p.id);
+    const g   = got ? petGame(p.id) : null;
+    const el = document.createElement('div');
+    el.className = 'petchip ' + (!got ? 'lock' : (g ? 'busy' : 'free'));
+    const sub = !got ? (p.how === 'level'  ? '레벨 ' + p.lv + '에 와요'
+                      : p.how === 'friend' ? '친구 1명 초대'
+                      : '🪙 ' + p.price + '개')
+              : g ? '"' + escapeHtml(g.title) + '" 맡는 중'
+                  : '게임 한 칸 비었어요';
+    el.innerHTML = '<div class="pic">' + (got ? p.icon : '🔒') + '</div>' +
+                   '<div><div>' + p.name + '</div><div class="psub">' + sub + '</div></div>';
+    box.appendChild(el);
+  });
+  const mine = myPets().length, used = Games.all().filter(x=>x.pet).length;
+  const left = Math.max(0, mine - used);
+  const how = $('#shpethow');
+  if(how) how.innerHTML = left > 0
+    ? '✅ 지금 <b>' + left + '개</b> 더 만들 수 있어요. (친구 ' + mine + '마리 중 ' + used + '마리가 맡는 중)'
+    : '🔒 친구가 모두 게임을 맡고 있어요. ' + escapeHtml(petHowNext());
+  const lb = $('#shnewlabel');
+  if(lb) lb.textContent = left > 0
+    ? '➕ 새 게임 만들기 — 어떤 게임을 만들까요? (' + left + '칸 남음)'
+    : '➕ 새 게임 만들기 — 친구를 더 데려와야 해요';
+}
+
 function renderStudioHome(){
   const box = $('#shlist');
   const games = Games.all();
+  renderPetSlots();
   box.innerHTML = '';
   if(!games.length){
     box.innerHTML = '<div class="msub" style="margin:4px 0 0">아직 만든 게임이 없어요. 아래에서 새로 만들어 보세요!</div>';
@@ -8498,7 +8805,10 @@ function renderStudioHome(){
     el.className = 'gamecard';
     el.innerHTML =
       '<div class="gtitle">' + kindDef(g.kind).icon + ' ' + escapeHtml(g.title) + '</div>' +
-      '<div class="gsub">' + kindDef(g.kind).name + ' · ' +
+      '<div class="gsub">' +
+        (g.pet && petDef(g.pet) ? petDef(g.pet).icon + ' ' + petDef(g.pet).name + '가 맡았어요 · '
+                                : '👫 친구에게 받은 게임 · ') +
+        kindDef(g.kind).name + ' · ' +
         goalDef(g.rules.goal).icon + ' ' + goalDef(g.rules.goal).name +
         ' · 블록 ' + Object.keys(g.edits).length + '칸</div>' +
       '<div class="grow">' +
@@ -8507,6 +8817,7 @@ function renderStudioHome(){
         '<button class="mbtn gray gshare" style="margin-top:0">📤 보내기</button>' +
         '<button class="mbtn gray gnum" style="margin-top:0" title="수백 자 대신 짧은 번호로 보내요">🔗 번호로</button>' +
         '<button class="mbtn gray grbx" style="margin-top:0" title="로블록스 스튜디오에서 열 수 있는 파일로 저장해요">🟥 로블록스로</button>' +
+        '<button class="mbtn gray gdel" style="margin-top:0" title="지우면 맡은 친구가 다시 비어요">🗑️ 지우기</button>' +
       '</div>';
     el.querySelector('.gplay').addEventListener('click', ()=>modeGo('play', g, {from:'island'}));
     el.querySelector('.gedit').addEventListener('click', ()=>modeGo('studio', g));
@@ -8526,6 +8837,28 @@ function renderStudioHome(){
       Sound.click();
     });
     el.querySelector('.gnum').addEventListener('click', ()=>makeShortKey(gameCode(g), '#shmsg'));
+    /* 🗑️ 지우기 — 게임 칸이 친구 수만큼이라 지우는 길이 꼭 있어야 한다.
+       한 번 더 눌러야 지워진다 (아이가 실수로 날리면 되돌릴 수 없다). */
+    const db = el.querySelector('.gdel');
+    db.addEventListener('click', ()=>{
+      if(db.dataset.sure !== '1'){
+        db.dataset.sure = '1';
+        db.textContent = '🗑️ 정말 지울까요?';
+        db.style.background = '#ff8e8e';
+        $('#shmsg').style.color = '#c0392b';
+        $('#shmsg').textContent = '"' + g.title + '" 을(를) 지우면 되돌릴 수 없어요. 맞으면 한 번 더 누르세요.';
+        Sound.deny();
+        setTimeout(()=>{ if(db.dataset.sure === '1') renderStudioHome(); }, 6000);
+        return;
+      }
+      const p = g.pet ? petDef(g.pet) : null;
+      Games.del(g.id);
+      Sound.click();
+      $('#shmsg').style.color = '#38b862';
+      $('#shmsg').textContent = p ? '🗑️ 지웠어요. ' + p.icon + ' ' + p.name + ' 가 다시 비었어요!'
+                                  : '🗑️ 지웠어요.';
+      renderStudioHome();
+    });
     el.querySelector('.grbx').addEventListener('click', ()=>{
       const r = exportRbxlx(g);
       $('#shmsg').style.color = r.ok ? '#38b862' : '#c0392b';
@@ -8544,14 +8877,23 @@ function renderStudioHome(){
     el.innerHTML = '<div class="cic">' + k.icon + '</div><div class="cnm">' + k.name +
                    '</div><div class="cds">' + k.desc + '</div>';
     el.addEventListener('click', ()=>{
+      // ① 선반이 꽉 찼는지 ② 게임을 맡아 줄 친구가 남았는지
       if(Games.all().length >= GAME_MAX){
         $('#shmsg').style.color = '#c0392b';
-        $('#shmsg').textContent = '게임은 ' + GAME_MAX + '개까지 만들 수 있어요. 하나를 지우고 만들어 주세요.';
+        $('#shmsg').textContent = '게임 선반이 ' + GAME_MAX + '칸뿐이에요. 하나를 지우고 만들어 주세요.';
         Sound.deny();
         return;
       }
-      const g = newGame(k.name + ' ' + (Games.all().length + 1), shGround || k.ground, k.id);
+      const pet = freePet();
+      if(!pet){
+        $('#shmsg').style.color = '#c0392b';
+        $('#shmsg').textContent = '🐣 지금 있는 친구들이 모두 게임을 하나씩 맡고 있어요. ' + petHowNext();
+        Sound.deny();
+        return;
+      }
+      const g = newGame(k.name + ' ' + (Games.all().length + 1), shGround || k.ground, k.id, pet.id);
       Games.put(g);
+      popText(pet.icon + ' ' + pet.name + '가 맡았어요!', '#7ae582');
       modeGo('studio', g);
     });
     nb.appendChild(el);
@@ -11745,6 +12087,557 @@ async function bootShortCode(){
 }
 setTimeout(bootShortCode, 1200);
 
+/* ═══════════════════════════════════════════════════
+   30. 🚪 코인 게임 — 상점 옆 게임문으로 들어가는 곳
+
+   섬의 코인은 한 번 먹으면 없어진다. 그래서 코인을 계속 벌 곳이 필요했고,
+   그 코인이 🥚 알 값이 되어 🐣 친구가 되고, 친구가 게임 한 칸이 된다.
+
+   이 방만 화면이 다르다. 블록 세상(Three.js)이 아니라 납작한 2D 판이고,
+   마리오처럼 옆에서 본다. 그래서 블록 쪽 코드를 한 줄도 안 건드린다 —
+   화면 위에 canvas 를 한 장 덮고, 그 위에서만 돈다.
+
+   조작: ← → 달리기 · ↑/스페이스 점프 · ↓ 사다리 내려가기 · Esc 나가기
+   칸 번호: 0 빈칸 · 1 땅 · 2 나무 발판(위에서만 밟힌다) · 3 사다리 ·
+            4 물(빠지면 목숨 하나) · 5 코인 · 6 깃발
+   ═══════════════════════════════════════════════════ */
+const Cave = (function(){
+  const CH = 13;                 // 세로 칸 수 (하늘이 너무 넓지 않게)
+  const GRAV = 34, RUN = 7.2, JUMP = 13.2, CLIMB = 5.2;
+  const PW = 0.62, PH = 0.92;    // 도도 크기 (칸 단위)
+
+  let on = false, lv = null, stage = 1, raf = 0, last = 0;
+  let px=0, py=0, vx=0, vy=0, onGround=false, onLadder=false;
+  let lives = 3, got = 0, safeX = 2, hurt = 0, cleared = false, dead = false;
+  let camX = 0, camY = 0, walkT = 0, face = 1;
+  const key = {l:false, r:false, u:false, d:false};
+  let jumpHeld = false, coyote = 0, buf = 0;
+
+  /* 단계마다 같은 판이 나온다 — 아이가 외워서 더 잘하게 된다 */
+  function rng(seed){
+    let t = seed >>> 0;
+    return function(){
+      t = (t + 0x6D2B79F5) >>> 0;
+      let x = Math.imul(t ^ (t >>> 15), 1 | t);
+      x = (x + Math.imul(x ^ (x >>> 7), 61 | x)) ^ x;
+      return ((x ^ (x >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  /* ── 판 만들기 ── */
+  function make(st){
+    const r = rng(st * 7919 + 13);
+    const W = 54 + st * 10;
+    const g = [];
+    for(let y=0;y<CH;y++) g.push(new Array(W).fill(0));
+    const top = new Array(W).fill(CH - 3);      // 땅 윗면 줄 번호
+    let coins = 0;
+
+    let x = 0, h = CH - 3;
+    while(x < W){
+      if(x < 6 || x > W - 8){                   // 시작과 끝은 평평하게
+        top[x] = h; x++; continue;
+      }
+      const roll = r();
+      if(roll < 0.20 + st*0.015){               // 구멍 (아래는 물)
+        const gap = 2 + Math.floor(r() * Math.min(3, 1 + st*0.4));
+        for(let i=0;i<gap && x<W;i++, x++) top[x] = -1;
+        continue;
+      }
+      if(roll < 0.44){                          // 계단 오르내리기
+        h += (r() < 0.5 ? -1 : 1) * (1 + (r() < 0.3 ? 1 : 0));
+        h = Math.max(3, Math.min(CH - 2, h));
+      }
+      const run = 2 + Math.floor(r() * 4);
+      for(let i=0;i<run && x<W;i++, x++) top[x] = h;
+    }
+
+    // 땅과 물 채우기
+    for(let x2=0;x2<W;x2++){
+      if(top[x2] < 0){
+        for(let y=CH-2;y<CH;y++) g[y][x2] = 4;       // 물
+      } else {
+        for(let y=top[x2]; y<CH; y++) g[y][x2] = 1;  // 땅
+      }
+    }
+
+    // 공중 발판 + 그 위 코인 (구멍 위에 놓아 건너갈 길을 만든다)
+    for(let x2=8; x2<W-8; x2++){
+      if(r() > 0.14) continue;
+      const base = top[x2] > 0 ? top[x2] : CH - 3;
+      const py2 = Math.max(2, base - (3 + Math.floor(r()*2)));
+      const wdt = 2 + Math.floor(r()*3);
+      for(let i=0;i<wdt && x2+i<W-3;i++){
+        if(g[py2][x2+i] === 0) g[py2][x2+i] = 2;
+        if(g[py2-1][x2+i] === 0) g[py2-1][x2+i] = 5, coins++;
+      }
+      x2 += wdt + 2;
+    }
+
+    // 사다리 — ↑ ↓ 로 오르내리는 자리 (위에는 코인 세 개)
+    for(let x2=12; x2<W-10; x2++){
+      if(r() > 0.10) continue;
+      if(top[x2] < 0 || top[x2-1] < 0) continue;
+      const bot = top[x2] - 1, topY = Math.max(1, bot - (3 + Math.floor(r()*3)));
+      let blocked = false;
+      for(let y=topY; y<=bot; y++) if(g[y][x2] !== 0) blocked = true;
+      if(blocked) continue;
+      for(let y=topY; y<=bot; y++) g[y][x2] = 3;
+      for(let i=0;i<3;i++) if(x2+i < W-3 && g[topY][x2+i] === 0) g[topY][x2+i] = 2;
+      for(let i=0;i<3;i++) if(x2+i < W-3 && g[topY-1][x2+i] === 0) g[topY-1][x2+i] = 5, coins++;
+      x2 += 6;
+    }
+
+    // 땅 위에 흩뿌린 코인
+    for(let x2=4; x2<W-4; x2++){
+      if(top[x2] < 0 || r() > 0.26) continue;
+      const y = top[x2] - 1;
+      if(g[y][x2] === 0){ g[y][x2] = 5; coins++; }
+    }
+
+    // 🏁 깃발 — 오른쪽 끝
+    const fx = W - 4, fy = (top[fx] > 0 ? top[fx] : CH - 3) - 1;
+    g[fy][fx] = 6;
+
+    return {g:g, W:W, top:top, coins:coins, flag:{x:fx, y:fy}};
+  }
+
+  const tile = (x,y) => (!lv || y<0 || y>=CH || x<0 || x>=lv.W) ? (y>=CH ? 0 : 1) : lv.g[y][x];
+  const solid = t => (t === 1);
+
+  /* ── 한 판 시작 ── */
+  function start(st){
+    stage = Math.max(1, st|0);
+    lv = make(stage);
+    px = 2.5; py = (lv.top[2] > 0 ? lv.top[2] : CH-3) - PH - 0.05;
+    vx = vy = 0; onGround = false; onLadder = false;
+    lives = 3; got = 0; safeX = px; hurt = 0; cleared = false; dead = false;
+    camX = 0; camY = 0; walkT = 0; face = 1; coyote = 0; buf = 0;
+    hud();
+    $('#caveover').classList.remove('on');
+  }
+
+  function hud(){
+    $('#cvstage').textContent = stage + '단계';
+    $('#cvcoin').textContent  = '🪙 ' + got;
+    $('#cvlife').textContent  = lives > 0 ? '❤️'.repeat(lives) : '💧';
+  }
+
+  /* ── 움직임 한 걸음 ── */
+  function step(dt){
+    if(cleared || dead) return;
+    dt = Math.min(dt, 0.05);
+    walkT += dt;
+    if(hurt > 0) hurt -= dt;
+    if(buf > 0) buf -= dt;
+
+    // 사다리에 닿아 있나
+    const cx = Math.floor(px + PW/2), cyTop = Math.floor(py + 0.15), cyBot = Math.floor(py + PH - 0.05);
+    const onL = tile(cx, cyTop) === 3 || tile(cx, cyBot) === 3;
+    if(onL && (key.u || key.d)) onLadder = true;
+    if(!onL) onLadder = false;
+
+    // 좌우
+    const want = (key.r ? 1 : 0) - (key.l ? 1 : 0);
+    if(want) face = want;
+    vx = want * RUN;
+
+    if(onLadder){
+      vy = (key.d ? CLIMB : 0) - (key.u ? CLIMB : 0);
+      if(buf > 0){ onLadder = false; vy = -JUMP*0.8; buf = 0; Sound.jump(); }
+    } else {
+      vy += GRAV * dt;
+      if(vy > 26) vy = 26;
+      if(buf > 0 && (onGround || coyote > 0)){
+        vy = -JUMP; buf = 0; coyote = 0; onGround = false; Sound.jump();
+      }
+      if(!jumpHeld && vy < -4) vy = -4;      // 짧게 누르면 조금만 뛴다
+    }
+
+    moveX(vx * dt);
+    const wasAir = !onGround;
+    moveY(vy * dt);
+    if(onGround){
+      coyote = 0.11;
+      if(wasAir && vy > 6) Sound.land();
+    } else if(coyote > 0) coyote -= dt;
+
+    pickups();
+
+    // 물에 빠지거나 판 아래로 떨어지면
+    const fx2 = Math.floor(px + PW/2), fy2 = Math.floor(py + PH/2);
+    if(py > CH || tile(fx2, fy2) === 4) drown();
+  }
+
+  function hits(nx, ny){
+    const x0 = Math.floor(nx), x1 = Math.floor(nx + PW - 0.001);
+    const y0 = Math.floor(ny), y1 = Math.floor(ny + PH - 0.001);
+    for(let y=y0;y<=y1;y++) for(let x=x0;x<=x1;x++) if(solid(tile(x,y))) return true;
+    return false;
+  }
+  function moveX(d){
+    if(!d) return;
+    const nx = px + d;
+    if(!hits(nx, py)) { px = nx; return; }
+    px = d > 0 ? Math.floor(nx + PW) - PW - 0.001 : Math.floor(nx) + 1.001;
+    vx = 0;
+  }
+  function moveY(d){
+    if(!d){ return; }
+    const ny = py + d;
+    // 나무 발판은 위에서 내려올 때만 밟힌다 (아래에서 뛰어 올라갈 수 있게)
+    if(d > 0 && !key.d){
+      const footNow = py + PH, footNext = ny + PH;
+      const row = Math.floor(footNext);
+      if(Math.floor(footNow) < row || footNow <= row){
+        for(let x=Math.floor(px); x<=Math.floor(px+PW-0.001); x++){
+          if(tile(x, row) === 2 && footNow <= row + 0.02){
+            py = row - PH; vy = 0; onGround = true; return;
+          }
+        }
+      }
+    }
+    if(!hits(px, ny)){
+      py = ny;
+      if(d > 0) onGround = false;
+      return;
+    }
+    if(d > 0){ py = Math.floor(ny + PH) - PH - 0.001; onGround = true; }
+    else     { py = Math.floor(ny) + 1.001; }
+    vy = 0;
+  }
+
+  function pickups(){
+    const x0 = Math.floor(px), x1 = Math.floor(px + PW);
+    const y0 = Math.floor(py), y1 = Math.floor(py + PH);
+    for(let y=y0;y<=y1;y++) for(let x=x0;x<=x1;x++){
+      const t = tile(x,y);
+      if(t === 5){ lv.g[y][x] = 0; got++; Sound.coin(); hud(); }
+      else if(t === 6 && !cleared) clear();
+    }
+    if(onGround && Math.floor(px) < lv.W && lv.top[Math.floor(px)] > 0) safeX = px;
+  }
+
+  function drown(){
+    if(hurt > 0.9) return;
+    lives--;
+    hurt = 1.2;
+    Sound.deny();
+    if(lives <= 0){ dead = true; hud(); setTimeout(over, 600); return; }
+    px = safeX;
+    const t = lv.top[Math.floor(px)] > 0 ? lv.top[Math.floor(px)] : CH - 3;
+    py = t - PH - 0.05; vx = vy = 0;
+    hud();
+  }
+
+  /* ── 끝났을 때 ── */
+  function payout(bonus){
+    const total = got + bonus;
+    if(total > 0) gainCoins(total, true);
+    addExp(6 + stage * 3);
+    state.cave = state.cave || {best:0, runs:0};
+    state.cave.runs = (state.cave.runs|0) + 1;
+    checkQuests(); updateHud(); saveSoon();
+    return total;
+  }
+  function clear(){
+    cleared = true;
+    Sound.fanfare();
+    state.cave = state.cave || {best:0, runs:0};
+    if(stage > (state.cave.best|0)) state.cave.best = stage;
+    const bonus = 20 + stage * 10;
+    const total = payout(bonus);
+    panel('🏁', stage + '단계 깼어요!',
+      '주운 코인 🪙 ' + got + '개 + 깃발 선물 🪙 ' + bonus + '개<br>' +
+      '<b>모두 🪙 ' + total + '개</b>를 가방에 넣었어요!',
+      stage + 1, '▶ ' + (stage+1) + '단계 하기');
+  }
+  function over(){
+    const total = payout(0);
+    panel('💧', '물에 빠졌어요',
+      total > 0 ? '그래도 주운 코인 🪙 <b>' + total + '개</b>는 그대로예요!'
+                : '괜찮아요, 다시 해 봐요!',
+      stage, '↻ ' + stage + '단계 다시');
+  }
+
+  /* ── 안내 판 ── */
+  let nextStage = 1;
+  function panel(ic, title, sub, goStage, goLabel){
+    nextStage = goStage;
+    $('#covic').textContent = ic;
+    $('#covtitle').textContent = title;
+    $('#covsub').innerHTML = sub;
+    $('#covgo').textContent = goLabel;
+    const box = $('#covstages');
+    box.innerHTML = '';
+    const best = (state.cave && state.cave.best|0) || 0;
+    for(let i=1; i<=best+1; i++){
+      const b = document.createElement('button');
+      b.className = 'cstg' + (i === goStage ? ' on' : '');
+      b.textContent = i + '단계';
+      b.addEventListener('click', ()=>{ nextStage = i; start(i); });
+      box.appendChild(b);
+    }
+    $('#caveover').classList.add('on');
+  }
+
+  /* ── 들어오기 · 나가기 ── */
+  function enter(){
+    if(on) return;
+    on = true;
+    caveOpen = true;
+    if(document.pointerLockElement) document.exitPointerLock();
+    $('#cave').classList.add('on');
+    const coarse = (typeof touchMode !== 'undefined' && touchMode) ||
+                   (window.matchMedia && matchMedia('(pointer: coarse)').matches);
+    $('#cavepad').classList.toggle('on', !!coarse);
+    resize();
+    const best = (state.cave && state.cave.best|0) || 0;
+    lv = null; got = 0; lives = 3; stage = best + 1;
+    hud();
+    panel('🪙', '코인 게임',
+      '오른쪽 끝 🏁 깃발까지 가면서 코인을 주워요.<br>' +
+      '<b>◀ ▶</b> 달리기 · <b>▲ / 스페이스</b> 점프 · <b>▼</b> 사다리 내려가기<br>' +
+      '물에 빠지면 ❤️ 를 하나 잃어요.',
+      best + 1, '▶ ' + (best+1) + '단계 시작');
+    last = performance.now();
+    loop();
+    Sound.shop();
+  }
+  function leave(){
+    if(!on) return;
+    on = false;
+    caveOpen = false;
+    cancelAnimationFrame(raf); raf = 0;
+    $('#cave').classList.remove('on');
+    $('#caveover').classList.remove('on');
+    for(const k in key) key[k] = false;
+    // 문 앞으로 한 걸음 물러나게 해서 바로 다시 안 열리게
+    if(GATE.at){
+      player.x = GATE.at.x + 1.6;
+      player.z = GATE.at.z;
+      player.y = GATE.y + 0.2;
+      player.vx = player.vy = player.vz = 0;
+    }
+    gateCooldown = 1.4;
+    saveNow();
+    showHint('🏝️ 섬으로 돌아왔어요!', 1600);
+  }
+
+  /* ── 그리기 ── */
+  const cv = () => $('#cavecv');
+  let ctx2 = null, ts = 34, vw = 0, vh = 0;
+  function resize(){
+    const c = cv();
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    vw = c.clientWidth; vh = c.clientHeight;
+    c.width = Math.round(vw * dpr); c.height = Math.round(vh * dpr);
+    ctx2 = c.getContext('2d');
+    ctx2.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx2.imageSmoothingEnabled = false;
+    ts = Math.max(22, Math.min(vw / 16, vh / 9));   // 가로 16칸 · 세로 9칸쯤 보이게
+  }
+  function draw(){
+    if(!ctx2) return;
+    const c = ctx2;
+    // 하늘
+    const sky = c.createLinearGradient(0, 0, 0, vh);
+    sky.addColorStop(0, '#8fd8ff'); sky.addColorStop(1, '#d8f4ff');
+    c.fillStyle = sky; c.fillRect(0, 0, vw, vh);
+    if(!lv) return;
+
+    // 따라오는 화면 — 옆으로도, 위아래로도
+    const wantX = px * ts - vw / 2;
+    camX += (Math.max(0, Math.min(Math.max(0, lv.W * ts - vw), wantX)) - camX) * 0.16;
+    const spanY = CH * ts;
+    const wantY = spanY > vh ? Math.max(0, Math.min(spanY - vh, py * ts - vh * 0.58)) : 0;
+    camY += (wantY - camY) * 0.12;
+    const oy = spanY > vh ? -camY : (vh - spanY) / 2;
+
+    // 구름 (천천히 흐른다)
+    c.fillStyle = 'rgba(255,255,255,.75)';
+    for(let i=0;i<9;i++){
+      const cx2 = ((i * 430 - camX * 0.18) % (vw + 500) + vw + 500) % (vw + 500) - 250;
+      const cy2 = oy + ts * (1.2 + (i % 3) * 1.5);
+      c.beginPath();
+      c.ellipse(cx2, cy2, ts*1.5, ts*0.55, 0, 0, 7);
+      c.ellipse(cx2 + ts*1.1, cy2 + ts*0.12, ts*1.0, ts*0.42, 0, 0, 7);
+      c.fill();
+    }
+
+    // 뒤쪽 언덕 (천천히 따라온다 — 깊이감)
+    const groundY = oy + (CH - 3) * ts;
+    c.fillStyle = '#bdeccb';
+    for(let i=0;i<20;i++){
+      const hx = ((i * 215 - camX * 0.25) % (vw + 430) + vw + 430) % (vw + 430) - 215;
+      c.beginPath(); c.arc(hx, groundY + ts*0.35, ts*1.35, Math.PI, 0); c.fill();
+    }
+
+    c.fillStyle = '#8a5c39';
+    c.fillRect(0, oy + CH * ts, vw, Math.max(0, vh - (oy + CH * ts)));
+
+    const x0 = Math.max(0, Math.floor(camX / ts) - 1);
+    const x1 = Math.min(lv.W - 1, Math.ceil((camX + vw) / ts) + 1);
+    const t = performance.now() / 1000;
+
+    for(let x=x0; x<=x1; x++) for(let y=0; y<CH; y++){
+      const v = lv.g[y][x];
+      if(!v) continue;
+      const sx = Math.round(x * ts - camX), sy = Math.round(oy + y * ts), S = Math.ceil(ts);
+      if(v === 1){
+        const grassTop = (y === 0 || lv.g[y-1][x] !== 1);
+        c.fillStyle = '#9c6b43'; c.fillRect(sx, sy, S, S);
+        c.fillStyle = 'rgba(0,0,0,.10)'; c.fillRect(sx, sy + S - 3, S, 3);
+        if(grassTop){ c.fillStyle = '#6dbf5a'; c.fillRect(sx, sy, S, Math.max(4, S*0.3)); }
+      } else if(v === 2){
+        c.fillStyle = '#c99a5b'; c.fillRect(sx, sy, S, Math.max(6, S*0.42));
+        c.fillStyle = '#8a6535'; c.fillRect(sx, sy + Math.max(6, S*0.42) - 3, S, 3);
+      } else if(v === 3){
+        c.fillStyle = '#b07a3a';
+        c.fillRect(sx + S*0.18, sy, Math.max(3,S*0.12), S);
+        c.fillRect(sx + S*0.70, sy, Math.max(3,S*0.12), S);
+        c.fillRect(sx + S*0.18, sy + S*0.42, S*0.64, Math.max(3,S*0.12));
+      } else if(v === 4){
+        const wob = Math.sin(t*2.4 + x*0.7) * S*0.08;
+        c.fillStyle = 'rgba(70,170,255,.72)';
+        c.fillRect(sx, sy + wob, S, S - wob);
+        c.fillStyle = 'rgba(255,255,255,.45)';
+        c.fillRect(sx, sy + wob, S, 3);
+      } else if(v === 5){
+        const bob = Math.sin(t*3 + x) * S*0.09;
+        const cxp = sx + S/2, cyp = sy + S/2 + bob, r = S*0.29;
+        c.fillStyle = '#ffd93d';
+        c.beginPath(); c.ellipse(cxp, cyp, r*0.78, r, 0, 0, 7); c.fill();
+        c.fillStyle = '#ffeea0';
+        c.beginPath(); c.ellipse(cxp - r*0.2, cyp - r*0.25, r*0.22, r*0.34, 0, 0, 7); c.fill();
+      } else if(v === 6){
+        c.fillStyle = '#9c6b43'; c.fillRect(sx + S*0.42, sy - S*1.4, Math.max(4,S*0.14), S*2.4);
+        c.fillStyle = '#ff5d5d';
+        c.beginPath();
+        c.moveTo(sx + S*0.56, sy - S*1.35);
+        c.lineTo(sx + S*1.5,  sy - S*0.95);
+        c.lineTo(sx + S*0.56, sy - S*0.55);
+        c.closePath(); c.fill();
+      }
+    }
+
+    drawDodo(c, oy, t);
+
+    if(cleared || dead) return;
+    // 남은 길 알려 주는 작은 띠
+    const prog = Math.max(0, Math.min(1, px / (lv.flag.x || 1)));
+    c.fillStyle = 'rgba(255,255,255,.55)';
+    c.fillRect(vw*0.18, vh - 16, vw*0.64, 8);
+    c.fillStyle = '#ffb03d';
+    c.fillRect(vw*0.18, vh - 16, vw*0.64*prog, 8);
+  }
+
+  /* 주인공 — 섬에서 입고 있는 옷 색을 그대로 쓴다 */
+  function drawDodo(c, oy, t){
+    if(hurt > 0 && Math.floor(hurt * 12) % 2) return;
+    const sk = (typeof skinById === 'function') ? skinById(state.skin) : null;
+    const hex = n => '#' + (n|0).toString(16).padStart(6, '0');
+    const body = hex(sk ? sk.body : 0x8fd9cf), legs = hex(sk ? sk.legs : 0xf3a03d),
+          skin = hex(sk ? sk.skin : 0xd9efe9);
+    const sx = Math.round(px * ts - camX), sy = Math.round(oy + py * ts);
+    const W2 = PW * ts, H2 = PH * ts;
+    const swing = onGround ? Math.sin(walkT * 13) * (Math.abs(vx) > 0.4 ? 1 : 0) : 0.4;
+    c.save();
+    c.translate(sx + W2/2, sy + H2);
+    c.scale(face, 1);
+    // 다리
+    c.fillStyle = legs;
+    c.fillRect(-W2*0.30 + swing*W2*0.18, -H2*0.22, W2*0.20, H2*0.22);
+    c.fillRect( W2*0.10 - swing*W2*0.18, -H2*0.22, W2*0.20, H2*0.22);
+    // 몸
+    c.fillStyle = body;
+    c.fillRect(-W2*0.42, -H2*0.72, W2*0.84, H2*0.52);
+    // 배
+    c.fillStyle = skin;
+    c.fillRect(-W2*0.22, -H2*0.56, W2*0.42, H2*0.30);
+    // 머리
+    c.fillStyle = skin;
+    c.fillRect(-W2*0.36, -H2*1.02, W2*0.72, H2*0.34);
+    // 부리
+    c.fillStyle = '#ffc043';
+    c.fillRect(W2*0.30, -H2*0.90, W2*0.30, H2*0.16);
+    // 눈
+    c.fillStyle = '#221a14';
+    c.fillRect(W2*0.10, -H2*0.94, Math.max(2, W2*0.10), Math.max(2, H2*0.10));
+    // 날개
+    c.fillStyle = body;
+    c.fillRect(-W2*0.50, -H2*0.66, W2*0.18, H2*0.26);
+    c.restore();
+  }
+
+  function loop(){
+    if(!on) return;
+    raf = requestAnimationFrame(loop);
+    const now = performance.now();
+    const dt = Math.min(0.05, (now - last) / 1000);
+    last = now;
+    if(lv) step(dt);
+    draw();
+  }
+
+  /* ── 자판 · 단추 ── */
+  function down(code){
+    if(code === 'ArrowLeft'  || code === 'KeyA') key.l = true;
+    else if(code === 'ArrowRight' || code === 'KeyD') key.r = true;
+    else if(code === 'ArrowUp'   || code === 'KeyW') key.u = true;
+    else if(code === 'ArrowDown' || code === 'KeyS') key.d = true;
+    if(code === 'Space' || code === 'ArrowUp' || code === 'KeyW'){ buf = 0.14; jumpHeld = true; }
+  }
+  function up(code){
+    if(code === 'ArrowLeft'  || code === 'KeyA') key.l = false;
+    else if(code === 'ArrowRight' || code === 'KeyD') key.r = false;
+    else if(code === 'ArrowUp'   || code === 'KeyW') key.u = false;
+    else if(code === 'ArrowDown' || code === 'KeyS') key.d = false;
+    if(code === 'Space' || code === 'ArrowUp' || code === 'KeyW') jumpHeld = false;
+  }
+
+  addEventListener('keydown', e=>{
+    if(!on) return;
+    if(e.code === 'Escape'){ leave(); e.preventDefault(); return; }
+    down(e.code);
+    if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Space'].indexOf(e.code) >= 0) e.preventDefault();
+  }, true);
+  addEventListener('keyup', e=>{ if(on) up(e.code); }, true);
+  addEventListener('resize', ()=>{ if(on) resize(); });
+
+  function pad(id, on_, off){
+    const el = $(id);
+    if(!el) return;
+    const a = e=>{ e.preventDefault(); on_(); };
+    const b = e=>{ e.preventDefault(); off(); };
+    el.addEventListener('pointerdown', a);
+    el.addEventListener('pointerup', b);
+    el.addEventListener('pointercancel', b);
+    el.addEventListener('pointerleave', b);
+  }
+
+  function wire(){
+    pad('#cpL', ()=>key.l = true,  ()=>key.l = false);
+    pad('#cpR', ()=>key.r = true,  ()=>key.r = false);
+    pad('#cpD', ()=>key.d = true,  ()=>key.d = false);
+    pad('#cpJ', ()=>{ key.u = true; buf = 0.14; jumpHeld = true; },
+                ()=>{ key.u = false; jumpHeld = false; });
+    $('#cvout').addEventListener('click', leave);
+    $('#covout').addEventListener('click', leave);
+    $('#covgo').addEventListener('click', ()=>start(nextStage));
+  }
+
+  return {enter, leave, open(){ return on; }, wire, start,
+          stage(){ return stage; }, make, level(){ return lv; },
+          pos(){ return {x:px, y:py, vx:vx, vy:vy, onGround:onGround}; },
+          lives(){ return lives; }, got(){ return got; },
+          cleared(){ return cleared; }, dead(){ return dead; },
+          press(c){ down(c); }, release(c){ up(c); },
+          sim(dt, n){ for(let i=0;i<(n||1);i++) step(dt); }};
+})();
+
+Cave.wire();                      // 🚪 코인 게임 단추 연결
+
 window.BW = {player, setBlock, getBlock, scene, camera, renderer, voxels, W,H,D, IDX, keys,
   Mode, Studio, Play, Games, newGame, gameCode, readGameCode, modeGo, magicCount,
   openStudioHome, closeStudioHome, tmplObby, tmplTreasure, tmplMaze, stLayPlats,
@@ -11766,6 +12659,8 @@ window.BW = {player, setBlock, getBlock, scene, camera, renderer, voxels, W,H,D,
   comboOn(){ return comboOn; }, registerCoinForCombo,
   SKINS, buySkin, applySkin, openShop, closeShop, shopOpen(){ return shopOpen; },
   spawnGoldBlock, goldEvent, pets, SHOP, npc(){ return npcGroup; }, npcLine, leaveShop,
+  PETS, petDef, hasPet, myPets, petGame, freePet, petHowNext, migrateGamePets,
+  renderEggs, buyEgg, renderPetSlots, GATE, Cave, caveOpen(){ return caveOpen; },
   foldAll, toggleFold,
   tut, tutStart, tutSkip, TUT_STEPS, setTouchMode, touchMode(){ return touchMode; }, touch, Sound, setSoundOn,
   Bag, RECIPES, CRAFTED, craftOne, openCraft, closeCraft, hotbarList,
