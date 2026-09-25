@@ -614,6 +614,65 @@
   .badge .bnm{font-size:13px; margin-top:4px;}
   .badge .bds{font-size:11px; opacity:.6; margin-top:2px; line-height:1.35;}
 
+  /* ── 📖 블록섬 도감 (카드) ── */
+  #dgbody{max-height:46vh; overflow-y:auto; padding-right:3px;}
+  .dsec{display:flex; align-items:baseline; gap:8px; margin:13px 0 7px; flex-wrap:wrap;}
+  .dsec b{font-size:16px;}
+  .dsec span{font-size:12px; opacity:.6;}
+  .dgrid{display:grid; grid-template-columns:repeat(auto-fill,minmax(94px,1fr)); gap:9px;}
+  .dcard{
+    background:#fffdf6; border:2.5px solid #3b2f5c; border-radius:12px;
+    padding:6px 5px 5px; text-align:center; cursor:pointer;
+    box-shadow:0 4px 0 rgba(0,0,0,.12); transition:transform .12s ease;
+  }
+  .dcard:hover{transform:translateY(-3px);}
+  .dcard .dnp{
+    font-size:12px; line-height:1.35; background:#8fd9cf; color:#26433f;
+    border-radius:7px; padding:2px 4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  .dcard .dart{margin:5px auto 3px; width:52px; height:52px;}
+  .dcard .dart svg{width:100%; height:100%; display:block;}
+  .dcard .dft{font-size:10px; opacity:.55;}
+  .dcard.gold{border-color:#e0a000; box-shadow:0 4px 0 #c98f00;}
+  .dcard.gold .dnp{background:#ffd93d; color:#5a4400;}
+  .dcard.lock{background:#efecf5; border-color:#b7b0c6; box-shadow:0 4px 0 rgba(0,0,0,.08);}
+  .dcard.lock .dnp{background:#cfc9da; color:#6b6480;}
+  .dcard.lock .dart{opacity:.45;}
+  .dcard.game .dnp{background:#7fc6ff; color:#123a5c;}
+  #dgpick{
+    display:flex; gap:12px; align-items:flex-start; margin-top:12px; min-height:88px;
+    background:#f6f2ea; border-radius:14px; padding:12px 14px;
+  }
+  #dgpick .dhint{font-size:13px; opacity:.6;}
+  #dgpick .dpk{width:58px; height:58px; flex:0 0 auto;}
+  #dgpick .dpk svg{width:100%; height:100%; display:block;}
+  #dgpick .dpk.off{opacity:.4;}
+  #dgpick .dpb{flex:1 1 auto; min-width:0;}
+  #dgpick .dpn{font-size:16px;}
+  #dgpick .dpt{font-size:13px; opacity:.72; line-height:1.5; margin-top:3px;}
+  #dgpick .dpw{font-size:12px; opacity:.55; margin-top:3px;}
+  #dgpick .dprow{display:flex; gap:8px; flex-wrap:wrap; margin-top:9px;}
+  #dgmsg{font-size:13px; margin-top:8px; line-height:1.5;}
+  #dgcode{display:none;}
+  #dogam textarea{
+    width:100%; height:64px; resize:none; border-radius:14px; border:3px solid #e3ddef;
+    padding:9px 11px; font-family:ui-monospace,Menlo,Consolas,monospace; font-size:12px;
+    font-weight:600; color:#3b3350; background:#faf8ff; word-break:break-all; margin-top:9px;
+  }
+  /* 배지 계단 — 앞 칸은 배지, 꼭대기부터는 카드 */
+  .lad{background:#faf7f1; border-radius:12px; padding:9px 11px; margin-bottom:8px;}
+  .lad .lnm{font-size:14px; display:flex; gap:7px; align-items:baseline; flex-wrap:wrap;}
+  .lad .lnm small{font-size:11px; opacity:.55;}
+  /* 칸이 화면보다 길면 다음 줄로 넘긴다 — 옆으로 밀어서 보면 끝 칸을 못 본다 */
+  .lsteps{display:flex; flex-wrap:wrap; gap:6px; margin-top:7px; padding-bottom:2px;}
+  .lstep{
+    flex:0 0 auto; font-size:11px; line-height:1.35; border-radius:9px; padding:4px 8px;
+    border:2px solid #cfc9da; color:#6b6480; white-space:nowrap; text-align:center; background:#fff;
+  }
+  .lstep b{display:block; font-size:12px;}
+  .lstep.on{border-color:#38b862; color:#2a8c4a; background:#e7f8ec;}
+  .lstep.card.on{border-color:#e0a000; color:#a97400; background:#fff5d6;}
+
   /* 청사진 목록 */
   .bplan{
     display:flex; align-items:center; gap:12px; padding:11px 12px; margin-bottom:10px;
@@ -1197,6 +1256,7 @@
   }
   #btoast.on{opacity:1; transform:translateX(-50%) scale(1);}
   #btoast .tbic{font-size:32px; line-height:1;}
+  #btoast .tbic svg{width:38px; height:38px; display:block; margin:0 auto;}
   #btoast .tbnm{font-size:17px; margin-top:2px;}
   #btoast .tbsub{font-size:12px; opacity:.6;}
 
@@ -1652,9 +1712,26 @@
 <!-- 🏅 배지 -->
 <div class="modal" id="badges"><div class="mbox">
   <div class="mhead"><h2>🏅 내 배지</h2><div id="badgecount" style="font-size:18px"></div></div>
-  <div class="msub">놀다 보면 저절로 모여요. 친구에게 자랑해 보세요!</div>
+  <div class="msub">배지는 종류별로 줄을 섰어요. <b>앞 칸은 배지, 꼭대기부터는 카드</b>가 나와요 —
+    카드는 📖 블록섬 도감에 모여요.</div>
   <div id="badgegrid"></div>
-  <button class="mbtn" id="badgeclose">닫기</button>
+  <button class="mbtn green" id="badgedogam">📖 블록섬 도감 열기</button>
+  <button class="mbtn gray" id="badgeclose">닫기</button>
+</div></div>
+
+<!-- 📖 블록섬 도감 -->
+<div class="modal" id="dogam"><div class="mbox">
+  <div class="mhead"><h2>📖 블록섬 도감</h2><div id="dgcount" style="font-size:18px"></div></div>
+  <div class="msub">섬에서 <b>처음 본 것</b>, <b>배지 계단 꼭대기</b>, <b>내가 만든 게임</b>이 카드가 돼요.
+    카드는 없어지지 않고 친구에게 <b>선물</b>할 수 있어요.</div>
+  <div id="dgbody"></div>
+  <div id="dgpick"></div>
+  <textarea id="dgcode" spellcheck="false" placeholder="여기에 보낼 코드가 나와요"></textarea>
+  <div class="msub" style="margin:12px 0 0">🎁 친구가 보낸 <b>카드 코드</b>나 <b>게임 코드</b>를 여기에 붙여넣으세요.</div>
+  <textarea id="dgin" spellcheck="false" placeholder="친구가 보낸 코드를 붙여넣기"></textarea>
+  <button class="mbtn green" id="dgtake">📥 넣기</button>
+  <div id="dgmsg"></div>
+  <button class="mbtn gray" id="dgclose">닫기</button>
 </div></div>
 
 <!-- 📐 청사진 건축학교 -->
@@ -1942,7 +2019,7 @@
 </div></div>
 
 <div id="btoast"><div class="tbic" id="tbic"></div><div class="tbnm" id="tbnm"></div>
-  <div class="tbsub">🏅 배지를 얻었어요</div></div>
+  <div class="tbsub" id="tbsub">🏅 배지를 얻었어요</div></div>
 
 <div id="levelfx"></div>
 <div id="err"></div>
@@ -3624,6 +3701,7 @@ function panelOpen(){
   const el = document.activeElement;
   if(el && (el.tagName==='TEXTAREA' || el.tagName==='INPUT')) return true;
   return caveOpen || shopOpen || craftOpen || plansOpen || friendsOpen || ideaOpen || shortsOpen || bagOpen || chatOpen ||
+         Dogam.isOpen() ||
          islandOpen || dodoOpen || rulesOpen || studioHomeOpen ||
          $('#playres').style.display==='flex' ||
          $('#strename').style.display==='flex' ||
@@ -3792,6 +3870,8 @@ const state = {
   look:{},                 // 도도 꾸미기 — 깃털색 · 부리색 · 모자
   tune:null, tuneAt:null,  // 오르골 노래 8칸 + 세워 둔 자리
   hunt:null, huntLog:[],   // 보물찾기 — 숨긴 자리 3곳 + 친구들 기록
+  cards:{}, saw:{},        // 📖 블록섬 도감 — 얻은 카드 · 처음 본 블록
+  thanksIn:{}, giftsOut:0, // 카드를 보내 주고 받은 고마워 코드 · 보낸 카드 수
   eggs:{},                 // 🥚 알로 깨운 도도 친구
   cave:{best:0, runs:0},   // 🚪 코인 게임 — 깬 단계 · 다녀온 횟수
   edits:{},                // "x,y,z" -> 블록 번호 (0 = 부순 자리)
@@ -3824,6 +3904,7 @@ function saveNow(){
       theme:state.theme, look:state.look, tune:state.tune, tuneAt:state.tuneAt,
       hunt:state.hunt, huntLog:state.huntLog,
       eggs:state.eggs, cave:state.cave,
+      cards:state.cards, saw:state.saw, thanksIn:state.thanksIn, giftsOut:state.giftsOut,
       prop:propPick, stGo:state.stGo|0,
       pos:{x:player.x, y:player.y, z:player.z}, slot:selectedSlot
     }));
@@ -3873,6 +3954,8 @@ function loadSave(){
   state.tuneAt = Array.isArray(d.tuneAt) ? d.tuneAt : null;
   state.eggs = d.eggs || {};
   state.cave = d.cave || {best:0, runs:0};
+  state.cards = d.cards || {}; state.saw = d.saw || {};
+  state.thanksIn = d.thanksIn || {}; state.giftsOut = d.giftsOut|0;
   state.hunt = d.hunt || null;
   state.huntLog = Array.isArray(d.huntLog) ? d.huntLog : [];
   state.quality = d.quality || 'auto';
@@ -4284,6 +4367,7 @@ function breakBlock(){
     return true;
   }
   state.broken++;
+  Dogam.saw(t);                 // 📖 처음 본 블록이면 카드가 된다
   // 부순 블록은 재료 주머니로 (제작대에서 쓴다)
   let delta = null;
   if(isMaterial(t) || isCrafted(t)){ Bag.add(t, 1); delta = {}; delta[t] = 1; }
@@ -4359,6 +4443,7 @@ function afterPlace(x,y,z,t){
     Lamps.add(x,y,z);
     if(DayNight.isNight() && !state.lampNight){ state.lampNight = 1; }
   }
+  Dogam.saw(t);                 // 📖 처음 놓은 블록이면 카드가 된다
   Undo.push(x,y,z,AIR,t,delta);
   Blueprint.onPlaced(x,y,z,t);
   Blueprint.check();
@@ -4911,6 +4996,7 @@ function checkQuests(){
       state.questsDone[q.id] = 1;
       gainCoins(q.coins, true);
       addExp(q.exp);
+      Dogam.questReward();       // 📖 미션 1·3·5·7·9개째에 장소 카드
       Sound.quest();
       popText('📋 퀘스트 완료!', '#7ae582');
       showHint('✅ ' + q.text.replace('{g}', q.goal) + ' 완료!  🪙+' + q.coins, 2600);
@@ -6530,10 +6616,13 @@ function closePlans(){ plansOpen = false; $('#plans').style.display = 'none'; }
 const BADGES = [
   {id:'first_place', icon:'🧱', name:'첫 블록',     desc:'블록을 처음 놓았어요',    ok:()=>state.placed>=1},
   {id:'first_break', icon:'⛏️', name:'첫 채굴',     desc:'블록을 처음 부쉈어요',    ok:()=>state.broken>=1},
+  {id:'place50',     icon:'🧰', name:'벽돌 쌓기',   desc:'블록 50개 놓기',         ok:()=>state.placed>=50},
   {id:'builder',     icon:'🏗️', name:'꼬마 건축가', desc:'블록 200개 놓기',        ok:()=>state.placed>=200},
+  {id:'break50',     icon:'🪏', name:'땅 파기',     desc:'블록 50개 부수기',       ok:()=>state.broken>=50},
   {id:'miner',       icon:'🕳️', name:'광부',        desc:'블록 200개 부수기',      ok:()=>state.broken>=200},
   {id:'coin100',     icon:'🪙', name:'저금통',      desc:'코인 100개 모으기',      ok:()=>state.coinsEarned>=100},
   {id:'coin500',     icon:'💰', name:'부자',        desc:'코인 500개 모으기',      ok:()=>state.coinsEarned>=500},
+  {id:'star2',       icon:'✨', name:'첫 별',       desc:'별 2개 찾기',            ok:()=>state.starsGot>=2},
   {id:'stars5',      icon:'⭐', name:'별 사냥꾼',   desc:'별 5개 찾기',            ok:()=>state.starsGot>=5},
   {id:'obby3',       icon:'🏆', name:'삼관왕',      desc:'점프 코스 3개 모두 완주', ok:()=>state.obbyDone.bronze&&state.obbyDone.silver&&state.obbyDone.gold},
   {id:'high35',      icon:'🚀', name:'하늘 높이',   desc:'35칸 높이까지 올라가기',  ok:()=>state.maxHeight>=35},
@@ -6560,14 +6649,25 @@ const BADGES = [
 
 let toastQueue = [], toastBusy = false;
 function badgeToast(b){
-  toastQueue.push(b);
+  toastQueue.push({icon:b.icon, name:b.name, sub:'🏅 배지를 얻었어요'});
+  runToast();
+}
+/* 📖 새 카드 — 배지와 같은 자리를 쓰지만 그림(SVG)이 들어간다 */
+function cardToast(c, from){
+  toastQueue.push({art:Dogam.art(c.art), name:c.name,
+                   sub:from ? '🎁 ' + from + ' 님의 선물' : '📖 새 카드'});
+  runToast();
+}
+function runToast(){
   if(toastBusy) return;
   (function next(){
     const b2 = toastQueue.shift();
     if(!b2){ toastBusy = false; return; }
     toastBusy = true;
-    $('#tbic').textContent = b2.icon;
+    if(b2.art) $('#tbic').innerHTML = b2.art;
+    else $('#tbic').textContent = b2.icon;
     $('#tbnm').textContent = b2.name;
+    $('#tbsub').textContent = b2.sub || '';
     $('#btoast').classList.add('on');
     Sound.star();
     setTimeout(()=>{ $('#btoast').classList.remove('on'); setTimeout(next, 350); }, 2300);
@@ -6588,21 +6688,48 @@ function checkBadges(){
     }
   }
   if(got) saveSoon();
+  Dogam.check();          // 📖 계단 꼭대기 카드도 같이 본다
 }
 function renderBadges(){
   const n = Object.keys(state.badges).length;
   $('#badgecount').textContent = n + ' / ' + BADGES.length;
   const grid = $('#badgegrid');
-  grid.innerHTML = '';
-  BADGES.forEach(b=>{
-    const got = !!state.badges[b.id];
-    const el = document.createElement('div');
-    el.className = 'badge ' + (got ? 'got' : 'lock');
-    el.innerHTML = '<div class="bic">' + b.icon + '</div>' +
-                   '<div class="bnm">' + (got ? b.name : '???') + '</div>' +
-                   '<div class="bds">' + b.desc + '</div>';
-    grid.appendChild(el);
+  grid.style.display = 'block';          // 예전엔 네모 칸 격자였다 — 이제 계단 줄이다
+  const used = {};
+  let h = '';
+  Dogam.ladders().forEach(L=>{
+    h += '<div class="lad"><div class="lnm">' + L.icon + ' ' + L.name +
+         ' <small>' + L.what + '</small></div><div class="lsteps">';
+    L.badges.forEach(id=>{
+      const b = BADGES.find(x=>x.id === id);
+      if(!b) return;
+      used[id] = 1;
+      h += '<div class="lstep' + (state.badges[id] ? ' on' : '') + '">' +
+           '<b>' + b.icon + ' ' + b.name + '</b>' + b.desc + '</div>';
+    });
+    /* 꼭대기부터는 카드 — 배지가 끝나는 대신 계단이 계속 자란다 */
+    L.cards.forEach(st=>{
+      const c = Dogam.card(st.c);
+      if(!c) return;
+      const got = Dogam.has(st.c);
+      let now = 0;
+      try{ now = st.now()|0; }catch(e){}
+      h += '<div class="lstep card' + (got ? ' on' : '') + '">' +
+           '<b>🃏 ' + (got ? c.name : '카드') + '</b>' +
+           st.goal + st.unit + (got ? '' : ' (지금 ' + Math.min(now, st.goal) + ')') + '</div>';
+    });
+    h += '</div></div>';
   });
+  const rest = BADGES.filter(b => !used[b.id]);
+  if(rest.length){
+    h += '<div class="lad"><div class="lnm">🎒 그 밖에 <small>한 번만 받는 배지</small></div><div class="lsteps">';
+    rest.forEach(b=>{
+      h += '<div class="lstep' + (state.badges[b.id] ? ' on' : '') + '">' +
+           '<b>' + b.icon + ' ' + b.name + '</b>' + b.desc + '</div>';
+    });
+    h += '</div></div>';
+  }
+  grid.innerHTML = h;
 }
 function openBadges(){
   $('#badges').style.display = 'flex';
@@ -6610,6 +6737,502 @@ function openBadges(){
   renderBadges();
   Sound.shop();
 }
+
+/* ═══════════════════════════════════════════════════
+   10.30 📖 블록섬 도감  (카드 모으기)
+   ───────────────────────────────────────────────────
+   카드는 "돈"이 아니라 "도감"이다. 코인은 쓰면 없어지고, 카드는 안 없어진다.
+   그래서 카드로 코인을 사지는 못한다 — 한 방향으로만 흐른다.
+
+   카드가 오는 길 세 가지:
+   ① 처음 본 블록      → 그 블록 카드 (놀다 보면 저절로 찬다. 시작한 아이 몫)
+   ② 배지 계단 꼭대기  → 계단 카드 (배지는 하나도 안 없앴다. 그 위에 칸을 얹었다)
+   ③ 미션 1·3·5·7·9개  → 장소 카드 (뽑기가 아니다. 어떤 카드인지 미리 보인다)
+   ④ 내가 만든 게임    → 표지 카드 (따로 저장 안 한다. 게임 목록에서 그때그때 만든다)
+
+   그림은 전부 코드로 그린다(그림 파일 없음 — 인터넷 없이도 열려야 한다).
+   Art 모듈과 같은 결: viewBox 0 0 32 32, 잉크색 한 가지, 굵은 테두리.
+   ═══════════════════════════════════════════════════ */
+const Dogam = (function(){
+  const INK = '#3b2f5c';
+
+  /* ── 카드 전용 그림 ── (Art 에 없는 것만 여기서 그린다) */
+  const CART = {
+    /* 뒷면 — 아직 못 얻은 카드 */
+    back(){ return '<circle cx="16" cy="16" r="13" fill="none" stroke="#8fd9cf" stroke-width="2" stroke-dasharray="4 3"/>'
+      + '<ellipse cx="16" cy="19" rx="7" ry="6.5" fill="#8fd9cf"/>'
+      + '<circle cx="16" cy="12" r="5" fill="#d9efe9"/>'
+      + '<path d="M19 12l5 2-5 2z" fill="#f3a03d"/>'; },
+    /* 계단 꼭대기 카드 */
+    mason(){ return '<ellipse cx="12.5" cy="19" rx="8.5" ry="9" fill="#6ed6c8" stroke="'+INK+'" stroke-width="2.2"/>'
+      + '<circle cx="15.5" cy="15.5" r="1.8" fill="'+INK+'"/>'
+      + '<path d="M20 16l7 2.5-7 2.8z" fill="#ffa73a" stroke="'+INK+'" stroke-width="2" stroke-linejoin="round"/>'
+      + '<rect x="18" y="4" width="11" height="7" rx="1.5" fill="#d98a5a" stroke="'+INK+'" stroke-width="2"/>'
+      + '<path d="M23.5 4v7" stroke="'+INK+'" stroke-width="1.6"/>'; },
+    goldbrick(){ return '<rect x="3.5" y="9" width="25" height="6.5" rx="1.5" fill="#ffd93d" stroke="'+INK+'" stroke-width="2.1"/>'
+      + '<rect x="3.5" y="17.5" width="25" height="6.5" rx="1.5" fill="#f0bf34" stroke="'+INK+'" stroke-width="2.1"/>'
+      + '<path d="M14 9v6.5M21 17.5V24" stroke="'+INK+'" stroke-width="1.7"/>'
+      + '<path d="M7 11.5q3-1.5 6-.5" fill="none" stroke="#fff6d0" stroke-width="1.8" stroke-linecap="round"/>'; },
+    pick(){ return '<path d="M9 25L22 9" stroke="#9c6b3f" stroke-width="3.4" stroke-linecap="round"/>'
+      + '<path d="M15 6q7-2 12 5-7-1-12-5z" fill="#c9c4d6" stroke="'+INK+'" stroke-width="2.1" stroke-linejoin="round"/>'
+      + '<path d="M26 11q2 7-3 12 0-7-3-9z" fill="#a9a2b8" stroke="'+INK+'" stroke-width="2.1" stroke-linejoin="round"/>'; },
+    crystal(){ return '<polygon points="16,3 24,13 16,29 8,13" fill="#b99cff" stroke="'+INK+'" stroke-width="2.2" stroke-linejoin="round"/>'
+      + '<path d="M16 3v26M8 13h16" stroke="#6f4fc0" stroke-width="1.7"/>'
+      + '<path d="M11.5 9.5q2 1.5 3 4" fill="none" stroke="#f3eaff" stroke-width="1.8" stroke-linecap="round"/>'; },
+    coinpile(){ return '<circle cx="11" cy="22" r="8" fill="#f0bf34" stroke="'+INK+'" stroke-width="2.1"/>'
+      + '<circle cx="21" cy="21" r="7" fill="#ffd93d" stroke="'+INK+'" stroke-width="2.1"/>'
+      + '<circle cx="16" cy="11" r="8" fill="#ffe27a" stroke="'+INK+'" stroke-width="2.1"/>'
+      + '<circle cx="16" cy="11" r="4" fill="none" stroke="#e09b12" stroke-width="1.8"/>'; },
+    golddodo(){ return '<ellipse cx="14" cy="18" rx="9.5" ry="10" fill="#ffd93d" stroke="'+INK+'" stroke-width="2.2"/>'
+      + '<path d="M22 14.5l8 2.8-8 3.2z" fill="#e09b12" stroke="'+INK+'" stroke-width="2.1" stroke-linejoin="round"/>'
+      + '<circle cx="17.5" cy="14.5" r="1.9" fill="'+INK+'"/>'
+      + '<path d="M5 6l1.6 3.2 3.4.5-2.5 2.4.6 3.4L5 13.9 1.9 15.5l.6-3.4L0 9.7l3.4-.5z" transform="translate(3,-1) scale(.9)" fill="#fff6d0" stroke="'+INK+'" stroke-width="1.4" stroke-linejoin="round"/>'; },
+    stardodo(){ return '<ellipse cx="14" cy="20" rx="9" ry="9.5" fill="#6ed6c8" stroke="'+INK+'" stroke-width="2.2"/>'
+      + '<path d="M21.5 17l7.5 2.6-7.5 3z" fill="#ffa73a" stroke="'+INK+'" stroke-width="2" stroke-linejoin="round"/>'
+      + '<circle cx="17" cy="16.5" r="1.8" fill="'+INK+'"/>'
+      + '<polygon points="24,2 25.9,6.6 30.8,7 27,10.2 28.2,15 24,12.4 19.8,15 21,10.2 17.2,7 22.1,6.6" fill="#ffd93d" stroke="'+INK+'" stroke-width="1.8" stroke-linejoin="round"/>'; },
+    nightmap(){ return '<rect x="4" y="6" width="24" height="20" rx="2.5" fill="#3d4c93" stroke="'+INK+'" stroke-width="2.2"/>'
+      + '<path d="M4 11q6 2 12 0t12 0" fill="none" stroke="#6f7dc9" stroke-width="1.6"/>'
+      + '<circle cx="10" cy="15" r="1.6" fill="#ffe27a"/><circle cx="17" cy="20" r="1.3" fill="#ffe27a"/>'
+      + '<circle cx="23" cy="13" r="1.8" fill="#fff6d0"/>'
+      + '<path d="M10 15l7 5 6-7" fill="none" stroke="#ffd93d" stroke-width="1.7" stroke-dasharray="2.5 2.5"/>'; },
+    medal(){ return '<polygon points="8,3 13,3 16,13 11,13" fill="#e8503a" stroke="'+INK+'" stroke-width="2" stroke-linejoin="round"/>'
+      + '<polygon points="19,3 24,3 21,13 16,13" fill="#49aee0" stroke="'+INK+'" stroke-width="2" stroke-linejoin="round"/>'
+      + '<circle cx="16" cy="21" r="8.5" fill="#ffd93d" stroke="'+INK+'" stroke-width="2.2"/>'
+      + '<path d="M16 16.5l1.6 3.2 3.4.5-2.5 2.5.6 3.4-3.1-1.7-3.1 1.7.6-3.4-2.5-2.5 3.4-.5z" fill="#e09b12"/>'; },
+    winflag(){ return '<path d="M8 29V4" stroke="'+INK+'" stroke-width="2.8" stroke-linecap="round"/>'
+      + '<path d="M9.5 5q7-2.5 13 1.5-6 3-13 2.5z" fill="#e8503a" stroke="'+INK+'" stroke-width="2.1" stroke-linejoin="round"/>'
+      + '<path d="M9.5 12q6-2 12 1.5-6 2.5-12 2z" fill="#ffd93d" stroke="'+INK+'" stroke-width="2.1" stroke-linejoin="round"/>'
+      + '<path d="M3 29h11" stroke="#9c6b3f" stroke-width="3" stroke-linecap="round"/>'; },
+    twododo(){ return '<ellipse cx="10" cy="20" rx="7.5" ry="8" fill="#6ed6c8" stroke="'+INK+'" stroke-width="2.1"/>'
+      + '<circle cx="12.5" cy="17.5" r="1.6" fill="'+INK+'"/>'
+      + '<path d="M3.5 17l-3 2 3 2z" fill="#ffa73a" stroke="'+INK+'" stroke-width="1.8" stroke-linejoin="round"/>'
+      + '<ellipse cx="22" cy="21" rx="6.5" ry="7" fill="#ffb3dd" stroke="'+INK+'" stroke-width="2.1"/>'
+      + '<circle cx="19.5" cy="18.5" r="1.5" fill="'+INK+'"/>'
+      + '<path d="M28.5 18.5l3 2-3 1.8z" fill="#ffa73a" stroke="'+INK+'" stroke-width="1.8" stroke-linejoin="round"/>'; },
+    plaza(){ return '<path d="M2 27q7-3 14 0t14 0" fill="none" stroke="#49aee0" stroke-width="2.2" stroke-linecap="round"/>'
+      + '<path d="M16 3v6" stroke="'+INK+'" stroke-width="2.4" stroke-linecap="round"/>'
+      + '<path d="M17 3.5q6-1.5 9 2-5 2-9 1.5z" fill="#ffd93d" stroke="'+INK+'" stroke-width="1.9" stroke-linejoin="round"/>'
+      + '<ellipse cx="8" cy="19" rx="5.5" ry="6" fill="#6ed6c8" stroke="'+INK+'" stroke-width="2"/>'
+      + '<ellipse cx="16" cy="21" rx="5" ry="5.5" fill="#ffb3dd" stroke="'+INK+'" stroke-width="2"/>'
+      + '<ellipse cx="24" cy="19" rx="5.5" ry="6" fill="#ffd28f" stroke="'+INK+'" stroke-width="2"/>'; },
+    brush(){ return '<path d="M8 27L20 13" stroke="#9c6b3f" stroke-width="3.4" stroke-linecap="round"/>'
+      + '<rect x="18" y="6" width="9" height="9" rx="2" transform="rotate(40 22.5 10.5)" fill="#c9c4d6" stroke="'+INK+'" stroke-width="2"/>'
+      + '<path d="M24 3q5 2 5 7" fill="none" stroke="#e8503a" stroke-width="2.2" stroke-linecap="round"/>'
+      + '<path d="M21 2q7 2 7 9" fill="none" stroke="#49aee0" stroke-width="2.2" stroke-linecap="round"/>'; },
+    islandflag(){ return '<path d="M2 26q4-2.5 8 0t8 0 8 0 6 0" fill="none" stroke="#49aee0" stroke-width="2.2" stroke-linecap="round"/>'
+      + '<path d="M4 22q4-6 12-6t12 6z" fill="#f0dfa8" stroke="'+INK+'" stroke-width="2.2" stroke-linejoin="round"/>'
+      + '<path d="M16 17V5" stroke="'+INK+'" stroke-width="2.4" stroke-linecap="round"/>'
+      + '<path d="M17 5.5q7-1.5 10 2.5-6 2.5-10 2z" fill="#6ed6c8" stroke="'+INK+'" stroke-width="2" stroke-linejoin="round"/>'; },
+    /* 장소 카드 */
+    shop(){ return '<rect x="7" y="14" width="18" height="13" fill="#d9a86a" stroke="'+INK+'" stroke-width="2.2"/>'
+      + '<polygon points="4,14 16,5 28,14" fill="#c0563f" stroke="'+INK+'" stroke-width="2.2" stroke-linejoin="round"/>'
+      + '<rect x="13" y="19" width="6" height="8" fill="#8a5a2b" stroke="'+INK+'" stroke-width="2"/>'
+      + '<circle cx="17.7" cy="23" r="1" fill="#ffd93d"/>'; },
+    tower(){ return '<rect x="9" y="20" width="14" height="8" fill="#b9b2ad" stroke="'+INK+'" stroke-width="2.1"/>'
+      + '<rect x="11" y="13" width="10" height="7" fill="#c9c4d6" stroke="'+INK+'" stroke-width="2.1"/>'
+      + '<circle cx="16" cy="7" r="5.5" fill="#ffd93d" stroke="'+INK+'" stroke-width="2.1"/>'
+      + '<circle cx="16" cy="7" r="2.6" fill="none" stroke="#e09b12" stroke-width="1.7"/>'; },
+    /* 소품 카드 */
+    flower(){ return '<path d="M16 29V16" stroke="#3aa93f" stroke-width="2.6" stroke-linecap="round"/>'
+      + '<path d="M16 22q-5-1-6-5 5 0 6 3" fill="#3aa93f" stroke="'+INK+'" stroke-width="1.8" stroke-linejoin="round"/>'
+      + '<circle cx="16" cy="10" r="4" fill="#ffd93d" stroke="'+INK+'" stroke-width="2"/>'
+      + '<circle cx="10.5" cy="10" r="3.6" fill="#ff8fc7" stroke="'+INK+'" stroke-width="2"/>'
+      + '<circle cx="21.5" cy="10" r="3.6" fill="#ff8fc7" stroke="'+INK+'" stroke-width="2"/>'
+      + '<circle cx="16" cy="5" r="3.6" fill="#ff8fc7" stroke="'+INK+'" stroke-width="2"/>'; },
+    sunflow(){ return '<path d="M16 29V17" stroke="#3aa93f" stroke-width="2.8" stroke-linecap="round"/>'
+      + '<path d="M16 24q5-1 6-5-5 0-6 3" fill="#3aa93f" stroke="'+INK+'" stroke-width="1.8" stroke-linejoin="round"/>'
+      + '<g stroke="'+INK+'" stroke-width="1.8" fill="#ffd93d">'
+      + '<circle cx="16" cy="4.5" r="3.2"/><circle cx="16" cy="17.5" r="3.2"/>'
+      + '<circle cx="9.5" cy="11" r="3.2"/><circle cx="22.5" cy="11" r="3.2"/>'
+      + '<circle cx="11" cy="6.5" r="3"/><circle cx="21" cy="6.5" r="3"/>'
+      + '<circle cx="11" cy="15.5" r="3"/><circle cx="21" cy="15.5" r="3"/></g>'
+      + '<circle cx="16" cy="11" r="4.6" fill="#8a5a2b" stroke="'+INK+'" stroke-width="2"/>'; },
+    mush(){ return '<rect x="13" y="16" width="6" height="12" rx="2.4" fill="#f3ece4" stroke="'+INK+'" stroke-width="2.1"/>'
+      + '<path d="M4 17q2-11 12-11t12 11z" fill="#e8503a" stroke="'+INK+'" stroke-width="2.2" stroke-linejoin="round"/>'
+      + '<circle cx="11" cy="12" r="2" fill="#fff6f0"/><circle cx="19.5" cy="10" r="2.4" fill="#fff6f0"/>'
+      + '<circle cx="23" cy="14.5" r="1.6" fill="#fff6f0"/>'; },
+    /* 게임 표지 */
+    cover(){ return '<rect x="3" y="5" width="26" height="22" rx="3" fill="#dff0ff" stroke="'+INK+'" stroke-width="2.2"/>'
+      + '<ellipse cx="10" cy="11" rx="4.5" ry="2.6" fill="#ffffff"/>'
+      + '<g stroke="'+INK+'" stroke-width="1.5" stroke-linejoin="round">'
+      + '<polygon points="6,22 12,19 18,22 12,25" fill="#7fd07a"/>'
+      + '<polygon points="16,17 21,14.5 26,17 21,19.5" fill="#7fd07a"/></g>'
+      + '<path d="M21 14.5V8l6 2.2-6 2" fill="#e8503a" stroke="'+INK+'" stroke-width="1.8" stroke-linejoin="round"/>'; }
+  };
+
+  const cache = {};
+  function art(key){
+    if(CART[key]){
+      if(cache[key] == null) cache[key] = '<svg viewBox="0 0 32 32" aria-hidden="true">' + CART[key]() + '</svg>';
+      return cache[key];
+    }
+    if(Art.has(key)) return Art.get(key);
+    return art('back');
+  }
+
+  /* ═══ 배지 계단 여덟 줄 ═══
+     앞 칸은 배지(지금 있는 것 그대로), 꼭대기부터는 카드.
+     badges 는 BADGES 의 id — 계단에 줄 세우기만 하고 판정은 건드리지 않는다. */
+  const LADDERS = [
+    {id:'build', icon:'🧱', name:'건축가', what:'블록 놓기',
+     badges:['first_place','place50','builder'],
+     cards:[{c:'l_mason', goal:500, now:()=>state.placed, unit:'개 놓기'},
+            {c:'l_goldbrick', goal:1000, now:()=>state.placed, unit:'개 놓기'}]},
+    {id:'mine', icon:'⛏️', name:'광부', what:'블록 부수기',
+     badges:['first_break','break50','miner'],
+     cards:[{c:'l_pick', goal:500, now:()=>state.broken, unit:'개 부수기'},
+            {c:'l_crystal', goal:1000, now:()=>state.broken, unit:'개 부수기'}]},
+    {id:'coin', icon:'🪙', name:'저금통', what:'코인 모으기',
+     badges:['coin100','coin500','combo5'],
+     cards:[{c:'l_coinpile', goal:1500, now:()=>state.coinsEarned, unit:'개 모으기'},
+            {c:'l_golddodo', goal:3000, now:()=>state.coinsEarned, unit:'개 모으기'}]},
+    {id:'star', icon:'⭐', name:'별 사냥', what:'별 찾기',
+     badges:['star2','stars5','high35'],
+     cards:[{c:'l_stardodo', goal:10, now:()=>state.starsGot, unit:'개 찾기'},
+            {c:'l_nightmap', goal:20, now:()=>state.starsGot, unit:'개 찾기'}]},
+    {id:'dare', icon:'🏆', name:'도전', what:'점프 코스 · 15초 도전',
+     badges:['obby3','short1','short_all'],
+     cards:[{c:'l_medal', goal:3, now:()=>['bronze','silver','gold'].filter(k=>state.obbyDone[k]).length, unit:'코스 완주'},
+            {c:'l_winflag', goal:4, now:()=>Object.keys(state.shortsDone||{}).length, unit:'개 성공'}]},
+    {id:'friend', icon:'👫', name:'친구', what:'초대 코드 주고받기',
+     badges:['friend1','friend3','share1'],
+     cards:[{c:'l_twododo', goal:5, now:()=>friendCount(), unit:'명 모으기'},
+            {c:'l_plaza', goal:10, now:()=>friendCount(), unit:'명 모으기'}]},
+    {id:'island', icon:'🏝️', name:'섬 주인', what:'섬 이름 · 꾸미기 · 영상',
+     badges:['island_name','decor3','clip1'],
+     cards:[{c:'l_islandflag', goal:10, now:()=>state.decor|0, unit:'번 꾸미기'},
+            {c:'l_director', goal:5, now:()=>state.clips|0, unit:'편 찍기'}]},
+    {id:'make', icon:'🎨', name:'만들기', what:'제작 · 청사진 · 무지개',
+     badges:['craft1','craft_all','plan1','plan_all','rainbow30'],
+     cards:[{c:'l_brush', goal:100, now:()=>state.rainbowPlaced, unit:'개 놓기'}]}
+  ];
+
+  /* ═══ 카드 목록 ═══ */
+  const LADDER_CARDS = [
+    {id:'l_mason',      name:'도도 미장이',  art:'mason',      tale:'벽돌 오백 장을 쌓은 도도. 손이 야무지다.'},
+    {id:'l_goldbrick',  name:'황금 벽돌',    art:'goldbrick',  tale:'천 번 쌓은 아이에게만 보이는 벽돌. 섬에서 제일 단단하다.', grade:'gold'},
+    {id:'l_pick',       name:'곡괭이 도도',  art:'pick',       tale:'땅이라면 어디든 파 본 도도. 곡괭이가 반짝반짝 닳았다.'},
+    {id:'l_crystal',    name:'땅속 수정',    art:'crystal',    tale:'블록 천 개를 부순 자리에서 나온 보라색 수정.', grade:'gold'},
+    {id:'l_coinpile',   name:'코인 더미',    art:'coinpile',   tale:'세어 보다 그만둔 코인. 도도 세 마리가 앉을 만큼.'},
+    {id:'l_golddodo',   name:'황금 도도',    art:'golddodo',   tale:'코인 삼천 개를 모은 아이 앞에만 나타난다는 도도.', grade:'gold'},
+    {id:'l_stardodo',   name:'별 도도',      art:'stardodo',   tale:'별을 열 개 찾으면 머리 위에 별이 하나 앉는다.'},
+    {id:'l_nightmap',   name:'밤하늘 지도',  art:'nightmap',   tale:'별 스무 개를 찾은 아이가 그린 지도. 다음 별이 어디 있는지 안다.', grade:'gold'},
+    {id:'l_medal',      name:'금메달 도도',  art:'medal',      tale:'점프 코스 셋을 다 넘은 도도. 다리가 튼튼하다.'},
+    {id:'l_winflag',    name:'도전왕 깃발',  art:'winflag',    tale:'십오 초 도전을 네 개 다 깨고 꽂은 깃발.', grade:'gold'},
+    {id:'l_twododo',    name:'친구 도도',    art:'twododo',    tale:'친구 다섯 명과 코드를 주고받은 도도. 혼자 놀지 않는다.'},
+    {id:'l_plaza',      name:'도도 광장',    art:'plaza',      tale:'친구 열 명이 모이면 열리는 광장. 시끌시끌하다.', grade:'gold'},
+    {id:'l_islandflag', name:'섬 깃발',      art:'islandflag', tale:'열 번 꾸민 섬에 꽂는 깃발. 이제 남의 섬과 안 헷갈린다.'},
+    {id:'l_director',   name:'꼬마 감독',    art:'rec',        tale:'영상 다섯 편을 찍은 도도. 카메라를 놓지 않는다.'},
+    {id:'l_brush',      name:'무지개 붓',    art:'brush',      tale:'무지개 블록 백 개를 놓은 아이의 붓. 색이 안 마른다.', grade:'gold'}
+  ];
+
+  /* 처음 본 블록이 곧 카드가 된다 — 계단 꼭대기는 며칠 걸리니까 초반은 이 칸이 채운다 */
+  const BLOCK_CARDS = [
+    {t:GRASS,   tale:'섬의 겉면. 밟으면 폭신하다.'},
+    {t:DIRT,    tale:'잔디를 들어내면 나오는 갈색 살. 파기 쉽다.'},
+    {t:STONE,   tale:'섬의 뼈. 부수면 소리가 제일 크다.'},
+    {t:WOOD,    tale:'섬 나무의 몸통. 판자로 쪼갤 수 있다.'},
+    {t:LEAF,    tale:'나무 머리카락. 떨어지면 바람에 날아간다.'},
+    {t:SAND,    tale:'바닷가 모래. 도도 발자국이 제일 잘 남는다.'},
+    {t:GLASS,   tale:'모래를 구워 만든 창. 밖이 보이고 물이 안 들어온다.'},
+    {t:RAINBOW, tale:'섬에서 제일 신나는 블록. 색이 계속 흐른다.', grade:'gold'},
+    {t:WATER,   tale:'섬을 둘러싼 물. 도도는 헤엄은 못 치지만 첨벙거린다.'},
+    {t:GOLD,    tale:'가끔 섬에 떨어지는 황금 덩이. 부수면 코인이 쏟아진다.', grade:'gold'},
+    {t:PLANK,   tale:'나무를 쪼갠 판자. 다리 놓을 때 제일 좋다.'},
+    {t:TRAMP,   tale:'밟으면 통통 튀는 블록. 제작대에서만 나온다.'},
+    {t:LAMP,    tale:'밤을 밝히는 램프. 도도는 어두운 걸 싫어한다.'},
+    {t:ICE,     tale:'미끄러운 블록. 멈추려면 미리 멈춰야 한다.'},
+    {t:FLOWER,  tale:'섬에 처음 핀 꽃. 도도가 제일 아끼는 소품.'},
+    {t:SUNFLOW, tale:'해를 따라 고개를 돌리는 큰 꽃.'},
+    {t:MUSH,    tale:'그늘에서 자라는 빨간 버섯. 먹으면 안 된다.'}
+  ];
+  const BLOCK_ART2 = {[FLOWER]:'flower', [SUNFLOW]:'sunflow', [MUSH]:'mush'};
+
+  /* 미션을 깨면 나오는 장소 카드 — 몇 개째에 무엇이 나오는지 미리 보인다(뽑기 아님) */
+  const PLACE_CARDS = [
+    {id:'p_elder',  at:1, name:'도도 장로',  art:'feather', tale:'섬에서 제일 오래 산 도도. 말하는 깃털을 준 장본인.'},
+    {id:'p_shop',   at:3, name:'도도 상점',  art:'shop',    tale:'섬 가운데 가게. 옷과 알을 코인으로 바꿔 준다.'},
+    {id:'p_gate',   at:5, name:'게임문',     art:'door',    tale:'상점 옆에 선 문. 열면 코인 탑으로 간다.'},
+    {id:'p_tower',  at:7, name:'코인 탑',    art:'tower',   tale:'옆으로 보이는 탑. 위로 올라가며 코인을 줍는다.'},
+    {id:'p_obby',   at:9, name:'점프 코스',  art:'goal',    tale:'동·은·금 세 코스. 금까지 넘으면 다리가 튼튼해진다.'}
+  ];
+
+  /* 목록 하나로 합친다 */
+  const ALL = [];
+  LADDER_CARDS.forEach(c=>ALL.push({id:c.id, kind:'ladder', name:c.name, art:c.art, tale:c.tale, grade:c.grade||'common'}));
+  BLOCK_CARDS.forEach((b,i)=>ALL.push({
+    id:'b'+b.t, kind:'block', block:b.t, no:i+1,
+    name:(BLOCKS[b.t] ? BLOCKS[b.t].name : '블록') + ' 블록',
+    art:BLOCK_ART2[b.t] || BLOCK_ART[b.t] || 'back',
+    tale:b.tale, grade:b.grade||'common'
+  }));
+  PLACE_CARDS.forEach((p,i)=>ALL.push({id:p.id, kind:'place', no:i+1, at:p.at, name:p.name, art:p.art, tale:p.tale, grade:'common'}));
+  const byId = {};
+  ALL.forEach(c=>byId[c.id] = c);
+  const blockCardId = t => byId['b'+t] ? 'b'+t : null;
+
+  function has(id){ return !!(state.cards && state.cards[id]); }
+  function total(){ return ALL.length; }
+  function count(){ return Object.keys(state.cards || {}).length; }
+
+  /* 카드 한 장 넣기 — from 은 보내 준 친구 이름(내가 얻은 것은 빈칸) */
+  function give(id, from){
+    const c = byId[id];
+    if(!c || has(id)) return false;
+    state.cards[id] = {d:dayKey(new Date()), f:from || ''};
+    cardToast(c, from);
+    addExp(15);
+    saveSoon();
+    if(dogamOpen) render();
+    return true;
+  }
+
+  /* 처음 본 블록 */
+  function saw(t){
+    if(!inIsland()) return;                 // 스튜디오·플레이에서 놓은 건 안 센다
+    if(state.saw[t]) return;
+    state.saw[t] = 1;
+    const id = blockCardId(t);
+    if(id) give(id);
+    else saveSoon();
+  }
+
+  /* 계단 꼭대기 카드 — 배지 판정과 따로 돈다(배지는 하나도 안 없앴다) */
+  function check(){
+    LADDERS.forEach(L=>{
+      L.cards.forEach(s=>{
+        if(has(s.c)) return;
+        let now = 0;
+        try{ now = s.now()|0; }catch(e){ return; }
+        if(now >= s.goal) give(s.c);
+      });
+    });
+  }
+
+  /* 미션을 깰 때마다 — 1·3·5·7·9개째에 장소 카드 */
+  function questReward(){
+    const done = Object.keys(state.questsDone || {}).length;
+    for(const p of PLACE_CARDS){
+      if(done >= p.at && !has(p.id)){ give(p.id); break; }
+    }
+  }
+
+  /* ── 카드 얼굴 ── */
+  function esc(s){ return escapeHtml(String(s == null ? '' : s)); }
+  function tagOf(c){
+    if(c.kind === 'ladder') return '계단 꼭대기';
+    if(c.kind === 'block')  return '블록 ' + String(c.no).padStart(2,'0');
+    return '장소 ' + String(c.no).padStart(2,'0');
+  }
+  function faceHtml(c, got){
+    const g = got && c.grade === 'gold';
+    return '<div class="dcard' + (got ? ' got' : ' lock') + (g ? ' gold' : '') + '" data-card="' + c.id + '">'
+      + '<div class="dnp">' + (got ? esc(c.name) : '???') + '</div>'
+      + '<div class="dart">' + (got ? art(c.art) : art('back')) + '</div>'
+      + '<div class="dft">' + tagOf(c) + (g ? ' ✦' : '') + '</div>'
+      + '</div>';
+  }
+  /* 아직 못 얻은 카드에 붙는 "어떻게 얻나" 한 줄 */
+  function howOf(c){
+    if(c.kind === 'block') return '📦 ' + (BLOCKS[c.block] ? BLOCKS[c.block].name : '이 블록') + ' 블록을 처음 놓거나 부수면 와요';
+    if(c.kind === 'place') return '🎯 미션 ' + c.at + '개를 깨면 와요';
+    for(const L of LADDERS){
+      for(const s of L.cards){
+        if(s.c !== c.id) continue;
+        let now = 0; try{ now = s.now()|0; }catch(e){}
+        return L.icon + ' ' + L.name + ' 계단 — ' + s.goal + s.unit + ' (지금 ' + Math.min(now, s.goal) + ')';
+      }
+    }
+    return '';
+  }
+
+  let dogamOpen = false;
+  let picked = null;
+
+  function section(title, sub, cards){
+    let h = '<div class="dsec"><b>' + title + '</b><span>' + sub + '</span></div><div class="dgrid">';
+    cards.forEach(c=>{ h += faceHtml(c, has(c.id)); });
+    return h + '</div>';
+  }
+
+  function render(){
+    $('#dgcount').textContent = count() + ' / ' + total();
+    const box = $('#dgbody');
+    let h = '';
+    h += section('🏅 계단 카드', '배지 계단 꼭대기에서 와요', ALL.filter(c=>c.kind==='ladder'));
+    h += section('🧱 블록 카드', '처음 놓거나 부수면 저절로 와요', ALL.filter(c=>c.kind==='block'));
+    h += section('🏝️ 장소 카드', '미션을 깨면 와요', ALL.filter(c=>c.kind==='place'));
+
+    /* 🎮 내 게임 표지 카드 — 따로 저장하지 않고 게임 목록에서 그때그때 만든다 */
+    const games = Games.all();
+    h += '<div class="dsec"><b>🎮 내 게임 카드</b><span>' +
+         (games.length ? '카드를 누르고 "게임 보내기" 를 누르면 친구가 바로 이 게임을 해요'
+                       : '스튜디오에서 게임을 만들면 표지 카드가 저절로 생겨요') + '</span></div>';
+    h += '<div class="dgrid">';
+    games.forEach(g=>{
+      h += '<div class="dcard got game" data-game="' + esc(g.id) + '">'
+        + '<div class="dnp">' + esc(g.title) + '</div>'
+        + '<div class="dart">' + art('cover') + '</div>'
+        + '<div class="dft">' + (g.author ? esc(g.author) : '내가 만든 것') + '</div>'
+        + '</div>';
+    });
+    h += '</div>';
+    box.innerHTML = h;
+
+    box.querySelectorAll('.dcard[data-card]').forEach(el=>{
+      el.addEventListener('click', ()=>{ pick(el.dataset.card); });
+    });
+    box.querySelectorAll('.dcard[data-game]').forEach(el=>{
+      el.addEventListener('click', ()=>{ pickGame(el.dataset.game); });
+    });
+    if(picked) paintPick();
+  }
+
+  function pick(id){
+    picked = {card:id};
+    paintPick();
+    Sound.click();
+  }
+  function pickGame(gid){
+    picked = {game:gid};
+    paintPick();
+    Sound.click();
+  }
+  function paintPick(){
+    const box = $('#dgpick');
+    if(!picked){ box.innerHTML = '<div class="dhint">카드를 누르면 여기에 이야기가 나와요.</div>'; return; }
+
+    if(picked.game){
+      const g = Games.get(picked.game);
+      if(!g){ picked = null; return paintPick(); }
+      box.innerHTML = '<div class="dpk">' + art('cover') + '</div>'
+        + '<div class="dpb"><div class="dpn">' + esc(g.title) + '</div>'
+        + '<div class="dpt">내가 만든 게임의 표지 카드예요. 이 카드를 친구에게 보내면 친구가 누르고 바로 놀 수 있어요.</div>'
+        + '<div class="dprow"><button class="mbtn green" id="dgsend" style="margin-top:0">📤 게임 보내기</button>'
+        + '<button class="mbtn" id="dgplay" style="margin-top:0">▶ 하기</button></div></div>';
+      $('#dgsend').addEventListener('click', ()=>{
+        putCode(gameCode(g));
+        msg(copyField('dgcode', '✅ 게임 카드를 복사했어요! 카톡으로 친구에게 보내 주세요.'), true);
+        Sound.click();
+      });
+      $('#dgplay').addEventListener('click', ()=>modeGo('play', g, {from:'island'}));
+      return;
+    }
+
+    const c = byId[picked.card];
+    if(!c){ picked = null; return paintPick(); }
+    const got = has(c.id);
+    const info = got ? state.cards[c.id] : null;
+    let from = '';
+    if(got && info && info.f) from = '🎁 ' + esc(info.f) + ' 님이 보내 줬어요';
+    else if(got) from = '내가 얻은 카드';
+    box.innerHTML = '<div class="dpk' + (got ? '' : ' off') + '">' + (got ? art(c.art) : art('back')) + '</div>'
+      + '<div class="dpb"><div class="dpn">' + (got ? esc(c.name) : '아직 못 얻은 카드') + '</div>'
+      + '<div class="dpt">' + (got ? esc(c.tale) : esc(howOf(c))) + '</div>'
+      + (got ? '<div class="dpw">' + from + '</div>' : '')
+      + (got ? '<div class="dprow"><button class="mbtn green" id="dggift" style="margin-top:0">🎁 친구에게 선물하기</button></div>' : '')
+      + '</div>';
+    if(got) $('#dggift').addEventListener('click', ()=>{
+      putCode(packCode('BWC1', {c:c.id, n:state.nick || randomNick(), u:state.uid}));
+      msg(copyField('dgcode', '✅ "' + c.name + '" 카드를 복사했어요! 카톡으로 친구에게 보내 주세요.'), true);
+      Sound.click();
+    });
+  }
+
+  /* 보낼 코드가 생겼을 때만 칸을 보여 준다 */
+  function putCode(v){
+    const t = $('#dgcode');
+    t.value = v;
+    t.style.display = 'block';
+  }
+
+  function msg(text, good){
+    const el = $('#dgmsg');
+    el.textContent = text;
+    el.style.color = good ? '#38b862' : '#c0392b';
+  }
+
+  /* 친구가 보낸 코드 넣기 — 🎁 선물(BWC1) 과 고마워(BWC2) 둘 다 여기로 */
+  function enter(){
+    const raw = $('#dgin').value;
+    const gift = unpackCode('BWC1', raw);
+    const th   = unpackCode('BWC2', raw);
+    const game = readGameCode(raw);
+
+    if(gift){
+      const c = byId[gift.c];
+      if(!c){ msg('😢 이 게임에 없는 카드예요.', false); Sound.deny(); return; }
+      if(gift.u === state.uid){ msg('그건 내가 만든 코드예요 😅 친구에게 보내 주세요!', false); Sound.deny(); return; }
+      if(has(c.id)){
+        msg('이미 가진 카드예요! "' + c.name + '" 은 도감에 있어요.', false);
+        Sound.deny(); return;
+      }
+      give(c.id, gift.n || '친구');
+      /* 보내 준 친구에게 돌려보낼 고마워 코드 */
+      putCode(packCode('BWC2', {c:c.id, n:state.nick || randomNick(), u:state.uid, to:gift.u}));
+      msg('✅ "' + c.name + '" 카드를 받았어요! 아래 "고마워 코드" 를 그 친구에게 꼭 보내 주세요.', true);
+      $('#dgin').value = '';
+      Sound.fanfare();
+      return;
+    }
+
+    if(th){
+      if(th.to !== state.uid){ msg('이 코드는 다른 친구에게 가야 하는 코드예요.', false); Sound.deny(); return; }
+      if(th.u === state.uid){ msg('내 코드는 넣을 수 없어요 😅', false); Sound.deny(); return; }
+      if(state.thanksIn[th.u]){ msg('이 친구의 고마워 코드는 이미 넣었어요.', false); Sound.deny(); return; }
+      state.thanksIn[th.u] = 1;
+      state.giftsOut = (state.giftsOut|0) + 1;
+      gainCoins(60, true);
+      addExp(40);
+      $('#dgin').value = '';
+      msg('🎉 ' + (th.n || '친구') + ' 님이 카드를 잘 받았어요! 코인 60개를 받았어요.', true);
+      showBanner('🎁 카드가 잘 갔어요!', (th.n || '친구') + ' 님이 고마워해요');
+      Sound.fanfare();
+      saveSoon();
+      return;
+    }
+
+    /* 친구가 게임 카드(게임 코드)를 보냈을 때도 여기서 받는다 */
+    if(game){
+      if(Games.all().length >= GAME_MAX){
+        msg('게임 선반이 ' + GAME_MAX + '칸뿐이에요. 스튜디오에서 하나를 지우고 다시 넣어 주세요.', false);
+        Sound.deny(); return;
+      }
+      Games.put(game);
+      $('#dgin').value = '';
+      msg('✅ "' + game.title + '" 게임이 들어왔어요! 아래 내 게임 카드에서 바로 할 수 있어요.', true);
+      Sound.fanfare();
+      render();
+      return;
+    }
+
+    msg('😢 코드가 이상해요. 친구가 보낸 코드를 통째로 붙여넣어 주세요.', false);
+    Sound.deny();
+  }
+
+  function open(){
+    dogamOpen = true;
+    $('#dogam').style.display = 'flex';
+    if(document.pointerLockElement) document.exitPointerLock();
+    $('#dgmsg').textContent = '';
+    $('#dgcode').value = '';
+    $('#dgcode').style.display = 'none';
+    $('#dgin').value = '';
+    check();
+    render();
+    paintPick();
+    Sound.shop();
+  }
+  function close(){ dogamOpen = false; $('#dogam').style.display = 'none'; }
+  function isOpen(){ return dogamOpen; }
+
+  return {
+    open:open, close:close, isOpen:isOpen, enter:enter, render:render,
+    has:has, give:give, saw:saw, check:check, questReward:questReward,
+    count:count, total:total, ladders:()=>LADDERS, card:id=>byId[id], art:art
+  };
+})();
 
 /* ═══════════════════════════════════════════════════
    10.27 오늘의 출석 보상 📅  (로블록스의 "또 오고 싶게")
@@ -7336,6 +7959,9 @@ const BAG_ITEMS = [
   {icon:'💬', name:'대화창',         desc:'골라 쓰는 말로 이야기하기', go:()=>{ closeBag(); Chat.open(); }},
   {icon:'💬', name:'아이디어',       desc:'넣고 싶은 걸 말해요',    go:()=>openIdeas()},
   {icon:'🛠️', name:'도도 스튜디오',  desc:'내 게임 만들기 · 친구 게임 하기', go:()=>openStudioHome()},
+  {icon:'📖', name:'블록섬 도감',
+   get desc(){ return '카드 ' + Dogam.count() + ' / ' + Dogam.total() + '장 모았어요 (J)'; },
+   go:()=>Dogam.open()},
   {icon:'🏅', name:'내 배지',        desc:'모은 배지 구경하기',     go:()=>openBadges()},
   {icon:'📤', name:'월드 나누기',    desc:'내 건축물을 친구에게',   go:()=>openShare()},
   {icon:'🔨', name:'제작대',         desc:'부순 재료로 특별 블록',  go:()=>openCraft()},
@@ -10172,7 +10798,7 @@ function guard(fn){
     if($('#daily').style.display === 'flex' || $('#nick').style.display === 'flex') return;
     if(Shorts.running()) Shorts.stop();
     closeCraft(); closePlans(); closeFriends(); closeIdeas(); closeShorts(); closeBag();
-    closeIsland(); closeDodo(); closeLook(); closeTune();
+    closeIsland(); closeDodo(); closeLook(); closeTune(); Dogam.close();
     $('#badges').style.display='none'; $('#share').style.display='none';
     $('#shortresult').style.display='none'; $('#bragbox').style.display='none';
     $('#recbox').style.display='none';
@@ -10230,6 +10856,9 @@ $('#btnRec').addEventListener('click', ()=>Rec.toggle());
 $('#craftclose').addEventListener('click', closeCraft);
 $('#planclose').addEventListener('click', closePlans);
 $('#badgeclose').addEventListener('click', ()=>{ $('#badges').style.display='none'; });
+$('#badgedogam').addEventListener('click', ()=>{ $('#badges').style.display='none'; Dogam.open(); });
+$('#dgclose').addEventListener('click', ()=>Dogam.close());
+$('#dgtake').addEventListener('click', ()=>Dogam.enter());
 $('#shareclose').addEventListener('click', ()=>{ $('#share').style.display='none'; });
 $('#dailyclose').addEventListener('click', ()=>{ $('#daily').style.display='none'; });
 $('#sharecopy').addEventListener('click', shareCopy);
@@ -10345,7 +10974,7 @@ addEventListener('keydown', e=>{
   const typing = ae && (ae.tagName === 'TEXTAREA' || ae.tagName === 'INPUT');
   if(typing && e.code !== 'Escape') return;
   const anyModal = craftOpen || plansOpen || bagOpen || friendsOpen || ideaOpen || shortsOpen ||
-                   islandOpen || dodoOpen || lookOpen ||
+                   islandOpen || dodoOpen || lookOpen || Dogam.isOpen() ||
                    $('#tune').style.display==='flex' || $('#huntdone').style.display==='flex' ||
                    $('#bragbox').style.display==='flex' || $('#recbox').style.display==='flex' ||
                    $('#badges').style.display==='flex' || $('#share').style.display==='flex' ||
@@ -10386,6 +11015,7 @@ addEventListener('keydown', e=>{
   if(e.code==='KeyC') craftOpen ? closeCraft() : openCraft();
   if(e.code==='KeyB') plansOpen ? closePlans() : openPlans();
   if(e.code==='KeyV') openBadges();
+  if(e.code==='KeyJ') Dogam.isOpen() ? Dogam.close() : Dogam.open();   // 📖 블록섬 도감
   if(e.code==='KeyG') openFriends();
   if(e.code==='KeyI') openIsland();
   if(e.code==='KeyK') lookOpen ? closeLook() : openLook();
