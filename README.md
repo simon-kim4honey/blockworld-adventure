@@ -22,12 +22,13 @@ npx wrangler login     # 처음 한 번만
 
 끝나면 **https://dodoblock.pages.dev** 에서 게임이 열립니다. 그 주소를 아는 사람은
 누구나 들어올 수 있으니, 공개해도 되는지 먼저 생각하고 올리세요.
-`publish.sh` 는 `index.html` 하나만 올립니다 (`server/` 는 안 올라갑니다).
+`publish.sh` 는 먼저 인터넷 보관함의 **main** 을 받아 온 다음(다른 가지에 있어도 main 으로
+옮깁니다) `index.html` 과 `media/` 만 올립니다 (`server/` 는 안 올라갑니다).
+받지 않고 지금 폴더 그대로 올리려면 `./publish.sh --here`.
 
-⚠️ Cloudflare 프로젝트의 **production branch** 와 같은 이름으로 올려야 그 주소에
-뜹니다. 다른 이름으로 올리면 아무도 안 보는 미리보기 자리에 올라갑니다.
-`publish.sh` 는 지금 있는 가지 이름을 그대로 씁니다 (`./publish.sh main` 처럼
-직접 정할 수도 있습니다).
+⚠️ Cloudflare 프로젝트의 **production branch** 이름(`claude/project-thread-md739t`)으로
+올려야 짧은 주소에 뜹니다. `publish.sh` 는 어느 가지에 있든 항상 이 이름으로 올립니다.
+올라간 판은 https://dodoblock.pages.dev/version.txt 에서 확인합니다.
 
 💬 대화 서버는 따로입니다 — `server/README.md` 를 보세요.
 
