@@ -586,6 +586,9 @@
     align-items:center; justify-content:center; background:rgba(25,20,45,.5);
     pointer-events:auto; padding:12px;
   }
+  /* 바깥을 눌렀는데 쓰던 글이 있어서 안 닫힐 때 — 창이 살짝 도리도리 */
+  @keyframes mnope{0%,100%{transform:translateX(0)}25%{transform:translateX(-9px)}75%{transform:translateX(9px)}}
+  .mbox.nope{animation:mnope .22s ease 2;}
   .mbox{
     background:#fffdf7; border-radius:26px; padding:20px 22px 18px;
     box-shadow:0 12px 0 rgba(0,0,0,.18), 0 24px 50px rgba(0,0,0,.35);
@@ -11259,6 +11262,36 @@ $('#helpclose').addEventListener('click', ()=>{ $('#help').style.display='none';
 // 어두운 바깥쪽을 눌러도 나가기
 $('#shop').addEventListener('click', e=>{ if(e.target.id === 'shop') leaveShop(); });
 $('#help').addEventListener('click', e=>{ if(e.target.id === 'help') $('#help').style.display='none'; });
+/* 공용 팝업 창(.modal)도 어두운 바깥쪽을 누르면 닫는다.
+   각 창의 닫기 단추를 대신 눌러 주므로, 닫을 때 하는 일(저장·상태 되돌리기)은 그대로 한다.
+   닫기 단추가 없는 창(별명 정하기, 게임 결과)은 꼭 골라야 하니 바깥을 눌러도 그대로 둔다. */
+const MODAL_CLOSE = {
+  strules:'strulesclose', strename:'stnamecancel', studiohome:'shclose', craft:'craftclose',
+  badges:'badgeclose', dogam:'dgclose', plans:'planclose', share:'shareclose', daily:'dailyclose',
+  island:'islandclose', tune:'tuneclose', look:'lookclose', huntdone:'hdclose', stamp:'stclose',
+  recbox:'recclose', bag:'bagclose', shorts:'shortsclose', shortresult:'srclose',
+  friends:'friendclose', ideas:'ideaclose', dodoai:'doclose', bragbox:'bragclose',
+};
+/* 아이가 직접 쓰거나 붙여넣는 칸. 여기에 글이 있으면 실수로 바깥을 눌러 날아가지 않게 안 닫는다
+   (창을 다시 열 때 비워지는 칸이 있다) — 닫기 단추나 Esc 로는 그대로 닫힌다. */
+const MODAL_TYPING = ['stnameinput','shcode','dgin','islandname','hunthint','huntcode',
+  'friendinput','ideainput','ideawhere','ideawhy','doinput'];
+let modalDownOn = null;   // 창 안에서 누르고 바깥에서 뗀 것(글자 끌어 고르기)은 바깥 누르기로 치지 않는다
+document.querySelectorAll('.modal').forEach(m=>{
+  const closeId = MODAL_CLOSE[m.id];
+  if(!closeId) return;
+  m.addEventListener('pointerdown', e=>{ modalDownOn = e.target; });
+  m.addEventListener('click', e=>{
+    if(e.target !== m || modalDownOn !== m) return;
+    const typed = MODAL_TYPING.some(id=>{ const f = document.getElementById(id); return f && m.contains(f) && f.value.trim(); });
+    if(typed){
+      const box = m.querySelector('.mbox');
+      box.classList.remove('nope'); void box.offsetWidth; box.classList.add('nope');
+      return;
+    }
+    $('#' + closeId).click();
+  });
+});
 if(!inIsland()){
   $('#start h1').textContent = inStudio() ? '🛠️ 도도 스튜디오' : '🎮 ' + Mode.game.title;
   $('#start .sub').textContent = inStudio()
