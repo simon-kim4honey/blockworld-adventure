@@ -231,6 +231,42 @@
   .quest .qbar{height:7px; background:#e8e3f0; border-radius:99px; margin-top:4px; overflow:hidden;}
   .quest .qfill{height:100%; width:0%; border-radius:99px; background:linear-gradient(90deg,#ffd93d,#ff9f1a); transition:width .35s ease;}
   .quest .qnum{font-size:11px; opacity:.6; margin-top:2px;}
+  /* 🐦 오늘의 도도 부탁 — 퀘스트 카드 맨 위 칸 */
+  #d3wrap{margin:0 0 7px; padding-bottom:6px; border-bottom:2px solid rgba(0,0,0,.10);}
+  #d3head{font-size:12px; opacity:.75; margin:0 0 4px;}
+  #d3head b{font-weight:700; opacity:1;}
+  .d3{display:flex; gap:7px; align-items:flex-start; padding:3px 0;}
+  .d3 .d3ic{font-size:16px; line-height:1.2; width:20px; text-align:center;}
+  .d3 .d3b{flex:1; min-width:0;}
+  .d3 .d3tx{font-size:12.5px; line-height:1.3;}
+  .d3 .d3n{font-size:11px; opacity:.6;}
+  .d3.on .d3tx{text-decoration:line-through; opacity:.5;}
+  .d3.on .d3ic{filter:none;}
+  #d3all{font-size:11.5px; color:#38b862; margin-top:3px;}
+  /* 휴대폰에서는 퀘스트 칸 자체가 좁다 — 부탁 한 줄을 한 줄로 눕힌다 */
+  @media (max-width:560px){
+    #d3wrap{margin-bottom:5px; padding-bottom:4px;}
+    #d3head{font-size:11px; margin-bottom:2px;}
+    .d3{padding:1px 0;}
+    .d3 .d3ic{font-size:13px; width:16px;}
+    .d3 .d3b{display:flex; gap:5px; align-items:baseline; min-width:0;}
+    .d3 .d3tx{font-size:11.5px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+    .d3 .d3n{font-size:10.5px; white-space:nowrap;}
+    #d3all{font-size:10.5px; margin-top:1px;}
+  }
+  /* 🪶 도장 찍고 가기 — 한마디 고르기 · 별 주기 */
+  #stmsgs{display:flex; flex-wrap:wrap; gap:6px;}
+  .stchip{
+    border:2px solid #e3dff0; background:#fff; border-radius:999px;
+    padding:6px 12px; font-size:14px; cursor:pointer; font-family:inherit; color:inherit;
+  }
+  .stchip.on{border-color:#38d39f; background:#e9fbf4;}
+  #ststars{display:flex; gap:8px; align-items:center;}
+  .ststar{
+    font-size:27px; line-height:1; cursor:pointer; background:none; border:0; padding:2px;
+    filter:grayscale(1); opacity:.45;
+  }
+  .ststar.on{filter:none; opacity:1;}
   .quest.done{animation:questDone .9s ease-out;}
   .quest.done .qtx{text-decoration:line-through; opacity:.55;}
   .quest.done .qfill{background:linear-gradient(90deg,#7ae582,#38d39f);}
@@ -1239,6 +1275,8 @@
     font-size:14px; padding:8px 14px; color:#fff;
     background:linear-gradient(#7c6df0,#5b4bd6); box-shadow:0 3px 0 #4335ad; white-space:nowrap;
   }
+  #visitstamp{background:linear-gradient(#7ae582,#38d39f); box-shadow:0 3px 0 #1f9e78; color:#0b3b2e;}
+  @media (max-width:560px){ #visitbar{flex-wrap:wrap; justify-content:center; border-radius:20px;} }
   body.visiting #fps{display:none;}
   body.visiting #recdot{top:64px;}
 
@@ -1446,6 +1484,7 @@
   <div class="card" id="quests">
     <div id="qtitle">📋 퀘스트<span class="sp"></span>
       <button class="foldbtn" id="foldQ" title="퀘스트 접기 / 펴기">▾</button></div>
+    <div id="d3wrap"><div id="d3head"></div><div id="d3list"></div><div id="d3all"></div></div>
     <div id="qlist"></div>
   </div>
   <!-- 🪶 도도AI 프롬프트 — 늘 화면 아래에 붙어 있다 -->
@@ -1558,6 +1597,10 @@
 <div class="worldlabel bob" id="shoplabel"></div>
 <div class="worldlabel" id="petlabel"></div>
 <div class="worldlabel bob" id="gatelabel"></div>
+<div class="worldlabel bob" id="yardlabel"></div>
+<div class="worldlabel" id="yardllabel"></div>
+<div class="worldlabel" id="yardrlabel"></div>
+<div class="worldlabel" id="stamplabel"></div>
 
 <!-- 🚪 코인 게임 — 옆에서 보는 납작한 화면 (지금 블록 화면과 아예 다른 방이다) -->
 <div id="cave">
@@ -1875,7 +1918,23 @@
   <div class="msub">걸린 시간 <b id="hdtime"></b> — 아래 기록 코드를 섬 주인에게 보내 주세요!</div>
   <textarea class="mcode" id="hdcode" spellcheck="false" readonly></textarea>
   <button class="mbtn green" id="hdcopy">📋 기록 코드 복사</button>
+  <button class="mbtn" id="hdstamp">🪶 도장도 찍고 가기</button>
   <button class="mbtn gray" id="hdclose">닫기</button>
+</div></div>
+
+<!-- 🪶 도장 찍고 가기 (친구 섬에 다녀간 흔적) -->
+<div class="modal" id="stamp"><div class="mbox">
+  <div class="mhead"><h2>🪶 도장 찍고 가기</h2></div>
+  <div class="msub" id="stsub"></div>
+  <div class="mlabel">① 한마디를 골라요</div>
+  <div id="stmsgs"></div>
+  <div class="mlabel">② 별을 줘요</div>
+  <div id="ststars"></div>
+  <div class="mlabel">③ 이 도장 코드를 섬 주인에게 보내요</div>
+  <textarea class="mcode" id="stcode" spellcheck="false" readonly></textarea>
+  <button class="mbtn green" id="stcopy">📋 도장 코드 복사</button>
+  <div id="stmsg"></div>
+  <button class="mbtn gray" id="stclose">닫기</button>
 </div></div>
 
 <!-- 🎥 녹화 결과 -->
@@ -1899,6 +1958,7 @@
 <div id="huntbar"><span id="hunttext"></span></div>
 <div id="visitbar">
   <span id="visittext"></span>
+  <button id="visitstamp">🪶 도장 찍고 가기</button>
   <button id="visithome">🏠 내 섬으로 돌아가기</button>
 </div>
 
@@ -1946,7 +2006,7 @@
   </div>
 
   <div class="mlabel">② 친구가 보낸 코드를 여기에 넣어요</div>
-  <input class="mfield" id="friendinput" placeholder="BWF1:... 또는 BWT1:..." spellcheck="false">
+  <input class="mfield" id="friendinput" placeholder="BWF1:... · BWT1:... · BWV1:(도장)" spellcheck="false">
   <button class="mbtn" id="friendgo">넣기</button>
   <div id="friendmsg"></div>
 
@@ -3872,6 +3932,8 @@ const state = {
   hunt:null, huntLog:[],   // 보물찾기 — 숨긴 자리 3곳 + 친구들 기록
   cards:{}, saw:{},        // 📖 블록섬 도감 — 얻은 카드 · 처음 본 블록
   thanksIn:{}, giftsOut:0, // 카드를 보내 주고 받은 고마워 코드 · 보낸 카드 수
+  day:null,                // 🐦 오늘의 도도 부탁 (날짜 · 시작값 · 다 한 것)
+  stamps:[],               // 🪶 친구가 내 섬에 남기고 간 도장
   eggs:{},                 // 🥚 알로 깨운 도도 친구
   cave:{best:0, runs:0},   // 🚪 코인 게임 — 깬 단계 · 다녀온 횟수
   edits:{},                // "x,y,z" -> 블록 번호 (0 = 부순 자리)
@@ -3904,6 +3966,7 @@ function saveNow(){
       theme:state.theme, look:state.look, tune:state.tune, tuneAt:state.tuneAt,
       hunt:state.hunt, huntLog:state.huntLog,
       eggs:state.eggs, cave:state.cave,
+      day:state.day, stamps:state.stamps,
       cards:state.cards, saw:state.saw, thanksIn:state.thanksIn, giftsOut:state.giftsOut,
       prop:propPick, stGo:state.stGo|0,
       pos:{x:player.x, y:player.y, z:player.z}, slot:selectedSlot
@@ -3953,6 +4016,8 @@ function loadSave(){
   state.tune = Array.isArray(d.tune) ? d.tune : null;
   state.tuneAt = Array.isArray(d.tuneAt) ? d.tuneAt : null;
   state.eggs = d.eggs || {};
+  state.day = (d.day && d.day.d) ? d.day : null;
+  state.stamps = Array.isArray(d.stamps) ? d.stamps : [];
   state.cave = d.cave || {best:0, runs:0};
   state.cards = d.cards || {}; state.saw = d.saw || {};
   state.thanksIn = d.thanksIn || {}; state.giftsOut = d.giftsOut|0;
@@ -5010,6 +5075,139 @@ function checkQuests(){
   }
   renderQuests();
   if(changed) saveSoon();
+  checkDaily3();
+}
+
+/* ═══════════════════════════════════════════════════
+   10.13b 🐦 오늘의 도도 부탁 — "오늘 뭐 하지?" 를 없애는 칸
+   ───────────────────────────────────────────────────
+   부탁 셋(만들기 · 놀기 · 나누기)을 날짜에서 뽑는다. 그래서
+   인터넷이 없어도 매일 바뀌고, 같은 날이면 친구들과 같은 부탁이 나온다.
+   못 한 날에 잃는 것은 하나도 없다 — 다음 날 새 부탁 셋이 그냥 온다.
+   그래서 여기서는 연속 일수를 세지도, 보여 주지도 않는다.
+   ═══════════════════════════════════════════════════ */
+const DAILY_POOL = [
+  /* 🔨 만들기 */
+  [
+    {id:'dp_place', icon:'🧱', text:'블록 40개 놓기',        goal:40, coins:35, now:()=>state.placed|0},
+    {id:'dp_break', icon:'⛏️', text:'블록 20개 부수기',      goal:20, coins:30, now:()=>state.broken|0},
+    {id:'dp_rain',  icon:'🌈', text:'무지개 블록 5개 놓기',   goal:5,  coins:40, now:()=>state.rainbowPlaced|0,
+     ok:()=>hasUnlock('무지개 블록')},
+    {id:'dp_decor', icon:'🌷', text:'섬 한 번 꾸미기',        goal:1,  coins:40, now:()=>state.decor|0},
+    {id:'dp_plan',  icon:'📐', text:'청사진 하나 완성하기',   goal:1,  coins:60, now:()=>Object.keys(state.bpDone||{}).length,
+     ok:()=>BLUEPRINTS.some(b => !state.bpDone[b.id])},
+  ],
+  /* 🎮 놀기 */
+  [
+    {id:'dg_coin',  icon:'🪙', text:'코인 50개 모으기',       goal:50, coins:35, now:()=>state.coinsEarned|0},
+    {id:'dg_star',  icon:'⭐', text:'별 1개 찾기',            goal:1,  coins:45, now:()=>state.starsGot|0},
+    {id:'dg_combo', icon:'🔥', text:'콤보 한 번 터뜨리기',    goal:1,  coins:40, now:()=>state.combosMade|0},
+    {id:'dg_cave',  icon:'🚪', text:'코인 게임 한 번 다녀오기', goal:1, coins:45, now:()=>(state.cave && state.cave.runs|0) || 0},
+    {id:'dg_short', icon:'🎬', text:'15초 도전 하나 성공하기', goal:1, coins:50, now:()=>Object.keys(state.shortsDone||{}).length,
+     ok:()=>SHORTS.some(x => !state.shortsDone[x.id])},
+  ],
+  /* 🤝 나누기 */
+  [
+    {id:'ds_clip',  icon:'🎥', text:'영상 한 편 찍기',        goal:1,  coins:45, now:()=>state.clips|0},
+    {id:'ds_card',  icon:'📖', text:'새 카드 한 장 얻기',     goal:1,  coins:40, now:()=>Object.keys(state.cards||{}).length},
+    {id:'ds_ai',    icon:'🪶', text:'도도 장로에게 세 번 말 걸기', goal:3, coins:35, now:()=>state.aiDone|0},
+    {id:'ds_gift',  icon:'🎁', text:'친구에게 카드 한 장 보내기', goal:1, coins:50, now:()=>state.giftsOut|0,
+     ok:()=>giftLevel() >= 1 && Dogam.count() >= 1},
+  ],
+];
+const DAILY_ALL = [].concat.apply([], DAILY_POOL);
+const dailyDef = id => DAILY_ALL.find(d => d.id === id);
+const DAILY_BONUS = 60;
+
+/* 날짜에서 뽑는다 — 같은 날이면 어느 기기에서든 같은 부탁이 나온다 */
+function dailyRng(seed){
+  let v = (seed >>> 0) || 1;
+  return function(){ v = (v * 1664525 + 1013904223) >>> 0; return v / 4294967296; };
+}
+function dailyEnsure(){
+  const now = new Date();
+  const key = dayKey(now);
+  if(state.day && state.day.d === key && Array.isArray(state.day.ids)) return false;
+  const rng = dailyRng(now.getFullYear()*10000 + (now.getMonth()+1)*100 + now.getDate());
+  /* 아직 못 하는 부탁은 빼고 뽑는다 — "무지개 블록"을 아직 못 쓰는 아이한테
+     무지개 블록을 부탁하면 그 칸은 하루 내내 죽은 칸이 된다. */
+  const ids = DAILY_POOL.map(group => {
+    const can = group.filter(it => !it.ok || it.ok());
+    const use = can.length ? can : group;
+    return use[Math.floor(rng() * use.length)].id;
+  });
+  const base = {};
+  ids.forEach(id => { const it = dailyDef(id); if(it) base[id] = it.now(); });
+  state.day = {d:key, ids:ids, base:base, done:{}, bonus:0};
+  saveSoon();
+  return true;
+}
+function dailyProgress(id){
+  const it = dailyDef(id);
+  if(!it || !state.day) return {cur:0, goal:1};
+  const b = state.day.base[id] || 0;
+  return {cur:clamp(it.now() - b, 0, it.goal), goal:it.goal};
+}
+function dailyDoneCount(){
+  if(!state.day) return 0;
+  return state.day.ids.filter(id => state.day.done[id]).length;
+}
+function renderDaily3(){
+  const head = $('#d3head'), list = $('#d3list'), all = $('#d3all');
+  if(!head || !list) return;
+  if(!state.day){ head.textContent = ''; list.innerHTML = ''; all.textContent = ''; return; }
+  head.innerHTML = '🐦 <b>오늘의 부탁</b> ' + dailyDoneCount() + ' / ' + state.day.ids.length;
+  list.innerHTML = '';
+  state.day.ids.forEach(id => {
+    const it = dailyDef(id); if(!it) return;
+    const done = !!state.day.done[id];
+    const {cur, goal} = dailyProgress(id);
+    const el = document.createElement('div');
+    el.className = 'd3' + (done ? ' on' : '');
+    el.innerHTML = '<div class="d3ic">' + (done ? '✅' : it.icon) + '</div>' +
+      '<div class="d3b"><div class="d3tx">' + it.text + '</div>' +
+      '<div class="d3n">' + (done ? '다 했어요 · 🪙+' + it.coins : cur + ' / ' + goal) + '</div></div>';
+    list.appendChild(el);
+  });
+  all.textContent = state.day.bonus ? '🎉 오늘 세 가지를 다 했어요!' : '';
+  if(typeof layoutUI === 'function') layoutUI();
+}
+/* 다 했는지 본다. 못 해도 아무 일 없다 — 혼내거나 빼앗지 않는다. */
+function checkDaily3(){
+  if(!inIsland() || VISIT) return;          // 친구 섬 구경 중엔 세지 않는다
+  if(dailyEnsure()) renderDaily3();
+  if(!state.day) return;
+  let changed = false;
+  for(const id of state.day.ids){
+    if(state.day.done[id]) continue;
+    const {cur, goal} = dailyProgress(id);
+    if(cur >= goal){
+      const it = dailyDef(id);
+      state.day.done[id] = 1;
+      gainCoins(it.coins, true);
+      Sound.quest();
+      popText('🐦 오늘의 부탁!', '#ffd93d');
+      showHint('🐦 ' + it.text + ' — 다 했어요!  🪙+' + it.coins, 2400);
+      changed = true;
+    }
+  }
+  if(changed && !state.day.bonus && state.day.ids.every(id => state.day.done[id])){
+    state.day.bonus = 1;
+    gainCoins(DAILY_BONUS, true);
+    Sound.fanfare();
+    showBanner('🐦 오늘의 부탁 세 가지 완료!', '도도 장로가 코인 ' + DAILY_BONUS + '개를 더 줬어요');
+  }
+  if(changed){ renderDaily3(); saveSoon(); }
+}
+/* 도도 장로가 해 주는 말에도 오늘의 부탁을 섞는다 */
+function dailyLine(){
+  if(!state.day) return null;
+  const left = state.day.ids.filter(id => !state.day.done[id]);
+  if(!left.length) return '오늘 부탁한 세 가지를 다 했구나! 정말 고마워 🎉';
+  const it = dailyDef(left[0]);
+  if(!it) return null;
+  const {cur, goal} = dailyProgress(left[0]);
+  return '오늘은 「' + it.text + '」 를 부탁할게.\n지금 ' + cur + ' / ' + goal + ' 했어!';
 }
 
 /* ---- 콤보: 30초 안에 코인 5개 ---- */
@@ -5149,6 +5347,168 @@ function buildGateHouse(){
   GATE.at   = {x:gx + 0.5, y:y, z:gz + 1.5};   // 이 자리를 밟으면 들어간다
 }
 
+/* ═══════════════════════════════════════════════════
+   🏆 자랑 마당 — 섬 입구에서 제일 먼저 보이는 진열대
+   ───────────────────────────────────────────────────
+   만든 게임 · 찍은 영상 · 배지 · 모은 카드 · 친구가 남긴 도장이
+   여기저기 서랍에 흩어져 있어서 "내가 이만큼 했다" 가 안 보였다.
+   한자리에 모아 세운다. 친구가 놀러 와도 여기가 첫 화면이 된다.
+
+   왼쪽 = 내가 만든 것(게임·영상), 오른쪽 = 모은 것(도감·배지).
+   📖 도감 스레드와 미리 맞춰 둔 자리 나눔이다.
+
+   블록은 setBlock(..., true) 로 짓는다 — 섬 코드(BWS2)에 담기는
+   state.edits 에는 안 들어간다. 그래서 카톡에 붙여넣는 섬 코드가
+   길어지지 않는다. 마당은 applyEdits() 보다 먼저 세워서, 아이가
+   그 위에 뭘 지었으면 아이 것이 이긴다.
+   ═══════════════════════════════════════════════════ */
+const YARD = {x0:27, x1:37, z0:38, z1:46, y:10};
+function buildYard(){
+  const y = YARD.y;
+  /* 판자 마당 + 위쪽 4칸 비우기 (풀·꽃이 서 있으면 걷기 불편하다) */
+  for(let x=YARD.x0;x<=YARD.x1;x++) for(let z=YARD.z0;z<=YARD.z1;z++){
+    setBlock(x, y-1, z, PLANK, true);
+    for(let k=0;k<4;k++) setBlock(x, y+k, z, AIR, true);
+  }
+  /* 들어오는 아치 — 마을 광장에서 마당으로 */
+  for(let k=0;k<3;k++){ setBlock(30, y+k, YARD.z0, WOOD, true); setBlock(34, y+k, YARD.z0, WOOD, true); }
+  for(let x=30;x<=34;x++) setBlock(x, y+3, YARD.z0, PLANK, true);
+  setBlock(32, y+4, YARD.z0, GOLD, true);
+  YARD.sign = {x:32.5, y:y+5.0, z:YARD.z0 + 0.5};
+
+  /* 왼쪽 문 — 🎮 내가 만든 것 */
+  YARD.L = yardDoor(29, y, RAINBOW);
+  /* 오른쪽 문 — 📖 모은 것 */
+  YARD.R = yardDoor(35, y, GOLD);
+
+  /* 가운데 길 — 한가운데를 밟고 지나가게 색을 달리한다 */
+  for(let z=YARD.z0+1;z<=YARD.z1-1;z++) setBlock(32, y-1, z, PATH_G, true);
+}
+/* 문 하나: x 줄에 기둥 둘 + 들보, 가운데 두 칸(z 41·42)이 지나가는 자리 */
+function yardDoor(x, y, topBlock){
+  for(let k=0;k<3;k++){
+    setBlock(x, y+k, 40, WOOD, true);
+    setBlock(x, y+k, 43, WOOD, true);
+    setBlock(x, y+k, 41, AIR, true);
+    setBlock(x, y+k, 42, AIR, true);
+  }
+  for(let z=40;z<=43;z++) setBlock(x, y+3, z, PLANK, true);
+  setBlock(x, y+4, 41, topBlock, true);
+  setBlock(x, y+4, 42, topBlock, true);
+  return {x:x + 0.5, y:y, z:41.5, sign:{x:x + 0.5, y:y + 5.0, z:41.5}};
+}
+
+/* ── 마당에 세울 내용 — 내 섬이면 내 것, 친구 섬 구경 중이면 친구 것 ── */
+function yardMine(){
+  return {
+    g:Games.all().length,
+    c:state.clips|0,
+    b:Object.keys(state.badges || {}).length,
+    k:Dogam.count(),
+    v:(state.stamps || []).map(x => ({n:x.n, u:x.u, m:x.m|0, r:x.r|0}))
+  };
+}
+function yardData(){
+  if(VISIT){
+    const sc = VISIT.sc;
+    if(!sc) return null;
+    return {g:sc.g|0, c:sc.c|0, b:sc.b|0, k:sc.k|0,
+            v:(Array.isArray(sc.v) ? sc.v : []).map(a => ({n:String(a[0] || '친구'), u:'', m:a[1]|0, r:a[2]|0}))};
+  }
+  return yardMine();
+}
+
+/* ── 친구 도도 인형 (받은 도장 하나에 한 마리) ── */
+const DOLL_COLORS = [0xf6f7f9, 0xffd3a5, 0xb8e0ff, 0xffc9de, 0xd6f5c4, 0xe4d4ff,
+                     0xfff0a8, 0xc9f0ea, 0xffbfa0, 0xd8d3cc, 0xbfd8ff, 0xf4c7f0];
+function dollHue(seed){
+  let h = 0;
+  const t = String(seed || '');
+  for(let i=0;i<t.length;i++) h = (h*31 + t.charCodeAt(i)) >>> 0;
+  return DOLL_COLORS[h % DOLL_COLORS.length];
+}
+function miniDodo(color){
+  const g = new THREE.Group();
+  const body = boxMesh(.52,.48,.42, color);   body.position.y = .40;
+  const head = boxMesh(.36,.32,.32, color);   head.position.set(0, .82, .02);
+  const beak = boxMesh(.14,.13,.20, 0xffc043); beak.position.set(0, .78, .23);
+  const eye  = new THREE.Mesh(new THREE.BoxGeometry(.24,.08,.03),
+    new THREE.MeshLambertMaterial({color:0x2f2530}));
+  eye.position.set(0, .86, .17);
+  const legL = boxMesh(.09,.22,.09, 0xf3a03d); legL.position.set(-.11,.11,0);
+  const legR = boxMesh(.09,.22,.09, 0xf3a03d); legR.position.set( .11,.11,0);
+  const base = boxMesh(.62,.14,.54, 0xc9a97a); base.position.y = -.07;
+  g.add(body, head, beak, eye, legL, legR, base);
+  return g;
+}
+let stampGroup = null;
+function buildStamps(){
+  if(stampGroup){ scene.remove(stampGroup); stampGroup = null; }
+  const data = yardData();
+  const list = (data && data.v) ? data.v.slice(0, STAMP_MAX) : [];
+  if(!list.length) return;
+  stampGroup = new THREE.Group();
+  list.forEach((s, i)=>{
+    const side = (i % 2) ? 1 : -1;              // 길 양옆으로 번갈아
+    const row  = Math.floor(i / 2);
+    const g = miniDodo(dollHue(s.u || s.n));
+    g.position.set(32.5 + side*1.6, YARD.y, YARD.z0 + 1.6 + row*1.2);
+    g.rotation.y = side > 0 ? -Math.PI/2 : Math.PI/2;   // 길 쪽을 본다
+    g.userData.stamp = s;
+    stampGroup.add(g);
+  });
+  scene.add(stampGroup);
+}
+
+/* 문패 셋과 친구 인형 말풍선 */
+function yardTitle(){
+  if(VISIT) return '🏆 ' + (VISIT.name || '친구의 섬') + '의 자랑 마당';
+  return '🏆 ' + islandName() + '의 자랑 마당';
+}
+function updateYardLabels(){
+  const d = yardData();
+  if(placeLabel($('#yardlabel'), YARD.sign.x, YARD.sign.y, YARD.sign.z, 8))
+    $('#yardlabel').textContent = yardTitle() +
+      (d ? '\n왼쪽 = 내가 만든 것 · 오른쪽 = 모은 것' : '\n아직 아무것도 없어요');
+  /* 문패 둘이 같이 뜨면 화면이 말풍선으로 덮인다 — 가까운 쪽 하나만 띄운다 */
+  const dl = Math.hypot(YARD.L.x - player.x, YARD.L.z - player.z);
+  const dr = Math.hypot(YARD.R.x - player.x, YARD.R.z - player.z);
+  const near = (dl <= dr) ? 'L' : 'R';
+  if(d && near === 'L' && placeLabel($('#yardllabel'), YARD.L.sign.x, YARD.L.sign.y, YARD.L.sign.z, 6))
+    $('#yardllabel').textContent = '🎮 내가 만든 것\n게임 ' + d.g + '개 · 영상 ' + d.c + '편' +
+      (VISIT ? '' : '\n(들어가면 열려요)');
+  else $('#yardllabel').style.display = 'none';
+  if(d && near === 'R' && placeLabel($('#yardrlabel'), YARD.R.sign.x, YARD.R.sign.y, YARD.R.sign.z, 6))
+    $('#yardrlabel').textContent = '📖 모은 것\n카드 ' + d.k + '장 · 배지 ' + d.b + '개' +
+      (VISIT ? '' : '\n(들어가면 열려요)');
+  else $('#yardrlabel').style.display = 'none';
+  /* 제일 가까운 친구 인형 하나만 말풍선을 띄운다 */
+  const lab = $('#stamplabel');
+  if(!stampGroup){ lab.style.display = 'none'; return; }
+  let best = null, bd = 4.2;
+  stampGroup.children.forEach(g=>{
+    const dd = Math.hypot(g.position.x - player.x, g.position.z - player.z);
+    if(dd < bd){ bd = dd; best = g; }
+  });
+  if(!best){ lab.style.display = 'none'; return; }
+  const st = best.userData.stamp;
+  if(placeLabel(lab, best.position.x, best.position.y + 1.5, best.position.z, 5))
+    lab.textContent = '🪶 ' + st.n + ' ' + '⭐'.repeat(clamp(st.r|0, 1, 3)) + '\n「' +
+      (STAMP_MSGS[st.m|0] || STAMP_MSGS[0]) + '」';
+}
+let yardCool = 0;
+function updateYardDoors(dt){
+  if(VISIT) return;                       // 친구 섬에서는 남의 서랍을 열지 않는다
+  if(yardCool > 0) yardCool -= dt;
+  const inY = Math.abs(player.y - YARD.y) < 2.6;
+  const atL = Math.abs(player.x - YARD.L.x) < 1.0 && Math.abs(player.z - YARD.L.z) < 1.3 && inY;
+  const atR = Math.abs(player.x - YARD.R.x) < 1.0 && Math.abs(player.z - YARD.R.z) < 1.3 && inY;
+  if(!atL && !atR){ yardCool = 0; return; }
+  if(yardCool > 0) return;
+  if(atL && !studioHomeOpen){ yardCool = 1.4; openStudioHome(); }
+  else if(atR && !Dogam.isOpen()){ yardCool = 1.4; Dogam.open(); }
+}
+
 /* 도도 장로 — 주인공보다 크고, 회색 깃털에 초록 밀짚모자 */
 function buildNPC(){
   const g = new THREE.Group();
@@ -5186,6 +5546,8 @@ function questLine(){
   return '「' + q.text.replace('{g}', goal) + '」\n지금 ' + cur + ' / ' + goal + ' 했어!';
 }
 function npcLine(){
+  const dl = dailyLine();
+  if(dl) return '반가워! 난 도도 장로야 👋\n' + dl;
   const line = questLine();
   if(!line) return '반가워! 난 이 섬의 도도 장로야 👋\n지금은 할 일이 없네. 마음껏 놀아!';
   return '반가워! 난 도도 장로야 👋\n' + line + '\n가게는 바로 저기야 🛒';
@@ -5584,6 +5946,9 @@ function updateLabels(dt){
   if(GATE.sign) placeLabel($('#gatelabel'), GATE.sign.x, GATE.sign.y, GATE.sign.z, 11) &&
     ($('#gatelabel').textContent = '🚪 코인 게임\n들어가면 코인을 벌 수 있어요!');
 
+  // 🏆 자랑 마당 — 문패 셋 + 친구 인형
+  if(YARD.sign && inIsland()) updateYardLabels();
+
   // 아기 도도가 알려 주는 코인 위치
   const pl = $('#petlabel');
   if(petTarget && pets.dodo && pets.dodo.visible){
@@ -5611,6 +5976,9 @@ function updateLabels(dt){
     if(near && gateCooldown <= 0 && !Cave.open()) Cave.enter();
     if(!near) gateCooldown = 0;
   }
+
+  // 🏆 자랑 마당의 두 문 — 들어서면 열린다
+  if(YARD.L && inIsland()) updateYardDoors(dt);
 }
 
 /* ═══════════════════════════════════════════════════
@@ -7573,6 +7941,18 @@ function enterFriendCode(){
   const raw = $('#friendinput').value;
   const inv = unpackCode('BWF1', raw);
   const th  = unpackCode('BWT1', raw);
+  const vst = unpackCode('BWV1', raw);          // 🪶 다녀간 친구가 찍고 간 도장
+
+  if(vst){
+    if(vst.u && vst.u === state.uid){ friendMsg('그건 내가 찍은 도장이에요 😅', false); Sound.deny(); return; }
+    const rec = addStamp(vst);
+    $('#friendinput').value = '';
+    friendMsg('🪶 ' + rec.n + ' 님의 도장을 받았어요! 섬 입구 자랑 마당에 세워 뒀어요.', true);
+    showBanner('🪶 ' + rec.n + ' 님이 다녀갔어요!',
+               STAMP_MSGS[rec.m] + '  ' + '⭐'.repeat(rec.r));
+    Sound.fanfare();
+    return;
+  }
 
   if(inv){
     if(inv.u === state.uid){ friendMsg('그건 내 코드예요 😅 친구에게 보내 주세요!', false); Sound.deny(); return; }
@@ -8450,7 +8830,8 @@ function visitIsland(code){
   if(!got || !got.edits) return false;
   const info = {edits:got.edits, name:got.name || '친구의 섬', nick:got.nick || '', uid:got.uid || '',
                 theme:got.theme || 'basic', tune:got.tune || null,
-                tuneAt:got.tuneAt || null, hunt:got.hunt || null};
+                tuneAt:got.tuneAt || null, hunt:got.hunt || null,
+                sc:got.sc || null};      // 🏆 친구 자랑 마당 요약
   try{ sessionStorage.setItem(VISIT_KEY, JSON.stringify(info)); }catch(e){ return false; }
   saveNow();
   location.reload();
@@ -8469,6 +8850,11 @@ function islandCode(){
   if(!tuneEmpty(state.tune) && state.tuneAt) o.m = {t:state.tune, p:state.tuneAt};
   if(state.hunt && state.hunt.spots && state.hunt.spots.length === 3)
     o.q = {s:state.hunt.spots, h:(state.hunt.hint || '').slice(0,20)};
+  /* 🏆 자랑 마당 요약 — 숫자 넷과 도장 여섯 개뿐이라 코드가 거의 안 길어진다.
+     친구가 내 섬을 열었을 때 마당이 텅 비어 보이지 않게 하려는 것. */
+  const yd = yardMine();
+  o.s = {g:yd.g, c:yd.c, b:yd.b, k:yd.k,
+         v:yd.v.slice(0, 6).map(x => [String(x.n).slice(0,10), x.m|0, x.r|0])};
   return packWorldCode('BWS2', o, body);
 }
 function decodeIsland(code){
@@ -8477,7 +8863,8 @@ function decodeIsland(code){
                        theme:m.t || 'basic',
                        tune:(m.m && Array.isArray(m.m.t)) ? m.m.t : null,
                        tuneAt:(m.m && Array.isArray(m.m.p)) ? m.m.p : null,
-                       hunt:(m.q && Array.isArray(m.q.s) && m.q.s.length === 3) ? m.q : null};
+                       hunt:(m.q && Array.isArray(m.q.s) && m.q.s.length === 3) ? m.q : null,
+                       sc:(m.s && typeof m.s === 'object') ? m.s : null};
   const e = decodeWorld(code);                       // 예전 월드 코드도 받아 준다
   return e ? {edits:e, name:'친구의 섬', nick:''} : null;
 }
@@ -10089,6 +10476,7 @@ function stepGame(dt){
   Lamps.update();
 }
 
+let d3Acc = 0;
 function frame(t){
   requestAnimationFrame(frame);
   const now = t*0.001;
@@ -10110,6 +10498,11 @@ function frame(t){
 
   /* 물결 무늬가 천천히 흘러간다 (그림 한 장을 밀어 주기만 하므로 부담이 거의 없다) */
   if(waterMap){ waterMap.offset.x += dt*0.035; waterMap.offset.y += dt*0.021; }
+
+  /* 🐦 오늘의 부탁은 1초에 한 번만 본다 — 영상·꾸미기처럼
+     퀘스트를 건드리지 않는 일도 여기서 같이 잡힌다 */
+  d3Acc += dt;
+  if(d3Acc > 1){ d3Acc = 0; if(inIsland() && !VISIT) checkDaily3(); }
 
   fpsAcc += dt; fpsCount++;
   if(fpsAcc > 0.5){
@@ -10298,6 +10691,94 @@ function enterHuntCode(){
   renderHunt();
   islandMsg('🏆 ' + rec.n + ' 님이 ' + rec.s + '초 만에 다 찾았대요!');
   Sound.fanfare();
+}
+
+/* ═══════════════════════════════════════════════════
+   10.33b 🪶 답장 도장 — 친구가 다녀간 흔적이 섬에 남는다
+   ───────────────────────────────────────────────────
+   지금까지 친구가 남 섬에 다녀가도 주인은 알 길이 없었다.
+   (보물찾기 기록 코드 BWH1 은 글자 한 줄로만 보였다.)
+   여기서는 다녀간 친구가 한마디와 별을 담은 도장 코드(BWV1)를
+   만들고, 주인이 그걸 넣으면 섬 입구 자랑 마당에 그 친구 도도가
+   서 있게 된다. 서버 없이, 초대 코드와 똑같은 왕복 방식이다.
+
+   한마디는 "고르기" 다. 아이가 아무 말이나 적어 보내면 걸러 줄
+   사람이 없기 때문 — 자유 입력은 거르개가 있는 💬 대화창에만 둔다.
+   ═══════════════════════════════════════════════════ */
+const STAMP_MSGS = [
+  '섬 예쁘다!', '또 올게 👋', '집 잘 지었네', '여기 어떻게 만들었어?',
+  '미로 어려워 😵', '보물 못 찾았어 😢', '최고야! 🎉', '나도 만들어 볼래',
+  '오르골 좋다 🎵', '벽화 멋져 🖼️', '길 잃었어 😂', '친구 하자!'
+];
+const STAMP_MAX = 12;                       // 섬 입구에 세울 수 있는 도도 인형 수
+let stampPick = {m:0, r:3};
+
+function stampCode(){
+  return packCode('BWV1', {
+    n:(state.nick || '친구').slice(0,12),
+    u:state.uid,
+    i:((VISIT && VISIT.name) || '').slice(0,16),
+    m:stampPick.m|0,
+    r:clamp(stampPick.r|0, 1, 3)
+  });
+}
+function renderStampUI(){
+  const box = $('#stmsgs');
+  box.innerHTML = '';
+  STAMP_MSGS.forEach((t,i)=>{
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'stchip' + (stampPick.m === i ? ' on' : '');
+    b.textContent = t;
+    b.addEventListener('click', ()=>{ stampPick.m = i; Sound.click(); renderStampUI(); });
+    box.appendChild(b);
+  });
+  const st = $('#ststars');
+  st.innerHTML = '';
+  for(let i=1;i<=3;i++){
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'ststar' + (stampPick.r >= i ? ' on' : '');
+    b.textContent = '⭐';
+    b.title = i + '개';
+    b.addEventListener('click', ()=>{ stampPick.r = i; Sound.star(); renderStampUI(); });
+    st.appendChild(b);
+  }
+  $('#stcode').value = stampCode();
+}
+function openStamp(){
+  if(!VISIT){
+    showHint('🪶 도장은 친구 섬에 놀러 갔을 때 찍을 수 있어요', 2400);
+    Sound.deny();
+    return;
+  }
+  if(!state.nick){ askNick(()=>openStamp()); return; }
+  $('#huntdone').style.display = 'none';
+  $('#stsub').textContent = '「' + (VISIT.name || '친구의 섬') +
+    '」에 다녀간 흔적을 남겨요. 아래 코드를 섬 주인에게 보내면, 그 섬 입구에 내 도도가 서 있게 돼요.';
+  $('#stmsg').textContent = '';
+  renderStampUI();
+  if(document.pointerLockElement) document.exitPointerLock();
+  $('#stamp').style.display = 'flex';
+  Sound.shop();
+}
+function closeStamp(){ $('#stamp').style.display = 'none'; }
+
+/* 받은 도장을 섬에 세운다 — 같은 친구가 또 오면 최근 것으로 바꾼다 */
+function addStamp(v){
+  const rec = {
+    n:String(v.n || '친구').slice(0,12),
+    u:String(v.u || '').slice(0,12),
+    m:clamp(v.m|0, 0, STAMP_MSGS.length-1),
+    r:clamp(v.r|0, 1, 3),
+    at:dayKey(new Date())
+  };
+  const list = (state.stamps || []).filter(x => !(rec.u && x.u === rec.u));
+  list.unshift(rec);
+  state.stamps = list.slice(0, STAMP_MAX);
+  saveSoon();
+  if(typeof buildStamps === 'function') buildStamps();
+  return rec;
 }
 
 const Hunt = (function(){
@@ -10748,10 +11229,12 @@ if(inIsland()){
   buildShopHouse();
   buildObbies();
   loadVisit();               // 친구 섬 구경 중인지 먼저 확인
+  buildYard();               // 🏆 자랑 마당 — 아이가 지은 것보다 먼저 세운다
   applyEdits();
   buildSign();
   if(VISIT){
     document.body.classList.add('visiting');
+    const d3 = $('#d3wrap'); if(d3) d3.style.display = 'none';
     $('#visittext').textContent = '🚢 ' + (VISIT.name || '친구의 섬') + ' 구경 중이에요 (여기서 지은 건 저장되지 않아요)';
   }
 } else {
@@ -10766,6 +11249,8 @@ updateHud();
 if(inIsland()){
   Collect.build();
   refillQuests();
+  if(!VISIT){ dailyEnsure(); renderDaily3(); }
+  buildStamps();             // 🪶 받은 도장만큼 친구 도도를 세운다
   npcGroup = buildNPC();
 }
 applySkin(state.skin);
@@ -10849,6 +11334,17 @@ $('#islandvisit').addEventListener('click', goVisit);
 $('#bragsave').addEventListener('click', saveBrag);
 $('#bragclose').addEventListener('click', ()=>{ $('#bragbox').style.display='none'; });
 $('#visithome').addEventListener('click', goHome);
+/* 🪶 도장 찍고 가기 */
+$('#visitstamp').addEventListener('click', openStamp);
+$('#hdstamp').addEventListener('click', openStamp);
+$('#stclose').addEventListener('click', closeStamp);
+$('#stamp').addEventListener('click', e=>{ if(e.target.id === 'stamp') closeStamp(); });
+$('#stcopy').addEventListener('click', ()=>{
+  const msg = copyField('stcode', '✅ 도장 코드를 복사했어요! 카톡으로 섬 주인에게 보내 주세요.');
+  $('#stmsg').style.color = msg.indexOf('✅') === 0 ? '#38b862' : '#c0392b';
+  $('#stmsg').textContent = msg;
+  Sound.click();
+});
 $('#recsave').addEventListener('click', ()=>Rec.save());
 $('#reccopy').addEventListener('click', ()=>{ copyField('reccap',''); Sound.click(); });
 $('#recclose').addEventListener('click', ()=>{ $('#recbox').style.display='none'; });
@@ -13818,6 +14314,11 @@ window.BW = {player, setBlock, getBlock, scene, camera, renderer, voxels, W,H,D,
   sendIdea, openIdeas, closeIdeas, APPLIED_IDEAS, ideaCode,
   openDodo, closeDodo, doAsk, doBrain, doNorm, doSuggest, DO_BUILD, DO_PLACE, DO_SKIN,
   setTimeMode, questLine,
+  /* 🐦 오늘의 부탁 · 🪶 답장 도장 · 🏆 자랑 마당 */
+  DAILY_POOL, dailyDef, dailyEnsure, dailyProgress, checkDaily3, renderDaily3, dailyLine,
+  STAMP_MSGS, openStamp, closeStamp, addStamp, stampCode, stampPick(){ return stampPick; },
+  YARD, buildYard, buildStamps, yardData, yardMine,
+  stampGroup(){ return stampGroup; },
   QUALITY, applyQuality, cycleQuality, rebuildAll, rebuildChunk, processDirtyChunks,
   cullInfo(){
     const f = new THREE.Frustum(), m = new THREE.Matrix4();
