@@ -4352,8 +4352,17 @@ function playerBoxOverlaps(x,y,z){
 }
 
 /* 지금 E 를 누르면 블록이 "정확히 어디에" 생기는지 — 미리보기와 놓기가 같은 답을 쓴다 */
+function onSmallProp(){
+  if(!aimed) return false;
+  const t = getBlock(aimed.x, aimed.y, aimed.z);
+  return isProp(t) && t !== FENCE;
+}
 function placeTarget(){
   if(!aimed) return null;
+  /* 🌷 꽃·해바라기·풀·버섯은 칸을 다 채우지 않는 작은 소품이라, 그 위나 옆에
+     블록을 붙이면 꽃 위에 꽃이 둥둥 뜬다. 소품을 가리키면 아무것도 놓지 않는다.
+     울타리는 칸 높이만큼 꽉 차서 위에 쌓아도 자연스러우니 그대로 둔다. */
+  if(onSmallProp()) return null;
   const x = aimed.x + aimed.nx, y = aimed.y + aimed.ny, z = aimed.z + aimed.nz;
   if(!inside(x,y,z)) return null;
   const cur = getBlock(x,y,z);
@@ -4477,6 +4486,11 @@ function placeBlock(){
   }
   /* 화면에 미리 보여 준 바로 그 칸에 놓는다 */
   const spot = placeAt || placeTarget();
+  if(!spot && onSmallProp()){
+    showHint('🌷 ' + BLOCKS[getBlock(aimed.x,aimed.y,aimed.z)].name + ' 위에는 못 놓아요. 땅을 보고 놓아 보세요', 1800);
+    Sound.deny();
+    return false;
+  }
   if(!spot){
     showHint('🙅 여기는 좁아서 못 놓아요. 조금 앞을 보고 놓아 보세요', 1800);
     Sound.deny();
