@@ -606,6 +606,17 @@
   .mbtn.gray:active{box-shadow:0 2px 0 #857d96;}
   .mrow{display:flex; gap:10px;}
   .mrow .mbtn{width:auto; flex:1;}
+  .mbtn.red{background:linear-gradient(#ff8a80,#e0453a); box-shadow:0 5px 0 #a8302a;}
+  .mbtn.red:active{box-shadow:0 2px 0 #a8302a;}
+  /* 🔄 처음부터 다시 — 시작 화면 위에서도 떠야 해서 더 위에 둔다 */
+  #resetbox{z-index:60;}
+  #resetbox .mbox{width:min(460px,94vw); text-align:center;}
+  #resetbox .mrow{flex-direction:column;}
+  #startreset{
+    position:relative; z-index:2; display:none; border:none; background:none; cursor:pointer;
+    font-family:inherit; font-size:14px; color:#fff; opacity:.8; text-decoration:underline;
+    text-shadow:0 1px 3px rgba(0,0,0,.4); padding:6px;
+  }
 
   /* 재료 주머니 */
   #bagrow{display:flex; flex-wrap:wrap; gap:7px; margin-bottom:14px;}
@@ -1525,6 +1536,7 @@
   <h1>🦤 도도블록</h1>
   <div class="sub">멸종된 도도새들이 모여 사는 신비의 블록섬</div>
   <button class="bigbtn" id="startbtn">▶ 섬으로 가기</button>
+  <button id="startreset">🔄 처음부터 다시 하기</button>
   <div class="keys">
     <span>W A S D = 이동</span>
     <span>스페이스 = 점프</span>
@@ -1968,6 +1980,17 @@
   <div class="msub">하고 싶은 걸 골라 보세요!</div>
   <div id="baggrid"></div>
   <button class="mbtn gray" id="bagclose">닫기</button>
+</div></div>
+
+<!-- 🔄 처음부터 다시 하기 — 아이가 실수로 누르지 않게 한 번 더 묻는다 -->
+<div class="modal" id="resetbox"><div class="mbox">
+  <div class="mhead" style="justify-content:center"><h2>🔄 처음부터 다시 할까요?</h2></div>
+  <div class="msub" style="opacity:.85">내 섬, 코인, 레벨, 배지, 도감 카드, 만든 게임이<br>
+    <b>이 기기에서 모두 지워져요.</b> 되돌릴 수 없어요!</div>
+  <div class="mrow">
+    <button class="mbtn green" id="resetno">아니요, 계속 할래요</button>
+    <button class="mbtn red" id="resetyes">네, 처음부터 다시 할래요</button>
+  </div>
 </div></div>
 
 <!-- 🎬 쇼츠 도전 -->
@@ -3928,9 +3951,45 @@ const state = {
 };
 const EXP_NEED = lv => 60 + (lv-1)*45;
 
+/* ═══════════════════════════════════════════════════
+   🔄 처음부터 다시 하기
+   ───────────────────────────────────────────────────
+   게임 기록은 이 기기의 브라우저 안(localStorage·sessionStorage)에 있다.
+   그래서 새 판을 올려도 예전 섬·코인이 그대로 나온다. 여기서 도도블록이
+   적어 둔 것(blockworld_…, dodo_…)만 골라 지우고 새로 불러온다.
+   주소 뒤에 ?처음부터 를 붙여 열어도 이 확인 창이 바로 뜬다.
+   ═══════════════════════════════════════════════════ */
+const Reset = {
+  busy:false,
+  mine(k){ return /^(blockworld_|dodo_)/.test(k); },
+  ask(){
+    if(typeof closeBag === 'function') closeBag();
+    if(document.pointerLockElement) document.exitPointerLock();
+    $('#resetbox').style.display = 'flex';
+  },
+  close(){ $('#resetbox').style.display = 'none'; },
+  isOpen(){ return $('#resetbox').style.display === 'flex'; },
+  hasSave(){
+    try{ return Object.keys(localStorage).some(k=>Reset.mine(k)); }catch(e){ return false; }
+  },
+  wipe(){
+    Reset.busy = true;
+    clearTimeout(saveTimer);
+    for(const st of ['localStorage','sessionStorage']){
+      try{
+        const box = window[st];
+        Object.keys(box).filter(k=>Reset.mine(k)).forEach(k=>box.removeItem(k));
+      }catch(e){}
+    }
+    /* ?g= 같은 꼬리표도 떼고 깨끗한 주소로 다시 연다 */
+    location.replace(location.pathname);
+  }
+};
+
 let saveTimer = null;
 function saveSoon(){ clearTimeout(saveTimer); saveTimer = setTimeout(saveNow, 700); }
 function saveNow(){
+  if(Reset.busy) return;          // 🔄 지우는 중에 다시 적어 버리면 안 된다
   try{
     localStorage.setItem(SAVE_KEY, JSON.stringify({
       v:7, coins:state.coins, exp:state.exp, level:state.level,
@@ -8349,6 +8408,7 @@ const BAG_ITEMS = [
    get desc(){ return {auto:'지금: 저절로 흘러요', day:'지금: 낮 고정', night:'지금: 밤 고정'}[state.timeMode||'auto']; },
    go:()=>{ cycleTimeMode(); openBag(); }},
   {icon:'❓', name:'조작법',         desc:'어떻게 하는지 보기',     go:()=>{ buildHelp(); $('#help').style.display='flex'; }},
+  {icon:'🔄', name:'처음부터 다시',  desc:'섬·코인·레벨을 다 지우고 새로 시작', go:()=>Reset.ask()},
   {icon:'⚙️', name:'화질',
    get desc(){ return {auto:'지금: 자동', high:'지금: 예쁘게 ✨', low:'지금: 빠르게 🐢'}[QUALITY.mode==='auto'?'auto':QUALITY.level]; },
    go:()=>{ cycleQuality(); openBag(); }},
@@ -11474,8 +11534,9 @@ addEventListener('keydown', e=>{
                    $('#tune').style.display==='flex' || $('#huntdone').style.display==='flex' ||
                    $('#bragbox').style.display==='flex' || $('#recbox').style.display==='flex' ||
                    $('#badges').style.display==='flex' || $('#share').style.display==='flex' ||
-                   chatOpen;
+                   chatOpen || Reset.isOpen();
   if(e.code==='Escape' && anyModal){
+    Reset.close();
     closeCraft(); closePlans(); closeBag(); closeFriends(); closeIdeas(); closeShorts();
     closeIsland(); closeDodo(); closeLook(); closeTune();
     $('#badges').style.display='none'; $('#share').style.display='none';
@@ -11548,6 +11609,12 @@ if(inIsland()){
   player.x = Mode.at.x; player.y = Mode.at.y + 0.2; player.z = Mode.at.z;
 }
 addEventListener('beforeunload', saveNow);
+$('#resetno').addEventListener('click', ()=>{ Reset.close(); Sound.click(); });
+$('#resetyes').addEventListener('click', ()=>Reset.wipe());
+$('#resetbox').addEventListener('click', e=>{ if(e.target.id === 'resetbox') Reset.close(); });
+$('#startreset').addEventListener('click', ()=>Reset.ask());
+if(Reset.hasSave()) $('#startreset').style.display = 'block';   // 기록이 있을 때만 시작 화면에 보인다
+if(/[?&](처음부터|reset)(=|&|$)/.test(decodeURIComponent(location.search))) Reset.ask();
 requestAnimationFrame(frame);
 
 /* 🎬 시작 화면 배경 동영상.
