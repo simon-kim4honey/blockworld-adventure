@@ -3710,19 +3710,39 @@ function updateCamera(dt){
      블록이 어디에 생기는지 안 보인다. 그래서 카메라를 오른쪽으로 살짝 민다.
      (마인크래프트·로블록스도 3인칭에서는 이렇게 한다.)
      민 만큼을 거리에 비례시켜서, 가까이 당겨도 도도가 화면에서 밀려나지 않게 한다. */
-  const side = camState.curDist * CAM_SIDE;
   const rx =  Math.cos(player.yaw), rz = -Math.sin(player.yaw);
-  const px = player.x, pz = player.z;
-  const hx = px + rx*side, hy = player.y + 1.5, hz = pz + rz*side;
+  const px = player.x, pz = player.z, py0 = player.y + 1.5;
 
-  // 벽에 카메라가 박히지 않게 거리 줄이기
-  let want = camState.dist;
-  const step = 0.25;
-  for(let d=step; d<=camState.dist; d+=step){
-    const px = hx + dirX*d, py = hy + dirY*d, pz = hz + dirZ*d;
-    if(solidAt(Math.floor(px),Math.floor(py),Math.floor(pz))){ want = Math.max(1.1, d-step*1.6); break; }
+  /* 벽에 카메라가 박히지 않게 거리 줄이기.
+     ⚠ 예전엔 "얼마나 옆으로 밀지"를 지금 카메라 거리로 정하고, 그 옆으로 민 자리에서
+     다시 벽을 찾았다. 그러면 가까워짐 → 덜 밈 → 벽이 안 걸림 → 멀어짐 → 더 밈 → 벽에 걸림…
+     이 매 프레임 되풀이돼서, 블록을 쌓다 보면 화면이 덜덜 흔들렸다.
+     이제 벽 찾기는 도도 자세만 보고 정한다(지금 카메라 거리를 안 본다). */
+  const rayHit = (ox, oz, max) => {
+    const step = 0.25;
+    for(let d=step; d<=max; d+=step){
+      if(solidAt(Math.floor(ox + dirX*d), Math.floor(py0 + dirY*d), Math.floor(oz + dirZ*d)))
+        return Math.max(1.1, d-step*1.6);
+    }
+    return max;
+  };
+  /* 옆으로 밀 수 있는 만큼 — 도도 바로 옆에 블록이 있으면 그 안으로 밀지 않는다 */
+  let room = 9;
+  for(let d=0.1; d<=camState.dist*CAM_SIDE + 0.3; d+=0.1){
+    if(solidAt(Math.floor(px + rx*d), Math.floor(py0), Math.floor(pz + rz*d))){ room = Math.max(0, d-0.3); break; }
   }
-  camState.curDist = lerp(camState.curDist, want, clamp(dt*14,0,1));
+  let want = rayHit(px, pz, camState.dist);                        // ① 도도 머리 한가운데에서
+  const sw = Math.min(want*CAM_SIDE, room);
+  want = Math.min(want, rayHit(px + rx*sw, pz + rz*sw, want));     // ② 옆으로 민 자리에서도
+  /* 벽에 걸리면 재빨리 당기고, 풀릴 때는 천천히 물러난다 — 블록 하나 놓을 때마다 휙휙 튀지 않게 */
+  camState.curDist = lerp(camState.curDist, want, clamp(dt*(want < camState.curDist ? 14 : 5),0,1));
+
+  /* 어깨 너머 시점 — 도도가 화면 한가운데 조준점을 딱 가리면
+     블록이 어디에 생기는지 안 보인다. 그래서 카메라를 오른쪽으로 살짝 민다.
+     (마인크래프트·로블록스도 3인칭에서는 이렇게 한다.)
+     민 만큼을 거리에 비례시켜서, 가까이 당겨도 도도가 화면에서 밀려나지 않게 한다. */
+  const side = Math.min(camState.curDist * CAM_SIDE, room);
+  const hx = px + rx*side, hy = py0, hz = pz + rz*side;
   camera.position.set(hx + dirX*camState.curDist, hy + dirY*camState.curDist, hz + dirZ*camState.curDist);
   camera.lookAt(hx, hy, hz);
 
